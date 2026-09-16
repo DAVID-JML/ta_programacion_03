@@ -18,7 +18,7 @@ import java.time.LocalTime;
 import java.util.Date;
 
 
-public class MainCRUD {
+public class MainTest {
     public static void main(String[] args) {
         Cliente cliente = new Cliente(
                 1,
@@ -236,6 +236,6 @@ public class MainCRUD {
         System.out.println("Indicaciones: " + receta.getIndicaciones());
         System.out.println("Detalles: " + receta.getDetallesReceta().size());
         System.out.println("Medicamento: " + detalleReceta.getMedicamentos().get(0).getNombre());
-        
+
     }
 }
