@@ -21,6 +21,7 @@ public class Mascota {
     private Sexo sexo;
     private final List<Cita> citas;
     private final List<AtencionMedica> atencionesMedicas;
+    private boolean activo;
 
     public Mascota() {
         citas = new ArrayList<>();
@@ -99,4 +100,11 @@ public class Mascota {
         atencionesMedicas.add(atencionMedica);
     }
 
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 }

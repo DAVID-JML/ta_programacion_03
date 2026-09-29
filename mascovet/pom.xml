@@ -12,6 +12,7 @@
         <module>mascovet_test</module>
         <module>mascovet_domain</module>
         <module>mascovet_dbmanager</module>
+        <module>mascovet_dao</module>
     </modules>
 
     <properties>

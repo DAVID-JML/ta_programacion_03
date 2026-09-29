@@ -14,6 +14,8 @@ public abstract class AtencionMedica {
     private Mascota mascota;
     private Cita cita;
     private Receta receta;
+    private double pesoActual;
+    private String alergias;
 
     public AtencionMedica() {
     }
@@ -83,5 +85,21 @@ public abstract class AtencionMedica {
 
     public void setReceta(Receta receta) {
         this.receta = receta;
+    }
+
+    public double getPesoActual() {
+        return pesoActual;
+    }
+
+    public void setPesoActual(double pesoActual) {
+        this.pesoActual = pesoActual;
+    }
+
+    public String getAlergias() {
+        return alergias;
+    }
+
+    public void setAlergias(String alergias) {
+        this.alergias = alergias;
     }
 }
