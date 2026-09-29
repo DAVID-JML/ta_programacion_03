@@ -1,6 +1,6 @@
 package pe.com.mascovet.usuario.model;
 
-public class Usuario {
+public abstract class Usuario {
     private int idUsuario;
     private String dni;
     private String nombre;
