@@ -9,6 +9,8 @@ import java.time.LocalTime;
 public abstract class AtencionMedica {
     private int idAtencion;
     private String observaciones;
+    private double pesoActual;
+    private String alergiasIdentificadas;
     private LocalTime horaInicio;
     private LocalTime horaFin;
     private Mascota mascota;
@@ -18,15 +20,33 @@ public abstract class AtencionMedica {
     public AtencionMedica() {
     }
 
-    public AtencionMedica(int idAtencion, String observaciones,
-                          LocalTime horaInicio, LocalTime horaFin,
-                          Mascota mascota, Cita cita) {
+    public AtencionMedica(int idAtencion, String observaciones, double pesoActual, String alergiasIdentificadas,
+                          LocalTime horaInicio, LocalTime horaFin, Mascota mascota, Cita cita, Receta receta) {
         this.idAtencion = idAtencion;
         this.observaciones = observaciones;
+        this.pesoActual = pesoActual;
+        this.alergiasIdentificadas = alergiasIdentificadas;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.mascota = mascota;
         this.cita = cita;
+        this.receta = receta;
+    }
+
+    public String getAlergiasIdentificadas() {
+        return alergiasIdentificadas;
+    }
+
+    public void setAlergiasIdentificadas(String alergiasIdentificadas) {
+        this.alergiasIdentificadas = alergiasIdentificadas;
+    }
+
+    public double getPesoActual() {
+        return pesoActual;
+    }
+
+    public void setPesoActual(double pesoActual) {
+        this.pesoActual = pesoActual;
     }
 
     public int getIdAtencion() {

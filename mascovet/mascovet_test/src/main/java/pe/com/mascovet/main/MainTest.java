@@ -114,10 +114,13 @@ public class MainTest {
         Consulta consulta = new Consulta(
                 300,
                 "Control en siete dias",
+                10.5,
+                "Ninguna",
                 LocalTime.of(10, 30),
                 LocalTime.of(11, 0),
                 mascota,
                 cita1,
+                null,
                 "Falta de apetito",
                 "Gastritis leve",
                 "Dieta blanda");
@@ -140,10 +143,13 @@ public class MainTest {
         Cirugia cirugia = new Cirugia(
                 302,
                 "Sin complicaciones",
+                11,
+                "Ninguna",
                 LocalTime.of(8, 0),
                 LocalTime.of(9, 30),
                 mascota,
                 cita1,
+                null,
                 "Esterilizacion",
                 "Reposo y control");
         mascota.agregarAtencionMedica(cirugia);
@@ -152,10 +158,13 @@ public class MainTest {
         Vacunacion vacunacion = new Vacunacion(
                 303,
                 "Vacunación anual",
+                15.5,
+                "Ninguna",
                 LocalTime.of(9, 30),
                 LocalTime.of(9, 45),
                 mascota,
                 cita1,
+                null,
                 new Date(),
                 new Date(),
                 "1 ml");
@@ -191,7 +200,8 @@ public class MainTest {
         medicamento.setDescripcion("Medicamento veterinario de uso oral");
         medicamento.setMonto(18.50);
         medicamento.setDetalleReceta(detalleReceta);
-        detalleReceta.agregarMedicamento(medicamento);
+        detalleReceta.setMedicamento(medicamento);
+
 
         System.out.println("===============================================");
         System.out.println("           PRUEBA DE DOMINIO - MASCOVET");
@@ -235,7 +245,11 @@ public class MainTest {
         System.out.println("\nRECETA");
         System.out.println("Indicaciones: " + receta.getIndicaciones());
         System.out.println("Detalles: " + receta.getDetallesReceta().size());
-        System.out.println("Medicamento: " + detalleReceta.getMedicamentos().get(0).getNombre());
+        System.out.println("Medicamento: " + detalleReceta.getMedicamento().getNombre());
+        System.out.println("Medicamento: " + detalleReceta.getDosis());
+        System.out.println("Medicamento: " + detalleReceta.getFrecuencia());
+        System.out.println("Medicamento: " + detalleReceta.getDuracion());
+
 
     }
 }
