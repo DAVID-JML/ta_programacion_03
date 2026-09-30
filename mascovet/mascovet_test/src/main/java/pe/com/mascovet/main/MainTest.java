@@ -1,16 +1,15 @@
 package pe.com.mascovet.main;
 
-import pe.com.mascovet.atencionmedica.model.*;
 import pe.com.mascovet.enums.model.*;
 
-import pe.com.mascovet.usuario.bo.AdministradorBOImpl;
-import pe.com.mascovet.usuario.bo.ClienteBOImpl;
-import pe.com.mascovet.usuario.bo.RecepcionistaBOImpl;
-import pe.com.mascovet.usuario.bo.VeterinarioBOImpl;
-import pe.com.mascovet.usuario.boi.IAdministradorBO;
-import pe.com.mascovet.usuario.boi.IClienteBO;
-import pe.com.mascovet.usuario.boi.IRecepcionistaBO;
-import pe.com.mascovet.usuario.boi.IVeterinarioBO;
+import pe.com.mascovet.usuario.boi.AdministradorBOImpl;
+import pe.com.mascovet.usuario.boi.ClienteBOImpl;
+import pe.com.mascovet.usuario.boi.RecepcionistaBOImpl;
+import pe.com.mascovet.usuario.boi.VeterinarioBOImpl;
+import pe.com.mascovet.usuario.bo.IAdministradorBO;
+import pe.com.mascovet.usuario.bo.IClienteBO;
+import pe.com.mascovet.usuario.bo.IRecepcionistaBO;
+import pe.com.mascovet.usuario.bo.IVeterinarioBO;
 import pe.com.mascovet.usuario.model.Cliente;
 import pe.com.mascovet.usuario.model.Recepcionista;
 import pe.com.mascovet.usuario.model.Administrador;
