@@ -1,241 +1,182 @@
 package pe.com.mascovet.main;
 
-
 import pe.com.mascovet.atencionmedica.model.*;
-import pe.com.mascovet.cita.model.Cita;
-import pe.com.mascovet.cita.model.HorarioAtencion;
 import pe.com.mascovet.enums.model.*;
-import pe.com.mascovet.receta.model.DetalleReceta;
-import pe.com.mascovet.receta.model.Medicamento;
-import pe.com.mascovet.receta.model.Receta;
+
+import pe.com.mascovet.usuario.bo.AdministradorBOImpl;
+import pe.com.mascovet.usuario.bo.ClienteBOImpl;
+import pe.com.mascovet.usuario.bo.RecepcionistaBOImpl;
+import pe.com.mascovet.usuario.bo.VeterinarioBOImpl;
+import pe.com.mascovet.usuario.boi.IAdministradorBO;
+import pe.com.mascovet.usuario.boi.IClienteBO;
+import pe.com.mascovet.usuario.boi.IRecepcionistaBO;
+import pe.com.mascovet.usuario.boi.IVeterinarioBO;
 import pe.com.mascovet.usuario.model.Cliente;
 import pe.com.mascovet.usuario.model.Recepcionista;
 import pe.com.mascovet.usuario.model.Administrador;
 import pe.com.mascovet.usuario.model.Veterinario;
-import pe.com.mascovet.mascota.model.Mascota;
 
-import java.time.LocalTime;
-import java.util.Date;
+import java.util.List;
 
 
 public class MainTest {
     public static void main(String[] args) {
-        Cliente cliente = new Cliente(
-                1,
-                "74851236",
-                "Carlos",
-                "Ramirez",
-                "cramirez",
-                "clave123",
-                true,
-                "carlos@correo.com",
-                "987654321");
+        String sufijo = String.format("%05d", System.currentTimeMillis() % 100000);
 
-        Veterinario veterinario = new Veterinario();
-        veterinario.setIdUsuario(2);
-        veterinario.setDni("45678912");
-        veterinario.setNombre("Andrea");
-        veterinario.setApellido("Salazar");
-        veterinario.setNombreUsuario("asalazar");
-        veterinario.setContrasena("vet123");
-        veterinario.setActivo(true);
-        veterinario.setNumeroColegiatura("CMVP-4587");
-        veterinario.setEspecialidad(Especialidad.MEDICINA_GENERAL);
+        System.out.println("====================================================");
+        System.out.println("      PRUEBA CRUD A TRAVES DE BUSINESS LOGIC");
+        System.out.println("====================================================");
+        System.out.println("Se prueban 4 entidades: Cliente, Veterinario, Recepcionista y Administrador.");
+        System.out.println("Los 4 usuarios usan la misma contraseña para evidenciar que contrasena NO es UNIQUE.");
 
-        Recepcionista recepcionista = new Recepcionista(
-                3,
-                "70981234",
-                "Maria",
-                "Lopez",
-                "mlopez",
-                "recep123",
-                true,
-                "MAÑANA");
+        try {
+            probarCliente(sufijo);
+            probarVeterinario(sufijo);
+            probarRecepcionista(sufijo);
+            probarAdministrador(sufijo);
 
-        Administrador administrador = new Administrador(
-                4,
-                "70112233",
-                "Luis",
-                "Torres",
-                "ltorres",
-                "admin123",
-                true,
-                "Administrador general");
-
-        Mascota mascota = new Mascota();
-        mascota.setIdMascota(10);
-        mascota.setNombre("Luna");
-        mascota.setFechaNacimiento(new Date());
-        mascota.setEspecie(Especie.PERRO);
-        mascota.setRaza("Labrador");
-        mascota.setSexo(Sexo.HEMBRA);
-        mascota.setCliente(cliente);
-        cliente.agregarMascota(mascota);
-
-        HorarioAtencion horario = new HorarioAtencion();
-        horario.setIdHorario(100);
-        horario.setDia(Dia.LUNES);
-        horario.setHoraInicio(LocalTime.of(9, 0));
-        horario.setHoraFin(LocalTime.of(13, 0));
-        horario.setVeterinario(veterinario);
-        veterinario.agregarHorarioAtencion(horario);
-
-        Cita cita1 = new Cita();
-        cita1.setIdCita(200);
-        cita1.setFecha(new Date());
-        cita1.setHora(LocalTime.of(10, 30));
-        cita1.setEstado(EstadoCita.CONFIRMADA);
-        cita1.setCliente(cliente);
-        cita1.setMascota(mascota);
-        cita1.setRecepcionista(recepcionista);
-        cita1.setVeterinario(veterinario);
-
-        cliente.agregarCita(cita1);
-        mascota.agregarCita(cita1);
-        recepcionista.agregarCita(cita1);
-        veterinario.agregarCita(cita1);
-
-        Cita cita2 = new Cita();
-        cita2.setIdCita(201);
-        cita2.setFecha(new Date());
-        cita2.setHora(LocalTime.of(12, 0));
-        cita2.setEstado(EstadoCita.RESERVADA);
-        cita2.setCliente(cliente);
-        cita2.setMascota(mascota);
-        cita2.setRecepcionista(recepcionista);
-        cita2.setVeterinario(veterinario);
-
-        cliente.agregarCita(cita2);
-        mascota.agregarCita(cita2);
-        recepcionista.agregarCita(cita2);
-        veterinario.agregarCita(cita2);
-
-
-        Consulta consulta = new Consulta(
-                300,
-                "Control en siete dias",
-                LocalTime.of(10, 30),
-                LocalTime.of(11, 0),
-                mascota,
-                cita1,
-                "Falta de apetito",
-                "Gastritis leve",
-                "Dieta blanda");
-        mascota.agregarAtencionMedica(consulta);
-        cita1.agregarAtencionMedica(consulta);
-
-
-        Control control = new Control();
-        control.setIdAtencion(301);
-        control.setObservaciones("Paciente estable");
-        control.setHoraInicio(LocalTime.of(11, 0));
-        control.setHoraFin(LocalTime.of(11, 20));
-        control.setMascota(mascota);
-        control.setCita(cita1);
-        control.setEvolucion("Evolucion favorable");
-        control.setIndicaciones("Continuar tratamiento");
-        mascota.agregarAtencionMedica(control);
-        cita1.agregarAtencionMedica(control);
-
-        Cirugia cirugia = new Cirugia(
-                302,
-                "Sin complicaciones",
-                LocalTime.of(8, 0),
-                LocalTime.of(9, 30),
-                mascota,
-                cita1,
-                "Esterilizacion",
-                "Reposo y control");
-        mascota.agregarAtencionMedica(cirugia);
-        cita1.agregarAtencionMedica(cirugia);
-
-        Vacunacion vacunacion = new Vacunacion(
-                303,
-                "Vacunación anual",
-                LocalTime.of(9, 30),
-                LocalTime.of(9, 45),
-                mascota,
-                cita1,
-                new Date(),
-                new Date(),
-                "1 ml");
-        mascota.agregarAtencionMedica(vacunacion);
-        cita1.agregarAtencionMedica(vacunacion);
-
-        Vacuna vacuna = new Vacuna();
-        vacuna.setIdVacuna(400);
-        vacuna.setNombre("Antirrabica");
-        vacuna.setDescripcion("Vacuna preventiva contra la rabia");
-        vacuna.setVacunacion(vacunacion);
-        vacunacion.agregarVacuna(vacuna);
-
-        Receta receta = new Receta();
-        receta.setIdReceta(500);
-        receta.setFecha(new Date());
-        receta.setIndicaciones("Administrar despues de los alimentos");
-        receta.setAtencionMedica(consulta);
-        consulta.setReceta(receta);
-
-        DetalleReceta detalleReceta = new DetalleReceta();
-        detalleReceta.setIdDetalleReceta(600);
-        detalleReceta.setDosis("5 ml");
-        detalleReceta.setFrecuencia("Cada 12 horas");
-        detalleReceta.setDuracion("5 dias");
-        detalleReceta.setMontoTotal(18.50);
-        detalleReceta.setReceta(receta);
-        receta.agregarDetalleReceta(detalleReceta);
-
-        Medicamento medicamento = new Medicamento();
-        medicamento.setIdMedicamento(700);
-        medicamento.setNombre("Protector gastrico");
-        medicamento.setDescripcion("Medicamento veterinario de uso oral");
-        medicamento.setMonto(18.50);
-        medicamento.setDetalleReceta(detalleReceta);
-        detalleReceta.agregarMedicamento(medicamento);
-
-        System.out.println("===============================================");
-        System.out.println("           PRUEBA DE DOMINIO - MASCOVET");
-        System.out.println("===============================================");
-
-        System.out.println("\nCLIENTE");
-        System.out.println("Nombre: " + cliente.getNombreCompleto());
-        System.out.println("Correo: " + cliente.getCorreo());
-        System.out.println("Mascotas registradas: " + cliente.getMascotas().size());
-        System.out.println("Citas registradas: " + cliente.getCitas().size());
-
-        System.out.println("\nMASCOTA");
-        System.out.println("Nombre: " + mascota.getNombre());
-        System.out.println("Especie: " + mascota.getEspecie());
-        System.out.println("Dueno: " + mascota.getCliente().getNombreCompleto());
-        System.out.println("Cantidad de citas: " + mascota.getCitas().size());
-        System.out.println("Atenciones medicas: " + mascota.getAtencionesMedicas().size());
-
-        System.out.println("\nVETERINARIO");
-        System.out.println("Nombre: " + veterinario.getNombreCompleto());
-        System.out.println("Colegiatura: " + veterinario.getNumeroColegiatura());
-        System.out.println("Especialidad: " + veterinario.getEspecialidad());
-        System.out.println("Horarios registrados: " + veterinario.getHorariosAtencion().size());
-        System.out.println("Cantidad de citas: " + veterinario.getCitas().size());
-
-        System.out.println("\nCITAS");
-        for (Cita cita : mascota.getCitas()) {
-            System.out.println("Cita " + cita.getIdCita()
-                    + " - " + cita.getEstado()
-                    + " - " + cita.getHora()
-                    + " - Veterinario: " + cita.getVeterinario().getNombreCompleto());
+            System.out.println("\n====================================================");
+            System.out.println("LAS 4 PRUEBAS CRUD FINALIZARON CORRECTAMENTE");
+            System.out.println("====================================================");
+        } catch (RuntimeException ex) {
+            System.out.println("\nERROR DURANTE LAS PRUEBAS CRUD: " + ex.getMessage());
+            ex.printStackTrace();
         }
+    }
 
-        System.out.println("\nATENCION MEDICA");
-        System.out.println("Consulta: " + consulta.getMotivoConsulta());
-        System.out.println("Diagnostico: " + consulta.getDiagnostico());
-        System.out.println("Control: " + control.getEvolucion());
-        System.out.println("Cirugia: " + cirugia.getProcedimiento());
-        System.out.println("Vacunas aplicadas: " + vacunacion.getVacunas().size());
+    private static void probarCliente(String sufijo) {
+        System.out.println("\n---------------- CLIENTE ----------------");
+        IClienteBO clienteBO = new ClienteBOImpl();
+        Cliente cliente = new Cliente(0, "7000" + sufijo, "Carlos", "Ramirez",
+                "cliente_" + sufijo, "clave123", true,
+                "cliente" + sufijo + "@correo.com", "98765" + sufijo);
 
-        System.out.println("\nRECETA");
-        System.out.println("Indicaciones: " + receta.getIndicaciones());
-        System.out.println("Detalles: " + receta.getDetallesReceta().size());
-        System.out.println("Medicamento: " + detalleReceta.getMedicamentos().get(0).getNombre());
+        int id = clienteBO.insertar(cliente);
+        System.out.println("Insertado. ID: " + id);
+        Cliente encontrado = clienteBO.obtenerPorId(id);
+        System.out.println("ObtenerPorId: " + encontrado.getNombreCompleto() + " - " + encontrado.getCorreo());
 
+        encontrado.setTelefono("99999" + sufijo);
+        int modificados = clienteBO.modificar(encontrado);
+        System.out.println("Modificar. Resultado: " + modificados);
+        Cliente clienteModificado = clienteBO.obtenerPorId(id);
+        System.out.println("Verificacion modificacion. Telefono: " + clienteModificado.getTelefono());
+
+        System.out.println("ListarTodos:");
+        List<Cliente> clientes = clienteBO.listarTodos();
+        for (Cliente item : clientes) {
+            System.out.println("  ID: " + item.getIdUsuario()
+                    + " | DNI: " + item.getDni()
+                    + " | Nombre: " + item.getNombreCompleto()
+                    + " | Correo: " + item.getCorreo()
+                    + " | Telefono: " + item.getTelefono());
+        }
+        System.out.println("Cantidad total: " + clientes.size());
+
+        int eliminados = clienteBO.eliminar(id);
+        System.out.println("Eliminar. Resultado: " + eliminados);
+        Cliente clienteEliminado = clienteBO.obtenerPorId(id);
+        System.out.println("Verificacion baja logica. Activo: " + clienteEliminado.isActivo());
+    }
+
+    private static void probarVeterinario(String sufijo) {
+        System.out.println("\n-------------- VETERINARIO --------------");
+        IVeterinarioBO veterinarioBO = new VeterinarioBOImpl();
+        Veterinario veterinario = new Veterinario(0, "7001" + sufijo, "Andrea", "Salazar",
+                "veterinario_" + sufijo, "clave123", true,
+                "CMVP-" + sufijo, Especialidad.MEDICINA_GENERAL);
+
+        int id = veterinarioBO.insertar(veterinario);
+        System.out.println("Insertado. ID: " + id);
+        Veterinario encontrado = veterinarioBO.obtenerPorId(id);
+        System.out.println("ObtenerPorId: " + encontrado.getNombreCompleto() + " - " + encontrado.getEspecialidad());
+
+        encontrado.setEspecialidad(Especialidad.CIRUGIA);
+        int modificados = veterinarioBO.modificar(encontrado);
+        System.out.println("Modificar. Resultado: " + modificados);
+        Veterinario veterinarioModificado = veterinarioBO.obtenerPorId(id);
+        System.out.println("Verificacion modificacion. Especialidad: " + veterinarioModificado.getEspecialidad());
+
+        System.out.println("ListarTodos:");
+        List<Veterinario> veterinarios = veterinarioBO.listarTodos();
+        for (Veterinario item : veterinarios) {
+            System.out.println("  ID: " + item.getIdUsuario()
+                    + " | DNI: " + item.getDni()
+                    + " | Nombre: " + item.getNombreCompleto()
+                    + " | Colegiatura: " + item.getNumeroColegiatura()
+                    + " | Especialidad: " + item.getEspecialidad());
+        }
+        System.out.println("Cantidad total: " + veterinarios.size());
+
+        int eliminados = veterinarioBO.eliminar(id);
+        System.out.println("Eliminar. Resultado: " + eliminados);
+        Veterinario veterinarioEliminado = veterinarioBO.obtenerPorId(id);
+        System.out.println("Verificacion baja logica. Activo: " + veterinarioEliminado.isActivo());
+    }
+
+    private static void probarRecepcionista(String sufijo) {
+        System.out.println("\n------------- RECEPCIONISTA -------------");
+        IRecepcionistaBO recepcionistaBO = new RecepcionistaBOImpl();
+        Recepcionista recepcionista = new Recepcionista(0, "7002" + sufijo, "Maria", "Lopez",
+                "recepcionista_" + sufijo, "clave123", true, "MANANA");
+
+        int id = recepcionistaBO.insertar(recepcionista);
+        System.out.println("Insertado. ID: " + id);
+        Recepcionista encontrado = recepcionistaBO.obtenerPorId(id);
+        System.out.println("ObtenerPorId: " + encontrado.getNombreCompleto() + " - turno " + encontrado.getTurno());
+
+        encontrado.setTurno("TARDE");
+        int modificados = recepcionistaBO.modificar(encontrado);
+        System.out.println("Modificar. Resultado: " + modificados);
+        Recepcionista recepcionistaModificado = recepcionistaBO.obtenerPorId(id);
+        System.out.println("Verificacion modificacion. Turno: " + recepcionistaModificado.getTurno());
+
+        System.out.println("ListarTodos:");
+        List<Recepcionista> recepcionistas = recepcionistaBO.listarTodos();
+        for (Recepcionista item : recepcionistas) {
+            System.out.println("  ID: " + item.getIdUsuario()
+                    + " | DNI: " + item.getDni()
+                    + " | Nombre: " + item.getNombreCompleto()
+                    + " | Turno: " + item.getTurno());
+        }
+        System.out.println("Cantidad total: " + recepcionistas.size());
+
+        int eliminados = recepcionistaBO.eliminar(id);
+        System.out.println("Eliminar. Resultado: " + eliminados);
+        Recepcionista recepcionistaEliminado = recepcionistaBO.obtenerPorId(id);
+        System.out.println("Verificacion baja logica. Activo: " + recepcionistaEliminado.isActivo());
+    }
+
+    private static void probarAdministrador(String sufijo) {
+        System.out.println("\n------------- ADMINISTRADOR -------------");
+        IAdministradorBO administradorBO = new AdministradorBOImpl();
+        Administrador administrador = new Administrador(0, "7003" + sufijo, "Lucia", "Torres",
+                "administrador_" + sufijo, "clave123", true, "SUPERVISOR");
+
+        int id = administradorBO.insertar(administrador);
+        System.out.println("Insertado. ID: " + id);
+        Administrador encontrado = administradorBO.obtenerPorId(id);
+        System.out.println("ObtenerPorId: " + encontrado.getNombreCompleto() + " - cargo " + encontrado.getCargo());
+
+        encontrado.setCargo("ADMINISTRADOR GENERAL");
+        int modificados = administradorBO.modificar(encontrado);
+        System.out.println("Modificar. Resultado: " + modificados);
+        Administrador administradorModificado = administradorBO.obtenerPorId(id);
+        System.out.println("Verificacion modificacion. Cargo: " + administradorModificado.getCargo());
+
+        System.out.println("ListarTodos:");
+        List<Administrador> administradores = administradorBO.listarTodos();
+        for (Administrador item : administradores) {
+            System.out.println("  ID: " + item.getIdUsuario()
+                    + " | DNI: " + item.getDni()
+                    + " | Nombre: " + item.getNombreCompleto()
+                    + " | Cargo: " + item.getCargo());
+        }
+        System.out.println("Cantidad total: " + administradores.size());
+
+        int eliminados = administradorBO.eliminar(id);
+        System.out.println("Eliminar. Resultado: " + eliminados);
+        Administrador administradorEliminado = administradorBO.obtenerPorId(id);
+        System.out.println("Verificacion baja logica. Activo: " + administradorEliminado.isActivo());
     }
 }
