@@ -10,10 +10,9 @@ public class DetalleReceta {
     private String frecuencia;
     private String duracion;
     private Double montoTotal;
-    private final List<Medicamento> medicamentos;
+    private Medicamento medicamento;
 
     public DetalleReceta() {
-        medicamentos = new ArrayList<>();
     }
 
     public int getIdDetalleReceta() {
@@ -64,11 +63,11 @@ public class DetalleReceta {
         this.montoTotal = montoTotal;
     }
 
-    public List<Medicamento> getMedicamentos() {
-        return medicamentos;
+    public Medicamento getMedicamento() {
+        return medicamento;
     }
 
-    public void agregarMedicamento(Medicamento medicamento) {
-        medicamentos.add(medicamento);
+    public void setMedicamento(Medicamento medicamento) {
+        this.medicamento = medicamento;
     }
 }

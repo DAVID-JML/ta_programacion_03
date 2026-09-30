@@ -1,6 +1,7 @@
 package pe.com.mascovet.mascota.model;
 
 import pe.com.mascovet.enums.model.Especie;
+import pe.com.mascovet.enums.model.EstadoMascota;
 import pe.com.mascovet.enums.model.Sexo;
 import pe.com.mascovet.usuario.model.Cliente;
 import pe.com.mascovet.atencionmedica.model.AtencionMedica;
@@ -21,10 +22,20 @@ public class Mascota {
     private Sexo sexo;
     private final List<Cita> citas;
     private final List<AtencionMedica> atencionesMedicas;
+    private EstadoMascota estado;
 
     public Mascota() {
-        citas = new ArrayList<>();
-        atencionesMedicas = new ArrayList<>();
+        this.estado = EstadoMascota.ACTIVO;
+        this.citas = new ArrayList<>();
+        this.atencionesMedicas = new ArrayList<>();
+    }
+
+    public EstadoMascota getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoMascota estado) {
+        this.estado = estado;
     }
 
     public int getIdMascota() {

@@ -2,7 +2,7 @@ package pe.com.mascovet.receta.model;
 
 public class Medicamento {
     private int idMedicamento;
-    private DetalleReceta detalleReceta;
+    //private DetalleReceta detalleReceta;
     private String nombre;
     private String descripcion;
     private double monto;
@@ -18,13 +18,13 @@ public class Medicamento {
         this.idMedicamento = idMedicamento;
     }
 
-    public DetalleReceta getDetalleReceta() {
-        return detalleReceta;
-    }
-
-    public void setDetalleReceta(DetalleReceta detalleReceta) {
-        this.detalleReceta = detalleReceta;
-    }
+//    public DetalleReceta getDetalleReceta() {
+//        return detalleReceta;
+//    }
+//
+//    public void setDetalleReceta(DetalleReceta detalleReceta) {
+//        this.detalleReceta = detalleReceta;
+//    }
 
     public String getNombre() {
         return nombre;

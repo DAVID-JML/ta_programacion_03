@@ -16,7 +16,7 @@ public class Recepcionista extends Usuario{
     public Recepcionista(int idUsuario, String dni, String nombre, String apellido,
                          String nombreUsuario, String contrasena, boolean activo,
                          String turno) {
-        super();
+        super(idUsuario, dni, nombre, apellido, nombreUsuario, contrasena, activo);
         this.turno = turno;
         citas = new ArrayList<>();
     }

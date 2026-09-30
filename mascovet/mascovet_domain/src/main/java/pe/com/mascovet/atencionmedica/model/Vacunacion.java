@@ -2,6 +2,7 @@ package pe.com.mascovet.atencionmedica.model;
 
 import pe.com.mascovet.cita.model.Cita;
 import pe.com.mascovet.mascota.model.Mascota;
+import pe.com.mascovet.receta.model.Receta;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -20,9 +21,9 @@ public class Vacunacion extends AtencionMedica {
 
     public Vacunacion(int idAtencion, String observaciones,
                       LocalTime horaInicio, LocalTime horaFin,
-                      Mascota mascota, Cita cita,
+                      Mascota mascota, Cita cita, Receta receta, double pesoActual, String alergias,
                       Date fechaAplicacion, Date fechaProximaDosis, String dosis) {
-        super(idAtencion, observaciones, horaInicio, horaFin, mascota, cita);
+        super(idAtencion, observaciones, horaInicio, horaFin, mascota, cita, receta, pesoActual, alergias);
         this.fechaAplicacion = fechaAplicacion;
         this.fechaProximaDosis = fechaProximaDosis;
         this.dosis = dosis;

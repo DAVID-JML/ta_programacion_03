@@ -14,19 +14,24 @@ public abstract class AtencionMedica {
     private Mascota mascota;
     private Cita cita;
     private Receta receta;
+    private double pesoActual;
+    private String alergias;
 
     public AtencionMedica() {
     }
 
     public AtencionMedica(int idAtencion, String observaciones,
                           LocalTime horaInicio, LocalTime horaFin,
-                          Mascota mascota, Cita cita) {
+                          Mascota mascota, Cita cita, Receta receta, double pesoActual, String alergias) {
         this.idAtencion = idAtencion;
         this.observaciones = observaciones;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.mascota = mascota;
         this.cita = cita;
+        this.receta = receta;
+        this.pesoActual = pesoActual;
+        this.alergias = alergias;
     }
 
     public int getIdAtencion() {
@@ -83,5 +88,21 @@ public abstract class AtencionMedica {
 
     public void setReceta(Receta receta) {
         this.receta = receta;
+    }
+
+    public String getAlergias() {
+        return alergias;
+    }
+
+    public void setAlergias(String alergias) {
+        this.alergias = alergias;
+    }
+
+    public double getPesoActual() {
+        return pesoActual;
+    }
+
+    public void setPesoActual(double pesoActual) {
+        this.pesoActual = pesoActual;
     }
 }
