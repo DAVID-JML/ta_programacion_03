@@ -1,6 +1,18 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MainLayout)">
+            <PageTitle>Página no encontrada · Mascovet</PageTitle>
+            <PageHeader Title="Página no encontrada" Description="La dirección solicitada no existe en esta aplicación." />
+            <AppCard>
+                <AppEmptyState Icon="search" Title="No encontramos esta página"
+                               Description="Revisa la dirección o vuelve a la galería del Design System.">
+                    <a href="design-system">Ir a la galería</a>
+                </AppEmptyState>
+            </AppCard>
+        </LayoutView>
+    </NotFound>
 </Router>

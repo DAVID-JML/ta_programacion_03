@@ -1,0 +1,69 @@
+.ms-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ms-space-2);
+    min-height: var(--ms-control-height);
+    padding: 0 var(--ms-space-4);
+    border: var(--ms-border-width) solid transparent;
+    border-radius: var(--ms-radius-control);
+    font: inherit;
+    font-size: var(--ms-font-size-body);
+    font-weight: var(--ms-font-weight-semibold);
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.ms-btn--small {
+    min-height: var(--ms-control-height-sm);
+    padding: 0 var(--ms-space-3);
+    font-size: var(--ms-font-size-small);
+}
+
+/* Primary */
+.ms-btn--primary { background: var(--ms-color-primary); color: #fff; }
+.ms-btn--primary:hover:not(:disabled) { background: var(--ms-color-primary-hover); }
+.ms-btn--primary:active:not(:disabled) { background: var(--ms-color-primary-active); }
+
+/* Secondary */
+.ms-btn--secondary { background: var(--ms-color-surface); color: var(--ms-color-primary); border-color: var(--ms-color-primary); }
+.ms-btn--secondary:hover:not(:disabled) { background: var(--ms-color-background-soft); }
+.ms-btn--secondary:active:not(:disabled) { background: #D3EFEE; }
+
+/* Tertiary */
+.ms-btn--tertiary { background: transparent; color: var(--ms-color-primary); }
+.ms-btn--tertiary:hover:not(:disabled) { background: var(--ms-color-background-soft); }
+.ms-btn--tertiary:active:not(:disabled) { background: #D3EFEE; }
+
+/* Danger: se distingue de las acciones primarias por color y por uso (rojo semántico) */
+.ms-btn--danger { background: var(--ms-color-error); color: #fff; }
+.ms-btn--danger:hover:not(:disabled) { background: #961F18; }
+.ms-btn--danger:active:not(:disabled) { background: #7E1B15; }
+
+/* Deshabilitado */
+.ms-btn:disabled {
+    background: var(--ms-color-disabled-bg);
+    color: var(--ms-color-disabled-text);
+    border-color: var(--ms-color-disabled-border);
+    cursor: not-allowed;
+}
+
+/* Cargando: conserva su variante, pero muestra cursor de progreso */
+.ms-btn--loading { cursor: progress; opacity: 0.85; }
+
+.ms-btn__spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: ms-btn-spin 0.7s linear infinite;
+}
+
+@keyframes ms-btn-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .ms-btn__spinner { animation-duration: 2s; }
+}
