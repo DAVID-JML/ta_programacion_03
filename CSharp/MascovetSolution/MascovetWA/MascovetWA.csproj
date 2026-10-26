@@ -9,7 +9,15 @@
 
   <ItemGroup>
     <Folder Include="Components\DesignSystem\DataDisplay\" />
-    <Folder Include="Components\Forms\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppDatePicker.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppFieldWrapper.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppInput.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppSearchInput.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppSelect.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppTextArea.razor" />
   </ItemGroup>
 
 </Project>
