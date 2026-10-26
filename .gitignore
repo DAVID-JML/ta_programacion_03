@@ -1,25 +1,48 @@
-# Compiled class file
-*.class
-
-# Log file
+# ==========================================
+# Archivos del Sistema Operativo y Genéricos
+# ==========================================
+.DS_Store
+Thumbs.db
+*.tmp
 *.log
 
-# BlueJ files
-*.ctxt
+# ==========================================
+# Backend: Java / Maven / IntelliJ IDEA
+# ==========================================
+# Archivos de compilación Maven
+target/
+*.class
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-#idea
+# Entorno e IDE (IntelliJ / Eclipse)
 .idea/
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+# Base de datos y volcados locales temporales
+*.log.sql
+
+# ==========================================
+# Frontend: C# / .NET / Visual Studio
+# ==========================================
+# Directorios de compilación de .NET
+bin/
+obj/
+
+# Archivos de configuración local de Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+
+# Paquetes y herramientas
+*.nupkg
+.nuget/
+
+# Archivos de publicación
+PublishOutputs/
+*.pubxml
