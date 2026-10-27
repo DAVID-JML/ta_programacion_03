@@ -1,5 +1,355 @@
-﻿<h3>GestionarVacunacion</h3>
+﻿@page "/veterinario/vacunas"
+@using System.ComponentModel.DataAnnotations
+@inject ToastService Toast
+
+<PageTitle>Vacunación | Mascovet</PageTitle>
+
+<div class="mb-4">
+    <h1>Gestionar vacunaciones</h1>
+    <p class="ms-type-secondary">Registra, modifica y anula las vacunaciones aplicadas a la mascota.</p>
+</div>
+
+<EditForm Model="modelo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="mb-4">
+        <AppCard Title="Información de la cita y la mascota">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <AppInput TValue="string"
+                              Label="ID de la cita"
+                              Placeholder="Seleccione una cita"
+                              Required="true"
+                              Disabled="true"
+                              @bind-Value="modelo.IdCita" />
+                </div>
+                <div class="col-md-auto">
+                    <AppButton Variant="ButtonVariant.Secondary"
+                               Icon="search"
+                               OnClick="AbrirModalCita">
+                        Buscar cita
+                    </AppButton>
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                    <AppInput TValue="string" Label="Mascota" Disabled="true" @bind-Value="modelo.Mascota" />
+                </div>
+                <div class="col-md-6">
+                    <AppInput TValue="string" Label="Dueño" Disabled="true" @bind-Value="modelo.Dueno" />
+                </div>
+            </div>
+        </AppCard>
+    </div>
+
+    <div class="mb-4">
+        <AppCard Title="@(EditandoId.HasValue ? "Modificar vacunación" : "Registro de vacunación")">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <AppSelect TValue="int?"
+                               Label="Vacuna aplicada"
+                               Placeholder="Seleccione una vacuna"
+                               Required="true"
+                               Options="vacunas"
+                               @bind-Value="modelo.IdVacuna" />
+                </div>
+                <div class="col-md-6">
+                    <AppInput TValue="string"
+                              Label="Dosis"
+                              Placeholder="Ingrese la dosis aplicada"
+                              Required="true"
+                              maxlength="200"
+                              @bind-Value="modelo.Dosis" />
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-3">
+                    <AppDatePicker Label="Fecha de aplicación" Required="true" @bind-Value="modelo.FechaAplicacion" />
+                </div>
+                <div class="col-md-3">
+                    <AppDatePicker Label="Fecha de próxima dosis" @bind-Value="modelo.ProximaDosis" />
+                </div>
+                <div class="col-md-3">
+                    <AppInput TValue="string" Type="time" Label="Hora de inicio" Required="true" @bind-Value="modelo.HoraInicio" />
+                </div>
+                <div class="col-md-3">
+                    <AppInput TValue="string" Type="time" Label="Hora de fin" Required="true" @bind-Value="modelo.HoraFin" />
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-12">
+                    <AppTextArea TValue="string"
+                                 Label="Observaciones"
+                                 Rows="3"
+                                 maxlength="255"
+                                 HelpText="Máximo 255 caracteres."
+                                 @bind-Value="modelo.Observaciones" />
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end flex-wrap gap-2 mt-4">
+                <AppButton Variant="ButtonVariant.Tertiary" OnClick="Limpiar">Limpiar</AppButton>
+                <AppButton Type="submit" Variant="ButtonVariant.Primary">
+                    @(EditandoId.HasValue ? "Guardar cambios" : "Guardar vacunación")
+                </AppButton>
+            </div>
+        </AppCard>
+    </div>
+</EditForm>
+
+<div class="mb-4">
+    <AppCard Title="Vacunaciones registradas de la mascota">
+        <AppTable Items="Pagina(vacunaciones, paginaVacunaciones)"
+                  ColumnCount="6"
+                  Caption="Vacunaciones registradas de la mascota">
+            <HeaderContent>
+                <th scope="col">Vacuna</th>
+                <th scope="col">Dosis</th>
+                <th scope="col">Fecha de aplicación</th>
+                <th scope="col">Próxima dosis</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+            </HeaderContent>
+            <RowTemplate Context="v">
+                <td>@v.Vacuna</td>
+                <td>@v.Dosis</td>
+                <td>@v.FechaAplicacion.ToString("dd/MM/yyyy")</td>
+                <td>@(v.ProximaDosis?.ToString("dd/MM/yyyy") ?? "—")</td>
+                <td>
+                    <AppBadge Variant="@(v.Anulada ? SemanticVariant.Neutral : SemanticVariant.Success)">
+                        @(v.Anulada ? "Anulada" : "Vigente")
+                    </AppBadge>
+                </td>
+                <td>
+                    <div class="d-flex gap-2">
+                        <AppButton Size="ButtonSize.Small"
+                                   Variant="ButtonVariant.Secondary"
+                                   Disabled="@v.Anulada"
+                                   OnClick="() => Editar(v)">
+                            Editar
+                        </AppButton>
+                        <AppButton Size="ButtonSize.Small"
+                                   Variant="ButtonVariant.Danger"
+                                   Disabled="@v.Anulada"
+                                   OnClick="() => SolicitarAnulacion(v)">
+                            Anular
+                        </AppButton>
+                    </div>
+                </td>
+            </RowTemplate>
+            <EmptyContent>
+                <AppEmptyState Icon="inbox"
+                               Title="Sin vacunaciones registradas"
+                               Description="Selecciona una cita para ver las vacunaciones de la mascota." />
+            </EmptyContent>
+        </AppTable>
+
+        <AppPagination @bind-CurrentPage="paginaVacunaciones"
+                       TotalItems="vacunaciones.Count"
+                       PageSize="TamPagina"
+                       AriaLabel="Paginación de vacunaciones" />
+    </AppCard>
+</div>
+
+<AppButton Href="/veterinario/atencion" Variant="ButtonVariant.Secondary">Regresar</AppButton>
+
+<AppModal @bind-Visible="mostrarModalCita" Title="Búsqueda de cita">
+    <ChildContent>
+    <AppFilterBar SearchText="textoBusquedaCita"
+                  SearchTextChanged="BuscarCita"
+                  SearchLabel="ID de cita o nombre de mascota"
+                  SearchPlaceholder="Buscar cita…"
+                  OnClear="LimpiarBusquedaCita" />
+
+    <AppTable Items="Pagina(CitasFiltradas, paginaCitas)"
+              ColumnCount="6"
+              Caption="Citas disponibles">
+        <HeaderContent>
+            <th scope="col">ID</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Hora</th>
+            <th scope="col">Mascota</th>
+            <th scope="col">Servicio</th>
+            <th scope="col">Acciones</th>
+        </HeaderContent>
+        <RowTemplate Context="cita">
+            <td>@cita.Id</td>
+            <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+            <td>@cita.Hora.ToString("HH:mm")</td>
+            <td>@cita.Mascota</td>
+            <td>@cita.Servicio</td>
+            <td>
+                <AppButton Size="ButtonSize.Small"
+                           Variant="ButtonVariant.Secondary"
+                           OnClick="() => SeleccionarCita(cita)">
+                    Seleccionar
+                </AppButton>
+            </td>
+        </RowTemplate>
+        <EmptyContent>
+            <AppEmptyState Icon="calendar"
+                           Title="No se encontraron citas"
+                           Description="Prueba con otro ID de cita o con el nombre de la mascota." />
+        </EmptyContent>
+    </AppTable>
+
+    <AppPagination @bind-CurrentPage="paginaCitas"
+                   TotalItems="CitasFiltradas.Count()"
+                   PageSize="TamPagina"
+                   AriaLabel="Paginación de citas" />
+    </ChildContent>
+
+    <Actions>
+        <AppButton Variant="ButtonVariant.Tertiary" OnClick="CerrarModalCita">Cerrar</AppButton>
+    </Actions>
+</AppModal>
+
+<AppModal @bind-Visible="mostrarModalAnular"
+          Title="Confirmar anulación"
+          ConfirmText="Anular"
+          ConfirmVariant="ButtonVariant.Danger"
+          OnConfirm="ConfirmarAnulacion">
+    <p>¿Está seguro de anular el registro de vacunación seleccionado?</p>
+    @if (vacunacionSeleccionada is not null)
+    {
+        <p class="ms-type-secondary mt-2">
+            @vacunacionSeleccionada.Vacuna · aplicada el @vacunacionSeleccionada.FechaAplicacion.ToString("dd/MM/yyyy")
+        </p>
+    }
+</AppModal>
 
 @code {
 
+    private const int TamPagina = 5;
+
+    private VacunacionModel modelo = new();
+    private int? EditandoId => modelo.IdVacunacion;
+
+    // Catálogo de vacunas y datos de las grillas (se llenarán al conectar con el backend).
+    private readonly List<SelectOption<int?>> vacunas = new();
+    private readonly List<VacunacionFila> vacunaciones = new();
+    private readonly List<CitaBusqueda> citas = new();
+
+    private bool mostrarModalCita;
+    private bool mostrarModalAnular;
+    private VacunacionFila? vacunacionSeleccionada;
+
+    private string? textoBusquedaCita;
+    private int paginaCitas = 1;
+    private int paginaVacunaciones = 1;
+
+    private IEnumerable<CitaBusqueda> CitasFiltradas =>
+        citas.Where(c => Coincide(textoBusquedaCita, c.Id.ToString(), c.Mascota));
+
+    private static IEnumerable<T> Pagina<T>(IEnumerable<T> fuente, int pagina) =>
+        fuente.Skip((Math.Max(1, pagina) - 1) * TamPagina).Take(TamPagina);
+
+    private static bool Coincide(string? texto, params string[] campos) =>
+        string.IsNullOrWhiteSpace(texto) ||
+        campos.Any(c => c.Contains(texto.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private void AbrirModalCita() => mostrarModalCita = true;
+    private void CerrarModalCita() => mostrarModalCita = false;
+
+    private void BuscarCita(string? texto)
+    {
+        textoBusquedaCita = texto;
+        paginaCitas = 1;
+    }
+
+    private void LimpiarBusquedaCita() => BuscarCita(string.Empty);
+
+    private void SeleccionarCita(CitaBusqueda cita)
+    {
+        modelo.IdCita = cita.Id.ToString();
+        modelo.Mascota = cita.Mascota;
+        modelo.Dueno = cita.Dueno;
+        mostrarModalCita = false;
+    }
+
+    private void Editar(VacunacionFila v)
+    {
+        modelo.IdVacunacion = v.Id;
+        modelo.IdVacuna = v.IdVacuna;
+        modelo.Dosis = v.Dosis;
+        modelo.FechaAplicacion = v.FechaAplicacion;
+        modelo.ProximaDosis = v.ProximaDosis;
+    }
+
+    private void Limpiar()
+    {
+        var cita = (modelo.IdCita, modelo.Mascota, modelo.Dueno);
+        modelo = new VacunacionModel
+        {
+            IdCita = cita.IdCita,
+            Mascota = cita.Mascota,
+            Dueno = cita.Dueno
+        };
+    }
+
+    private void SolicitarAnulacion(VacunacionFila v)
+    {
+        vacunacionSeleccionada = v;
+        mostrarModalAnular = true;
+    }
+
+    private void ConfirmarAnulacion()
+    {
+        mostrarModalAnular = false;
+        vacunacionSeleccionada = null;
+        Toast.Info("Falta conectar el servicio de anulación.");
+    }
+
+    private void Guardar()
+    {
+        Toast.Info("Formulario validado. Falta conectar el servicio de guardado.");
+    }
+
+    private sealed record CitaBusqueda(int Id, DateOnly Fecha, TimeOnly Hora, string Mascota, string Dueno, string Servicio);
+
+    private sealed record VacunacionFila(int Id, int IdVacuna, string Vacuna, string Dosis,
+                                         DateOnly FechaAplicacion, DateOnly? ProximaDosis, bool Anulada);
+
+    private sealed class VacunacionModel : IValidatableObject
+    {
+        public int? IdVacunacion { get; set; }
+
+        [Required(ErrorMessage = "Seleccione una cita.")]
+        public string IdCita { get; set; } = string.Empty;
+        public string Mascota { get; set; } = string.Empty;
+        public string Dueno { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Seleccione la vacuna aplicada.")]
+        public int? IdVacuna { get; set; }
+
+        [Required(ErrorMessage = "Ingrese la dosis aplicada.")]
+        [StringLength(200, ErrorMessage = "La dosis no debe exceder los 200 caracteres.")]
+        public string Dosis { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingrese la fecha de aplicación.")]
+        public DateOnly? FechaAplicacion { get; set; }
+
+        public DateOnly? ProximaDosis { get; set; }
+
+        [Required(ErrorMessage = "Ingrese la hora de inicio.")]
+        public string HoraInicio { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingrese la hora de fin.")]
+        public string HoraFin { get; set; } = string.Empty;
+
+        [StringLength(255, ErrorMessage = "Las observaciones no deben exceder los 255 caracteres.")]
+        public string Observaciones { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.CompareOrdinal(HoraInicio, HoraFin) >= 0)
+                yield return new("La hora de inicio debe ser anterior a la hora de fin.", new[] { nameof(HoraFin) });
+
+            if (FechaAplicacion.HasValue && ProximaDosis.HasValue && ProximaDosis <= FechaAplicacion)
+                yield return new("La próxima dosis debe ser posterior a la fecha de aplicación.", new[] { nameof(ProximaDosis) });
+        }
+    }
 }
