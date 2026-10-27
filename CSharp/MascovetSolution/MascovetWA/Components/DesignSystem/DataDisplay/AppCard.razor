@@ -1,0 +1,41 @@
+<div class="ms-card" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Title) || Actions is not null)
+    {
+        <header class="ms-card__header">
+            <div>
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    <h3 class="ms-card__title">@Title</h3>
+                }
+                @if (!string.IsNullOrEmpty(Subtitle))
+                {
+                    <p class="ms-card__subtitle">@Subtitle</p>
+                }
+            </div>
+            @if (Actions is not null)
+            {
+                <div class="ms-card__actions">@Actions</div>
+            }
+        </header>
+    }
+
+    <div class="ms-card__body">@ChildContent</div>
+
+    @if (Footer is not null)
+    {
+        <footer class="ms-card__footer">@Footer</footer>
+    }
+</div>
+
+@code {
+    /// <summary>Título de la tarjeta (se renderiza como h3).</summary>
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Acciones alineadas a la derecha del encabezado.</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
+}

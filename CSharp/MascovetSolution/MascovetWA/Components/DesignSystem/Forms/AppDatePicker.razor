@@ -1,0 +1,54 @@
+@using System.Globalization
+@inherits AppFieldBase<DateOnly?>
+
+<AppFieldWrapper FieldId="@FieldId" Label="@Label" HelpText="@HelpText" Required="@Required" Errors="@Errors">
+    <input @attributes="AdditionalAttributes"
+           id="@FieldId"
+           type="date"
+           class="@ControlClass"
+           min="@MinValue"
+           max="@MaxValue"
+           disabled="@Disabled"
+           aria-required="@(Required ? "true" : null)"
+           aria-invalid="@(HasError ? "true" : null)"
+           aria-describedby="@DescribedBy"
+           value="@CurrentValueAsString"
+           @onchange="HandleChange" /> />
+</AppFieldWrapper>
+
+@code {
+    private const string IsoFormat = "yyyy-MM-dd";
+
+    private string? MinValue => Min?.ToString(IsoFormat, CultureInfo.InvariantCulture);
+    private string? MaxValue => Max?.ToString(IsoFormat, CultureInfo.InvariantCulture);
+    private void HandleChange(ChangeEventArgs e) => CurrentValueAsString = e.Value?.ToString();
+    /// <summary>Fecha mínima seleccionable en el control nativo (no sustituye a la validación).</summary>
+    [Parameter] public DateOnly? Min { get; set; }
+
+    /// <summary>Fecha máxima seleccionable en el control nativo.</summary>
+    [Parameter] public DateOnly? Max { get; set; }
+
+    protected override string? FormatValueAsString(DateOnly? value) =>
+        value?.ToString(IsoFormat, CultureInfo.InvariantCulture);
+
+    protected override bool TryParseValueFromString(string? value, out DateOnly? result, out string? validationErrorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            result = null;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        if (DateOnly.TryParseExact(value, IsoFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+        {
+            result = date;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = null;
+        validationErrorMessage = "Ingresa una fecha válida.";
+        return false;
+    }
+}

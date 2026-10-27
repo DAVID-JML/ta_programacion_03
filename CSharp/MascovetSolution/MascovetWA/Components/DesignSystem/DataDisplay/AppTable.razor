@@ -1,0 +1,68 @@
+@typeparam TItem
+
+<div class="ms-table-wrap" role="region" aria-label="@(Caption ?? "Tabla de datos")" tabindex="0">
+    <table class="ms-table">
+        @if (!string.IsNullOrEmpty(Caption))
+        {
+            <caption class="ms-visually-hidden">@Caption</caption>
+        }
+        <thead>
+            <tr>@HeaderContent</tr>
+        </thead>
+        <tbody>
+            @if (Loading)
+            {
+                <tr>
+                    <td colspan="@ColumnCount" class="ms-table__message">
+                        <span class="ms-table__spinner" aria-hidden="true"></span>
+                        <span role="status">Cargando datos…</span>
+                    </td>
+                </tr>
+            }
+            else if (Items is null || !Items.Any())
+            {
+                <tr>
+                    <td colspan="@ColumnCount">
+                        @if (EmptyContent is not null)
+                        {
+                            @EmptyContent
+                        }
+                        else
+                        {
+                            <AppEmptyState Title="Sin datos" Description="No hay registros para mostrar." />
+                        }
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Items)
+                {
+                    <tr>@RowTemplate(item)</tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    /// <summary>Registros a mostrar (ya filtrados y paginados por quien usa el componente).</summary>
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+
+    /// <summary>Celdas de encabezado, p. ej. &lt;th scope="col"&gt;Nombre&lt;/th&gt;.</summary>
+    [Parameter, EditorRequired] public RenderFragment HeaderContent { get; set; } = default!;
+
+    /// <summary>Plantilla de fila: debe devolver celdas &lt;td&gt; (incluye acciones por fila).</summary>
+    [Parameter, EditorRequired] public RenderFragment<TItem> RowTemplate { get; set; } = default!;
+
+    /// <summary>Contenido cuando no hay registros. Por defecto, un AppEmptyState genérico.</summary>
+    [Parameter] public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>Número de columnas, usado para las filas de carga y vacío.</summary>
+    [Parameter] public int ColumnCount { get; set; } = 1;
+
+    /// <summary>Descripción de la tabla para lectores de pantalla.</summary>
+    [Parameter] public string? Caption { get; set; }
+}

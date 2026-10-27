@@ -1,0 +1,22 @@
+<div class="ms-empty" role="status">
+    <span class="ms-empty__icon"><AppIcon Name="@Icon" Size="32" /></span>
+    <p class="ms-empty__title">@Title</p>
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <p class="ms-empty__description">@Description</p>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="ms-empty__actions">@ChildContent</div>
+    }
+</div>
+
+@code {
+    /// <summary>Icono de IconCatalog.</summary>
+    [Parameter] public string Icon { get; set; } = "inbox";
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Acción opcional (botón o enlace) para salir del estado vacío.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

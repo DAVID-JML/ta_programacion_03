@@ -1,0 +1,20 @@
+@typeparam TValue
+@inherits AppFieldBase<TValue>
+
+<AppFieldWrapper FieldId="@FieldId" Label="@Label" HelpText="@HelpText" Required="@Required" Errors="@Errors">
+    <textarea @attributes="AdditionalAttributes"
+              id="@FieldId"
+              class="@ControlClass"
+              rows="@Rows"
+              placeholder="@Placeholder"
+              disabled="@Disabled"
+              aria-required="@(Required ? "true" : null)"
+              aria-invalid="@(HasError ? "true" : null)"
+              aria-describedby="@DescribedBy"
+              @bind="CurrentValueAsString"></textarea>
+</AppFieldWrapper>
+
+@code {
+    /// <summary>Filas visibles.</summary>
+    [Parameter] public int Rows { get; set; } = 4;
+}
