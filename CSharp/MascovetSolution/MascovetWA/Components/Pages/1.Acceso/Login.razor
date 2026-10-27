@@ -1,5 +1,9 @@
 ﻿@page "/"
 @layout AuthLayout
+@using MascovetWA.Components.Layout
+@inject AuthService Auth
+@inject UserContext User
+@inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
 
 <PageTitle>Iniciar sesión | Mascovet</PageTitle>
@@ -28,11 +32,11 @@
 
             <div class="login-fields">
                 <AppInput TValue="string"
-                          Label="Correo electrónico"
-                          Type="email"
-                          Placeholder="nombre@correo.com"
+                          Label="Usuario o correo electrónico"
+                          Type="text"
+                          Placeholder="usuario o nombre@correo.com"
                           Required="true"
-                          @bind-Value="modelo.Correo"
+                          @bind-Value="modelo.Usuario"
                           autocomplete="username" />
 
                 <AppInput TValue="string"
@@ -127,18 +131,30 @@
         mostrarModalRecuperacion = false;
         mensaje = "Formulario validado. Falta conectar el servicio de recuperación.";
     }
-    private void IniciarSesion()
+    private async Task IniciarSesion()
     {
-        // Pendiente: conectar con el servicio de autenticación.
-        // No se deben validar credenciales únicamente en el cliente.
-        mensaje = "La interfaz está lista, pero falta conectar el servicio de autenticación.";
+        enviando = true;
+        mensaje = string.Empty;
+        await Task.Delay(400); // simula latencia; se quita con el servicio real
+
+        var resultado = Auth.Validar(modelo.Usuario, modelo.Contrasena);
+        enviando = false;
+
+        if (resultado is null)
+        {
+            mensaje = "Usuario o contraseña incorrectos.";
+            modelo.Contrasena = string.Empty;
+            return;
+        }
+
+        User.SignIn(resultado.Role, resultado.Nombre);
+        Navigation.NavigateTo(NavCatalog.HomeFor(resultado.Role));
     }
 
     private sealed class LoginModel
     {
-        [Required(ErrorMessage = "Ingresa tu correo electrónico.")]
-        [EmailAddress(ErrorMessage = "Ingresa un correo electrónico válido.")]
-        public string Correo { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Ingresa tu usuario o correo electrónico.")]
+        public string Usuario { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Ingresa tu contraseña.")]
         public string Contrasena { get; set; } = string.Empty;

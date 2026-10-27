@@ -1,30 +1,60 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">MascovetWA</a>
+﻿@inject UserContext User
+@inject NavigationManager Navigation
+
+<div class="ms-nav">
+    <a href="@(NavCatalog.HomeFor(User.Role))" class="ms-nav__brand">
+        <span class="ms-nav__logo" aria-hidden="true"><AppIcon Name="heart" Size="22" /></span>
+        <span>Mascovet</span>
+    </a>
+
+    <p class="ms-nav__label" id="ms-nav-label">MENÚ PRINCIPAL</p>
+
+    <nav aria-labelledby="ms-nav-label">
+        <ul class="ms-nav__list">
+            @foreach (var item in Principales)
+            {
+                <li>
+                    <NavLink class="ms-nav__link" href="@item.Href" Match="@MatchFor(item)">
+                        <AppIcon Name="@item.Icon" Size="20" />
+                        <span>@item.Text</span>
+                    </NavLink>
+                </li>
+            }
+        </ul>
+    </nav>
+
+    <div class="ms-nav__bottom">
+        <ul class="ms-nav__list">
+            @foreach (var item in Inferiores)
+            {
+                <li>
+                    <NavLink class="ms-nav__link" href="@item.Href" Match="@MatchFor(item)">
+                        <AppIcon Name="@item.Icon" Size="20" />
+                        <span>@item.Text</span>
+                    </NavLink>
+                </li>
+            }
+            <li>
+                <button type="button" class="ms-nav__logout" @onclick="CerrarSesion">
+                    <AppIcon Name="log-out" Size="20" />
+                    <span>Cerrar sesión</span>
+                </button>
+            </li>
+        </ul>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+@code {
+    private IEnumerable<NavItem> Principales => NavCatalog.For(User.Role).Where(i => !i.Bottom);
+    private IEnumerable<NavItem> Inferiores => NavCatalog.For(User.Role).Where(i => i.Bottom);
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+    // El "Inicio" solo se marca activo en su ruta exacta; el resto, también en sus subrutas.
+    private NavLinkMatch MatchFor(NavItem item) =>
+        item.Href == NavCatalog.HomeFor(User.Role) ? NavLinkMatch.All : NavLinkMatch.Prefix;
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+    private void CerrarSesion()
+    {
+        User.SignOut();
+        Navigation.NavigateTo("/", replace: true);
+    }
+}

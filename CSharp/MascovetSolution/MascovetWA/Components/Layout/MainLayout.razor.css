@@ -1,98 +1,113 @@
-.page {
-    position: relative;
+.ms-shell {
     display: flex;
+    min-height: 100vh;
+}
+
+.ms-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    flex: 0 0 var(--ms-sidebar-width);
+    width: var(--ms-sidebar-width);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--ms-color-surface);
+    border-right: var(--ms-border-width) solid var(--ms-color-border);
+}
+
+.ms-main {
+    display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
+    min-width: 0;
 }
 
-main {
-    flex: 1;
+.ms-content {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin: 0 auto;
+    padding: var(--ms-space-8) var(--ms-space-10);
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    .ms-content:focus {
+        outline: none;
+    }
+
+.ms-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--ms-space-2) var(--ms-space-6);
+    padding: var(--ms-space-4) var(--ms-space-10);
+    border-top: var(--ms-border-width) solid var(--ms-color-border);
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
 }
 
-.top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
-    justify-content: flex-end;
-    height: 3.5rem;
+.ms-skip-link {
+    position: absolute;
+    left: var(--ms-space-4);
+    top: -4rem;
+    z-index: 2000;
+    padding: var(--ms-space-2) var(--ms-space-4);
+    background: var(--ms-color-surface);
+    color: var(--ms-color-primary-dark);
+    border-radius: var(--ms-radius-control);
+    box-shadow: var(--ms-shadow-lg);
+    font-weight: var(--ms-font-weight-semibold);
+}
+
+    .ms-skip-link:focus {
+        top: var(--ms-space-4);
+    }
+
+.ms-topbar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+    min-height: 82px;
+    padding: var(--ms-space-4) var(--ms-space-10);
+    background: var(--ms-color-surface);
+    border-bottom: var(--ms-border-width) solid var(--ms-color-border);
 }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-@media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
+.ms-topbar__caption {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
+    font-weight: var(--ms-font-weight-semibold);
+    letter-spacing: 0.06em;
 }
 
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
-    }
+.ms-topbar p {
+    margin-top: 4px;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
 }
 
-#blazor-error-ui {
-    color-scheme: light only;
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
+.ms-topbar__user {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-3);
 }
 
-    #blazor-error-ui .dismiss {
-        cursor: pointer;
-        position: absolute;
-        right: 0.75rem;
-        top: 0.5rem;
+    .ms-topbar__user strong, .ms-topbar__user small {
+        display: block;
     }
+
+    .ms-topbar__user small {
+        margin-top: 3px;
+        color: var(--ms-color-text-muted);
+    }
+
+.ms-topbar__avatar {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary-dark);
+    font-weight: var(--ms-font-weight-bold);
+}
