@@ -283,7 +283,7 @@
         _ => "paw-print"
     };
     private static string HistorialHref(int mascotaId) =>
-        $"/cliente/historial?mascotaId={mascotaId}";
+    $"/cliente/mascotas/{mascotaId}/historial";
 
     private static string ReservaHref(int mascotaId) =>
         $"/cliente/reservar?mascotaId={mascotaId}";

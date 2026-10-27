@@ -2,11 +2,6 @@ namespace MascovetWA.Components.DesignSystem.Feedback;
 
 /// <summary>Notificación gestionada por ToastService.</summary>
 public sealed record ToastMessage(Guid Id, SemanticVariant Variant, string Message, string? Title, int DurationMs);
-
-/// <summary>
-/// Servicio genérico para mostrar notificaciones temporales. No conoce ninguna entidad de negocio.
-/// Se registra como Scoped (uno por circuito de Blazor) y se muestra con AppToastContainer.
-/// </summary>
 public sealed class ToastService
 {
     private readonly List<ToastMessage> _items = new();
