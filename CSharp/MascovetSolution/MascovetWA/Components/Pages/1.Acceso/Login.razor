@@ -45,7 +45,8 @@
             </div>
 
             <div class="login-options">
-                <a href="/recuperar-contrasena">
+                <a href="#" @onclick="AbrirModalRecuperacion"
+                   @onclick:preventDefault="true">
                     ¿Olvidaste tu contraseña?
                 </a>
             </div>
@@ -77,13 +78,55 @@
     <p class="login-copyright">
         © 2026 Mascovet. Todos los derechos reservados.
     </p>
+    <AppModal @bind-Visible="mostrarModalRecuperacion"
+          Title="Recuperar contraseña"
+          ConfirmText="Enviar instrucciones"
+          CancelText="Cancelar"
+          OnConfirm="EnviarSolicitudRecuperacion">
+
+    <p>Ingresa tu correo electrónico para recuperar tu cuenta.</p>
+
+    <AppInput TValue="string"
+              Label="Correo electrónico"
+              Type="email"
+              Placeholder="nombre@correo.com"
+              Required="true"
+              @bind-Value="correoRecuperacion"
+              autocomplete="email" />
+
+    @if (!string.IsNullOrWhiteSpace(errorRecuperacion))
+    {
+        <p class="login-feedback">@errorRecuperacion</p>
+    }
+    </AppModal>
 </main>
 
 @code {
     private LoginModel modelo = new();
     private bool enviando;
     private string mensaje = string.Empty;
+    private bool mostrarModalRecuperacion;
+    private string correoRecuperacion = string.Empty;
+    private string errorRecuperacion = string.Empty;
 
+    private void AbrirModalRecuperacion()
+    {
+        errorRecuperacion = string.Empty;
+        mostrarModalRecuperacion = true;
+    }
+
+    private void EnviarSolicitudRecuperacion()
+    {
+        if (!new System.ComponentModel.DataAnnotations
+            .EmailAddressAttribute().IsValid(correoRecuperacion))
+        {
+            errorRecuperacion = "Ingresa un correo electrónico válido.";
+            return;
+        }
+
+        mostrarModalRecuperacion = false;
+        mensaje = "Formulario validado. Falta conectar el servicio de recuperación.";
+    }
     private void IniciarSesion()
     {
         // Pendiente: conectar con el servicio de autenticación.

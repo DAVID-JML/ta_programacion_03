@@ -1,0 +1,56 @@
+@implements IDisposable
+
+<div class="ms-toast ms-toast--@Variant.ToCss()">
+    <span class="ms-toast__icon"><AppIcon Name="@(Variant.IconName() ?? "info")" Size="20" /></span>
+    <div class="ms-toast__body">
+        <p class="ms-toast__title">@(Title ?? Variant.Label())</p>
+        <p class="ms-toast__message">@Message</p>
+    </div>
+    <button type="button" class="ms-toast__close" aria-label="Cerrar notificación" @onclick="CloseAsync">
+        <AppIcon Name="x" Size="16" />
+    </button>
+</div>
+
+@code {
+    private CancellationTokenSource? _cts;
+
+    [Parameter] public SemanticVariant Variant { get; set; } = SemanticVariant.Info;
+    [Parameter] public string? Title { get; set; }
+    [Parameter, EditorRequired] public string Message { get; set; } = string.Empty;
+
+    /// <summary>Milisegundos antes del cierre automático. 0 = solo cierre manual.</summary>
+    [Parameter] public int DurationMs { get; set; } = 5000;
+
+    /// <summary>Se invoca al cerrarse (manualmente o por tiempo). El contenedor retira el toast.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (DurationMs <= 0) return;
+        _cts = new CancellationTokenSource();
+        _ = AutoCloseAsync(_cts.Token);
+    }
+
+    private async Task AutoCloseAsync(CancellationToken token)
+    {
+        try
+        {
+            await Task.Delay(DurationMs, token);
+            await InvokeAsync(() => OnClose.InvokeAsync());
+        }
+        catch (OperationCanceledException) { /* cerrado a mano o componente destruido */ }
+        catch (ObjectDisposedException) { /* el circuito ya terminó */ }
+    }
+
+    private Task CloseAsync()
+    {
+        _cts?.Cancel();
+        return OnClose.InvokeAsync();
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}
