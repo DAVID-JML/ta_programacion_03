@@ -1,0 +1,140 @@
+
+.reporte-servicio {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.reporte-servicio__header h1 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.reporte-servicio__header p {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+}
+
+.reporte-servicio__nav {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ms-space-2);
+}
+
+.reporte-servicio__filter-section,
+.reporte-servicio__results {
+    min-width: 0;
+}
+
+.reporte-servicio__filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+    max-width: 760px;
+}
+
+.reporte-servicio__field {
+    min-width: 0;
+}
+
+    .reporte-servicio__field ::deep .ms-field {
+        width: 100%;
+    }
+
+.reporte-servicio__filter-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ms-space-2);
+    margin-top: var(--ms-space-6);
+}
+
+.reporte-servicio__results ::deep .ms-card__body {
+    min-width: 0;
+}
+
+.reporte-servicio__results ::deep .ms-table-wrap {
+    max-width: 100%;
+}
+
+.reporte-servicio__results ::deep .ms-table {
+    width: 100%;
+}
+
+    .reporte-servicio__results ::deep .ms-table th,
+    .reporte-servicio__results ::deep .ms-table td {
+        padding: var(--ms-space-3) var(--ms-space-4);
+        vertical-align: middle;
+    }
+
+.reporte-servicio__number,
+.reporte-servicio__total-cell {
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.reporte-servicio__total-cell {
+    color: var(--ms-color-primary-dark);
+    font-weight: var(--ms-font-weight-bold);
+}
+
+.reporte-servicio__results-footer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-3);
+    width: 100%;
+}
+
+.reporte-servicio__grand-total {
+    margin: 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+    .reporte-servicio__grand-total strong {
+        color: var(--ms-color-text);
+        font-weight: var(--ms-font-weight-bold);
+        font-variant-numeric: tabular-nums;
+    }
+
+@media (max-width: 700px) {
+    .reporte-servicio {
+        gap: var(--ms-space-4);
+    }
+
+    .reporte-servicio__nav {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .reporte-servicio__nav ::deep .ms-btn {
+            justify-content: center;
+        }
+
+    .reporte-servicio__filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reporte-servicio__filter-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .reporte-servicio__filter-actions ::deep .ms-btn {
+            justify-content: center;
+        }
+
+    .reporte-servicio__results ::deep .ms-table {
+        min-width: 600px;
+    }
+}

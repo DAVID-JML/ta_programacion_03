@@ -1,109 +1,210 @@
 ﻿@page "/administrador/reportes/especialidad"
+
 @using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@using MascovetWA.Components.DesignSystem
+@using MascovetWA.Components.DesignSystem.Buttons
+@using MascovetWA.Components.DesignSystem.DataDisplay
+@using MascovetWA.Components.DesignSystem.Forms
+@using MascovetWA.Components.DesignSystem.Feedback
+
 @inject ToastService Toast
 
 <PageTitle>Reporte de citas por especialidad | Mascovet</PageTitle>
 
-<div class="mb-4">
-    <h1>Reportes</h1>
-    <p class="ms-type-secondary">Consulta y exporta los reportes de atención de la clínica.</p>
-</div>
+<div class="reporte-especialidad">
 
-<div class="d-flex flex-wrap gap-2 mb-4">
-    <AppButton Href="/administrador/reportes/servicio" Variant="ButtonVariant.Secondary" Icon="bar-chart">
-        Citas por servicio
-    </AppButton>
-    <AppButton Href="/administrador/reportes/especialidad" Variant="ButtonVariant.Primary" Icon="bar-chart">
-        Citas por especialidad
-    </AppButton>
-</div>
-
-<EditForm Model="filtro" OnValidSubmit="Generar">
-    <DataAnnotationsValidator />
-
-    <div class="mb-4">
-        <AppCard Title="Reporte de citas por especialidad"
-                 Subtitle="Cantidad de citas registradas, agrupadas por especialidad médica.">
-            <div class="row g-3 align-items-start">
-                <div class="col-md-3">
-                    <AppDatePicker Label="Fecha de inicio" Required="true" @bind-Value="filtro.FechaInicio" />
-                </div>
-                <div class="col-md-3">
-                    <AppDatePicker Label="Fecha de fin" Required="true" @bind-Value="filtro.FechaFin" />
-                </div>
-            </div>
-
-            <div class="d-flex flex-wrap gap-2 mt-4">
-                <AppButton Type="submit" Variant="ButtonVariant.Primary" Icon="bar-chart">Generar reporte</AppButton>
-                <AppButton Variant="ButtonVariant.Tertiary" OnClick="Limpiar">Limpiar</AppButton>
-            </div>
-        </AppCard>
-    </div>
-</EditForm>
-
-<AppCard Title="Resultados">
-    <AppTable Items="Pagina(resumen, paginaResumen)"
-              ColumnCount="3"
-              Caption="Citas registradas por especialidad médica">
-        <HeaderContent>
-            <th scope="col">Especialidad</th>
-            <th scope="col">Cantidad de citas</th>
-            <th scope="col">Porcentaje</th>
-        </HeaderContent>
-        <RowTemplate Context="fila">
-            <td>@fila.Especialidad</td>
-            <td>@fila.Cantidad</td>
-            <td>
-                <div class="porcentaje">
-                    <div class="barra" aria-hidden="true">
-                        <div class="barra__relleno" style="width: @(Porcentaje(fila).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
-                    </div>
-                    <span>@Porcentaje(fila).ToString("0.#")%</span>
-                </div>
-            </td>
-        </RowTemplate>
-        <EmptyContent>
-            <AppEmptyState Icon="bar-chart"
-                           Title="Sin resultados para mostrar"
-                           Description="Selecciona un rango de fechas y presiona «Generar reporte»." />
-        </EmptyContent>
-    </AppTable>
-
-    <AppPagination @bind-CurrentPage="paginaResumen"
-                   TotalItems="resumen.Count"
-                   PageSize="TamPagina"
-                   AriaLabel="Paginación del reporte" />
-
-    @if (resumen.Count > 0)
-    {
-        <p class="ms-type-label mt-3">
-            Total de citas en el rango: <strong>@TotalCitas</strong>
+    <header class="reporte-especialidad__header">
+        <h1>Reportes</h1>
+        <p>
+            Consulta y exporta los reportes de atención de la clínica.
         </p>
-    }
-</AppCard>
+    </header>
+
+    <nav class="reporte-especialidad__nav"
+         aria-label="Tipos de reporte">
+
+        <AppButton Href="/administrador/reportes/servicio"
+                   Variant="ButtonVariant.Secondary"
+                   Icon="bar-chart">
+            Citas por servicio
+        </AppButton>
+
+        <AppButton Href="/administrador/reportes/especialidad"
+                   Variant="ButtonVariant.Primary"
+                   Icon="bar-chart">
+            Citas por especialidad
+        </AppButton>
+
+    </nav>
+
+    <section class="reporte-especialidad__filter-section"
+             aria-label="Filtros del reporte">
+
+        <EditForm Model="@filtro"
+                  OnValidSubmit="@Generar">
+
+            <DataAnnotationsValidator />
+
+            <AppCard Title="Reporte de citas por especialidad"
+                     Subtitle="Cantidad de citas registradas, agrupadas por especialidad médica.">
+
+                <ChildContent>
+                    <div class="reporte-especialidad__filters">
+
+                        <div class="reporte-especialidad__field">
+                            <AppDatePicker Id="fecha-inicio"
+                                           Label="Fecha de inicio"
+                                           Required="true"
+                                           @bind-Value="filtro.FechaInicio" />
+                        </div>
+
+                        <div class="reporte-especialidad__field">
+                            <AppDatePicker Id="fecha-fin"
+                                           Label="Fecha de fin"
+                                           Required="true"
+                                           @bind-Value="filtro.FechaFin" />
+                        </div>
+
+                    </div>
+
+                    <div class="reporte-especialidad__filter-actions">
+
+                        <AppButton Type="submit"
+                                   Variant="ButtonVariant.Primary"
+                                   Icon="bar-chart">
+                            Generar reporte
+                        </AppButton>
+
+                        <AppButton Type="button"
+                                   Variant="ButtonVariant.Tertiary"
+                                   OnClick="@Limpiar">
+                            Limpiar
+                        </AppButton>
+
+                    </div>
+                </ChildContent>
+
+            </AppCard>
+
+        </EditForm>
+
+    </section>
+
+    <section class="reporte-especialidad__results"
+             aria-label="Resultados del reporte">
+
+        <AppCard Title="Resultados"
+                 Subtitle="Citas agrupadas por especialidad médica">
+
+            <ChildContent>
+
+                <AppTable TItem="FilaEspecialidad"
+                          Items="@Pagina(resumen, paginaResumen)"
+                          ColumnCount="3"
+                          Caption="Citas registradas por especialidad médica">
+
+                    <HeaderContent>
+                        <th scope="col">Especialidad</th>
+                        <th scope="col">Cantidad de citas</th>
+                        <th scope="col">Porcentaje</th>
+                    </HeaderContent>
+
+                    <RowTemplate Context="fila">
+
+                        <td>@fila.Especialidad</td>
+
+                        <td class="reporte-especialidad__quantity">
+                            @fila.Cantidad
+                        </td>
+
+                        <td>
+                            <div class="reporte-especialidad__percentage">
+
+                                <div class="reporte-especialidad__bar"
+                                     role="progressbar"
+                                     aria-label="@($"Porcentaje de {fila.Especialidad}")"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     aria-valuenow="@Porcentaje(fila)">
+
+                                    <div class="reporte-especialidad__bar-fill"
+                                         style="width: @(Porcentaje(fila).ToString("0.#", CultureInfo.InvariantCulture))%">
+                                    </div>
+
+                                </div>
+
+                                <span class="reporte-especialidad__percentage-value">
+                                    @Porcentaje(fila).ToString("0.#")%
+                                </span>
+
+                            </div>
+                        </td>
+
+                    </RowTemplate>
+
+                    <EmptyContent>
+                        <AppEmptyState Icon="bar-chart"
+                                       Title="Sin resultados para mostrar"
+                                       Description="Selecciona un rango de fechas y genera el reporte cuando esté conectado el servicio correspondiente." />
+                    </EmptyContent>
+
+                </AppTable>
+
+            </ChildContent>
+
+            <Footer>
+                <div class="reporte-especialidad__pagination">
+                    <AppPagination @bind-CurrentPage="paginaResumen"
+                                   TotalItems="@resumen.Count"
+                                   PageSize="@TamPagina"
+                                   AriaLabel="Paginación del reporte" />
+                </div>
+
+                @if (resumen.Count > 0)
+                {
+                    <p class="reporte-especialidad__total">
+                        Total de citas en el rango:
+                        <strong>@TotalCitas</strong>
+                    </p>
+                }
+            </Footer>
+
+        </AppCard>
+
+    </section>
+
+</div>
 
 @code {
-
     private const int TamPagina = 10;
 
     private FiltroModel filtro = new();
     private int paginaResumen = 1;
 
-    // Resultado del reporte (se llenará al conectar con el backend).
+    // Se llenará cuando se conecte el servicio del backend.
     private readonly List<FilaEspecialidad> resumen = new();
 
     private int TotalCitas => resumen.Sum(f => f.Cantidad);
 
     private double Porcentaje(FilaEspecialidad fila) =>
-        TotalCitas == 0 ? 0 : fila.Cantidad * 100.0 / TotalCitas;
+        TotalCitas == 0
+            ? 0
+            : fila.Cantidad * 100.0 / TotalCitas;
 
-    private static IEnumerable<T> Pagina<T>(IEnumerable<T> fuente, int pagina) =>
-        fuente.Skip((Math.Max(1, pagina) - 1) * TamPagina).Take(TamPagina);
+    private static IEnumerable<T> Pagina<T>(
+        IEnumerable<T> fuente,
+        int pagina) =>
+        fuente
+            .Skip((Math.Max(1, pagina) - 1) * TamPagina)
+            .Take(TamPagina);
 
     private void Generar()
     {
         paginaResumen = 1;
-        Toast.Info("Rango de fechas validado. Falta conectar el servicio del reporte.");
+
+        Toast.Info(
+            "Rango de fechas validado. Falta conectar el servicio del reporte.");
     }
 
     private void Limpiar()
@@ -113,7 +214,9 @@
         paginaResumen = 1;
     }
 
-    private sealed record FilaEspecialidad(string Especialidad, int Cantidad);
+    private sealed record FilaEspecialidad(
+        string Especialidad,
+        int Cantidad);
 
     private sealed class FiltroModel : IValidatableObject
     {
@@ -123,10 +226,17 @@
         [Required(ErrorMessage = "Ingrese la fecha de fin.")]
         public DateOnly? FechaFin { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        public IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
         {
-            if (FechaInicio.HasValue && FechaFin.HasValue && FechaInicio > FechaFin)
-                yield return new("La fecha de inicio no puede ser posterior a la fecha de fin.", new[] { nameof(FechaFin) });
+            if (FechaInicio.HasValue &&
+                FechaFin.HasValue &&
+                FechaInicio > FechaFin)
+            {
+                yield return new ValidationResult(
+                    "La fecha de inicio no puede ser posterior a la fecha de fin.",
+                    new[] { nameof(FechaFin) });
+            }
         }
     }
 }

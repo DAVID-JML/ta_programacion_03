@@ -1,21 +1,167 @@
-/* CSS for ReporteCitasEspecialidad component */
-.porcentaje {
+
+.reporte-especialidad {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.reporte-especialidad__header h1 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.reporte-especialidad__header p {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+}
+
+.reporte-especialidad__nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ms-space-2);
+}
+
+.reporte-especialidad__filter-section,
+.reporte-especialidad__results {
+    min-width: 0;
+}
+
+.reporte-especialidad__filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+    max-width: 760px;
+}
+
+.reporte-especialidad__field {
+    min-width: 0;
+}
+
+    .reporte-especialidad__field ::deep .ms-field {
+        width: 100%;
+    }
+
+.reporte-especialidad__filter-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--ms-space-2);
+    margin-top: var(--ms-space-6);
+}
+
+.reporte-especialidad__results ::deep .ms-card__body {
+    min-width: 0;
+}
+
+.reporte-especialidad__results ::deep .ms-table-wrap {
+    max-width: 100%;
+}
+
+.reporte-especialidad__results ::deep .ms-table {
+    width: 100%;
+}
+
+    .reporte-especialidad__results ::deep .ms-table th,
+    .reporte-especialidad__results ::deep .ms-table td {
+        padding: var(--ms-space-3);
+        vertical-align: middle;
+    }
+
+.reporte-especialidad__quantity {
+    font-weight: var(--ms-font-weight-semibold);
+    font-variant-numeric: tabular-nums;
+}
+
+.reporte-especialidad__percentage {
     display: flex;
     align-items: center;
     gap: var(--ms-space-3);
     min-width: 12rem;
 }
 
-.barra {
+.reporte-especialidad__bar {
     flex: 1;
+    min-width: 3rem;
     height: 0.5rem;
     overflow: hidden;
     background: var(--ms-color-neutral-bg);
     border-radius: 999px;
 }
 
-.barra__relleno {
+.reporte-especialidad__bar-fill {
     height: 100%;
     background: var(--ms-color-primary);
-    border-radius: 999px;
+    border-radius: inherit;
+    transition: width 0.2s ease;
+}
+
+.reporte-especialidad__percentage-value {
+    min-width: 3.5rem;
+    color: var(--ms-color-text);
+    font-size: var(--ms-font-size-small);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.reporte-especialidad__pagination {
+    width: 100%;
+}
+
+.reporte-especialidad__total {
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+}
+
+    .reporte-especialidad__total strong {
+        color: var(--ms-color-text);
+        font-weight: var(--ms-font-weight-bold);
+        font-variant-numeric: tabular-nums;
+    }
+
+@media (max-width: 700px) {
+    .reporte-especialidad {
+        gap: var(--ms-space-4);
+    }
+
+    .reporte-especialidad__nav {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .reporte-especialidad__nav ::deep .ms-btn {
+            justify-content: center;
+        }
+
+    .reporte-especialidad__filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reporte-especialidad__filter-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .reporte-especialidad__filter-actions ::deep .ms-btn {
+            justify-content: center;
+        }
+
+    .reporte-especialidad__percentage {
+        min-width: 9rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reporte-especialidad__bar-fill {
+        transition: none;
+    }
 }

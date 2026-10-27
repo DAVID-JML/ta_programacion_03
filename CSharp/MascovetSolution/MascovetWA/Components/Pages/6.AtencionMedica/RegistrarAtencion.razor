@@ -1,259 +1,434 @@
-﻿@page "/veterinario/atencion"
+﻿
+@page "/veterinario/atencion"
 @page "/veterinario/atencion/{IdAtencion:int}"
-@using System.ComponentModel.DataAnnotations
+
 @inject ToastService Toast
 
 <PageTitle>@Titulo | Mascovet</PageTitle>
 
-<div class="mb-4">
-    <h1>@Titulo</h1>
-    <p class="ms-type-secondary">Registra la consulta, el control o la cirugía realizada a la mascota.</p>
+<div class="atencion-page">
+
+    <PageHeader Title="@Titulo"
+                Description="Registra la consulta, el control o la cirugía realizada a la mascota." />
+
+    <EditForm Model="@modelo" OnValidSubmit="@Guardar">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="atencion-validation-summary" />
+
+        <div class="atencion-sections">
+
+            <section class="atencion-section"
+                     aria-label="Información de la cita">
+
+                <AppCard Title="Información de la cita"
+                         Subtitle="Selecciona la cita correspondiente a esta atención.">
+
+                    <ChildContent>
+                        <div class="atencion-grid atencion-grid--appointment">
+
+                            <div class="atencion-field">
+                                <AppInput TValue="string"
+                                          Id="atencion-id-cita"
+                                          Label="ID de la cita"
+                                          Placeholder="Seleccione una cita"
+                                          Required="true"
+                                          Disabled="true"
+                                          @bind-Value="modelo.IdCita" />
+                            </div>
+
+                            <div class="atencion-field atencion-field--action">
+                                <AppButton Variant="ButtonVariant.Secondary"
+                                           Icon="search"
+                                           Disabled="@EsEdicion"
+                                           OnClick="@AbrirModalCita">
+                                    Buscar cita
+                                </AppButton>
+                            </div>
+
+                        </div>
+
+                        <div class="atencion-grid atencion-grid--two-columns">
+
+                            <div class="atencion-field">
+                                <AppInput TValue="string"
+                                          Id="atencion-mascota"
+                                          Label="Mascota"
+                                          Disabled="true"
+                                          @bind-Value="modelo.Mascota" />
+                            </div>
+
+                            <div class="atencion-field">
+                                <AppInput TValue="string"
+                                          Id="atencion-dueno"
+                                          Label="Dueño"
+                                          Disabled="true"
+                                          @bind-Value="modelo.Dueno" />
+                            </div>
+
+                        </div>
+                    </ChildContent>
+
+                </AppCard>
+            </section>
+
+            <section class="atencion-section"
+                     aria-label="Datos generales de la atención">
+
+                <AppCard Title="Datos generales de la atención">
+
+                    <ChildContent>
+                        <div class="atencion-grid atencion-grid--general">
+
+                            <div class="atencion-field">
+                                <AppSelect TValue="string"
+                                           Id="atencion-tipo"
+                                           Label="Tipo de atención"
+                                           Placeholder="Selecciona el tipo"
+                                           Required="true"
+                                           Disabled="@EsEdicion"
+                                           Options="@tiposAtencion"
+                                           @bind-Value="modelo.Tipo" />
+                            </div>
+
+                            <div class="atencion-field">
+                                <AppInput TValue="string"
+                                          Id="atencion-hora-inicio"
+                                          Type="time"
+                                          Label="Hora de inicio"
+                                          Required="true"
+                                          @bind-Value="modelo.HoraInicio" />
+                            </div>
+
+                            <div class="atencion-field">
+                                <AppInput TValue="string"
+                                          Id="atencion-hora-fin"
+                                          Type="time"
+                                          Label="Hora de fin"
+                                          Required="true"
+                                          @bind-Value="modelo.HoraFin" />
+                            </div>
+
+                            <div class="atencion-field">
+                                <AppInput TValue="double?"
+                                          Id="atencion-peso"
+                                          Type="number"
+                                          Label="Peso actual (kg)"
+                                          step="0.01"
+                                          min="0"
+                                          @bind-Value="modelo.PesoActual" />
+                            </div>
+
+                        </div>
+
+                        <div class="atencion-grid atencion-grid--two-columns">
+
+                            <div class="atencion-field">
+                                <AppTextArea TValue="string"
+                                             Id="atencion-alergias"
+                                             Label="Alergias"
+                                             Rows="3"
+                                             maxlength="500"
+                                             HelpText="Máximo 500 caracteres."
+                                             @bind-Value="modelo.Alergias" />
+                            </div>
+
+                            <div class="atencion-field">
+                                <AppTextArea TValue="string"
+                                             Id="atencion-observaciones"
+                                             Label="Observaciones"
+                                             Rows="3"
+                                             maxlength="255"
+                                             HelpText="Máximo 255 caracteres."
+                                             @bind-Value="modelo.Observaciones" />
+                            </div>
+
+                        </div>
+                    </ChildContent>
+
+                </AppCard>
+            </section>
+
+            <section class="atencion-section"
+                     aria-label="Detalle clínico de la atención">
+
+                @if (EsConsulta)
+                {
+                    <AppCard Title="Detalle de la consulta"
+                             Subtitle="Registra el motivo, el diagnóstico y el tratamiento.">
+
+                        <ChildContent>
+                            <div class="atencion-grid">
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-motivo"
+                                                 Label="Motivo de consulta"
+                                                 Required="true"
+                                                 Rows="2"
+                                                 maxlength="400"
+                                                 HelpText="Máximo 400 caracteres."
+                                                 @bind-Value="modelo.MotivoConsulta" />
+                                </div>
+
+                            </div>
+
+                            <div class="atencion-grid atencion-grid--two-columns">
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-diagnostico"
+                                                 Label="Diagnóstico"
+                                                 Required="true"
+                                                 Rows="4"
+                                                 maxlength="400"
+                                                 HelpText="Máximo 400 caracteres."
+                                                 @bind-Value="modelo.Diagnostico" />
+                                </div>
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-tratamiento"
+                                                 Label="Tratamiento"
+                                                 Required="true"
+                                                 Rows="4"
+                                                 maxlength="400"
+                                                 HelpText="Máximo 400 caracteres."
+                                                 @bind-Value="modelo.Tratamiento" />
+                                </div>
+
+                            </div>
+                        </ChildContent>
+
+                    </AppCard>
+                }
+                else if (EsControl)
+                {
+                    <AppCard Title="Detalle del control"
+                             Subtitle="Registra la evolución del paciente y las indicaciones.">
+
+                        <ChildContent>
+                            <div class="atencion-grid atencion-grid--two-columns">
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-evolucion"
+                                                 Label="Evolución"
+                                                 Required="true"
+                                                 Rows="4"
+                                                 maxlength="500"
+                                                 HelpText="Máximo 500 caracteres."
+                                                 @bind-Value="modelo.Evolucion" />
+                                </div>
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-indicaciones"
+                                                 Label="Indicaciones"
+                                                 Required="true"
+                                                 Rows="4"
+                                                 maxlength="500"
+                                                 HelpText="Máximo 500 caracteres."
+                                                 @bind-Value="modelo.Indicaciones" />
+                                </div>
+
+                            </div>
+                        </ChildContent>
+
+                    </AppCard>
+                }
+                else
+                {
+                    <AppCard Title="Detalle de la cirugía"
+                             Subtitle="Registra el procedimiento y las indicaciones posteriores.">
+
+                        <ChildContent>
+                            <div class="atencion-grid atencion-grid--two-columns">
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-procedimiento"
+                                                 Label="Procedimiento"
+                                                 Required="true"
+                                                 Rows="4"
+                                                 maxlength="500"
+                                                 HelpText="Máximo 500 caracteres."
+                                                 @bind-Value="modelo.Procedimiento" />
+                                </div>
+
+                                <div class="atencion-field">
+                                    <AppTextArea TValue="string"
+                                                 Id="atencion-postoperatorio"
+                                                 Label="Indicaciones postoperatorias"
+                                                 Required="true"
+                                                 Rows="4"
+                                                 maxlength="500"
+                                                 HelpText="Máximo 500 caracteres."
+                                                 @bind-Value="modelo.IndicacionesPostoperatorias" />
+                                </div>
+
+                            </div>
+                        </ChildContent>
+
+                    </AppCard>
+                }
+            </section>
+
+        </div>
+
+        <div class="atencion-form-actions">
+
+            <AppButton Href="/veterinario/agenda"
+                       Variant="ButtonVariant.Secondary">
+                Regresar
+            </AppButton>
+
+            <div class="atencion-form-actions__group">
+
+                <AppButton Href="/veterinario/vacunas"
+                           Variant="ButtonVariant.Tertiary">
+                    Registrar vacunación
+                </AppButton>
+
+                <AppButton Href="/veterinario/recetas"
+                           Variant="ButtonVariant.Tertiary">
+                    Generar receta
+                </AppButton>
+
+                <AppButton Type="submit"
+                           Variant="ButtonVariant.Primary">
+                    Guardar atención
+                </AppButton>
+
+            </div>
+        </div>
+
+    </EditForm>
+
+    <AppModal @bind-Visible="mostrarModalCita"
+              Title="Búsqueda de cita"
+              CancelText="Cerrar">
+
+        <ChildContent>
+            <div class="atencion-modal-content">
+
+                <AppFilterBar SearchText="@textoBusquedaCita"
+                              SearchTextChanged="@BuscarCita"
+                              SearchLabel="Buscar cita"
+                              SearchPlaceholder="ID de cita o nombre de mascota"
+                              OnClear="@LimpiarBusquedaCita" />
+
+                <AppTable TItem="CitaBusqueda"
+                          Items="@Pagina(CitasFiltradas, paginaCitas)"
+                          ColumnCount="6"
+                          Caption="Citas disponibles para registrar la atención">
+
+                    <HeaderContent>
+                        <th scope="col">ID</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Hora</th>
+                        <th scope="col">Mascota</th>
+                        <th scope="col">Servicio</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+
+                    <RowTemplate Context="cita">
+                        <td>@cita.Id</td>
+                        <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>@cita.Hora.ToString("HH:mm")</td>
+                        <td>@cita.Mascota</td>
+                        <td>@cita.Servicio</td>
+                        <td>
+                            <AppButton Size="ButtonSize.Small"
+                                       Variant="ButtonVariant.Secondary"
+                                       OnClick="@(() => SeleccionarCita(cita))">
+                                Seleccionar
+                            </AppButton>
+                        </td>
+                    </RowTemplate>
+
+                    <EmptyContent>
+                        <AppEmptyState Icon="calendar"
+                                       Title="No hay citas disponibles"
+                                       Description="No hay citas para mostrar con la búsqueda actual." />
+                    </EmptyContent>
+
+                </AppTable>
+
+                <AppPagination @bind-CurrentPage="paginaCitas"
+                               TotalItems="@CitasFiltradas.Count()"
+                               PageSize="@TamPagina"
+                               AriaLabel="Paginación de citas" />
+
+            </div>
+        </ChildContent>
+
+        <Actions>
+            <AppButton Variant="ButtonVariant.Tertiary"
+                       OnClick="@CerrarModalCita">
+                Cerrar
+            </AppButton>
+        </Actions>
+
+    </AppModal>
+
 </div>
 
-<EditForm Model="modelo" OnValidSubmit="Guardar">
-    <DataAnnotationsValidator />
-
-    <div class="mb-4">
-        <AppCard Title="Información de la cita">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <AppInput TValue="string"
-                              Label="ID de la cita"
-                              Placeholder="Seleccione una cita"
-                              Required="true"
-                              Disabled="true"
-                              @bind-Value="modelo.IdCita" />
-                </div>
-                <div class="col-md-auto">
-                    <AppButton Variant="ButtonVariant.Secondary"
-                               Icon="search"
-                               Disabled="@EsEdicion"
-                               OnClick="AbrirModalCita">
-                        Buscar cita
-                    </AppButton>
-                </div>
-            </div>
-
-            <div class="row g-3 mt-1">
-                <div class="col-md-6">
-                    <AppInput TValue="string" Label="Mascota" Disabled="true" @bind-Value="modelo.Mascota" />
-                </div>
-                <div class="col-md-6">
-                    <AppInput TValue="string" Label="Dueño" Disabled="true" @bind-Value="modelo.Dueno" />
-                </div>
-            </div>
-        </AppCard>
-    </div>
-
-    <div class="mb-4">
-        <AppCard Title="Datos generales de la atención">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <AppSelect TValue="string"
-                               Label="Tipo de atención"
-                               Required="true"
-                               Disabled="@EsEdicion"
-                               Options="tiposAtencion"
-                               @bind-Value="modelo.Tipo" />
-                </div>
-                <div class="col-md-3">
-                    <AppInput TValue="string" Type="time" Label="Hora de inicio" Required="true" @bind-Value="modelo.HoraInicio" />
-                </div>
-                <div class="col-md-3">
-                    <AppInput TValue="string" Type="time" Label="Hora de fin" Required="true" @bind-Value="modelo.HoraFin" />
-                </div>
-                <div class="col-md-2">
-                    <AppInput TValue="double"
-                              Type="number"
-                              Label="Peso actual (kg)"
-                              step="0.01"
-                              min="0"
-                              @bind-Value="modelo.PesoActual" />
-                </div>
-            </div>
-
-            <div class="row g-3 mt-1">
-                <div class="col-md-6">
-                    <AppTextArea TValue="string"
-                                 Label="Alergias"
-                                 Rows="3"
-                                 maxlength="500"
-                                 HelpText="Máximo 500 caracteres."
-                                 @bind-Value="modelo.Alergias" />
-                </div>
-                <div class="col-md-6">
-                    <AppTextArea TValue="string"
-                                 Label="Observaciones"
-                                 Rows="3"
-                                 maxlength="255"
-                                 HelpText="Máximo 255 caracteres."
-                                 @bind-Value="modelo.Observaciones" />
-                </div>
-            </div>
-        </AppCard>
-    </div>
-
-    <div class="mb-4">
-        @if (EsConsulta)
-        {
-            <AppCard Title="Detalle de la consulta">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <AppTextArea TValue="string" Label="Motivo de consulta" Required="true" Rows="2"
-                                     maxlength="400" HelpText="Máximo 400 caracteres."
-                                     @bind-Value="modelo.MotivoConsulta" />
-                    </div>
-                    <div class="col-md-6">
-                        <AppTextArea TValue="string" Label="Diagnóstico" Required="true" Rows="4"
-                                     maxlength="400" HelpText="Máximo 400 caracteres."
-                                     @bind-Value="modelo.Diagnostico" />
-                    </div>
-                    <div class="col-md-6">
-                        <AppTextArea TValue="string" Label="Tratamiento" Required="true" Rows="4"
-                                     maxlength="400" HelpText="Máximo 400 caracteres."
-                                     @bind-Value="modelo.Tratamiento" />
-                    </div>
-                </div>
-            </AppCard>
-        }
-        else if (EsControl)
-        {
-            <AppCard Title="Detalle del control">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <AppTextArea TValue="string" Label="Evolución" Required="true" Rows="4"
-                                     maxlength="500" HelpText="Máximo 500 caracteres."
-                                     @bind-Value="modelo.Evolucion" />
-                    </div>
-                    <div class="col-md-6">
-                        <AppTextArea TValue="string" Label="Indicaciones" Required="true" Rows="4"
-                                     maxlength="500" HelpText="Máximo 500 caracteres."
-                                     @bind-Value="modelo.Indicaciones" />
-                    </div>
-                </div>
-            </AppCard>
-        }
-        else
-        {
-            <AppCard Title="Detalle de la cirugía">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <AppTextArea TValue="string" Label="Procedimiento" Required="true" Rows="4"
-                                     maxlength="500" HelpText="Máximo 500 caracteres."
-                                     @bind-Value="modelo.Procedimiento" />
-                    </div>
-                    <div class="col-md-6">
-                        <AppTextArea TValue="string" Label="Indicaciones postoperatorias" Required="true" Rows="4"
-                                     maxlength="500" HelpText="Máximo 500 caracteres."
-                                     @bind-Value="modelo.IndicacionesPostoperatorias" />
-                    </div>
-                </div>
-            </AppCard>
-        }
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <AppButton Href="/veterinario/agenda" Variant="ButtonVariant.Secondary">Regresar</AppButton>
-
-        <div class="d-flex flex-wrap gap-2">
-            <AppButton Href="/veterinario/vacunas" Variant="ButtonVariant.Tertiary">Registrar vacunación</AppButton>
-            <AppButton Href="/veterinario/recetas" Variant="ButtonVariant.Tertiary">Generar receta</AppButton>
-            <AppButton Type="submit" Variant="ButtonVariant.Primary">Guardar atención</AppButton>
-        </div>
-    </div>
-</EditForm>
-
-<AppModal @bind-Visible="mostrarModalCita" Title="Búsqueda de cita">
-    <ChildContent>
-    <AppFilterBar SearchText="textoBusquedaCita"
-                  SearchTextChanged="BuscarCita"
-                  SearchLabel="ID de cita o nombre de mascota"
-                  SearchPlaceholder="Buscar cita…"
-                  OnClear="LimpiarBusquedaCita" />
-
-    <AppTable Items="Pagina(CitasFiltradas, paginaCitas)"
-              ColumnCount="6"
-              Caption="Citas disponibles para registrar la atención">
-        <HeaderContent>
-            <th scope="col">ID</th>
-            <th scope="col">Fecha</th>
-            <th scope="col">Hora</th>
-            <th scope="col">Mascota</th>
-            <th scope="col">Servicio</th>
-            <th scope="col">Acciones</th>
-        </HeaderContent>
-        <RowTemplate Context="cita">
-            <td>@cita.Id</td>
-            <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
-            <td>@cita.Hora.ToString("HH:mm")</td>
-            <td>@cita.Mascota</td>
-            <td>@cita.Servicio</td>
-            <td>
-                <AppButton Size="ButtonSize.Small"
-                           Variant="ButtonVariant.Secondary"
-                           OnClick="() => SeleccionarCita(cita)">
-                    Seleccionar
-                </AppButton>
-            </td>
-        </RowTemplate>
-        <EmptyContent>
-            <AppEmptyState Icon="calendar"
-                           Title="No se encontraron citas"
-                           Description="Prueba con otro ID de cita o con el nombre de la mascota." />
-        </EmptyContent>
-    </AppTable>
-
-    <AppPagination @bind-CurrentPage="paginaCitas"
-                   TotalItems="CitasFiltradas.Count()"
-                   PageSize="TamPagina"
-                   AriaLabel="Paginación de citas" />
-    </ChildContent>
-
-    <Actions>
-        <AppButton Variant="ButtonVariant.Tertiary" OnClick="CerrarModalCita">Cerrar</AppButton>
-    </Actions>
-</AppModal>
-
 @code {
-
     [Parameter]
     public int? IdAtencion { get; set; }
 
     private const int TamPagina = 5;
 
     private bool EsEdicion => IdAtencion.HasValue;
-    private string Titulo => EsEdicion ? "Editar atención médica" : "Registrar atención médica";
+
+    private string Titulo =>
+        EsEdicion ? "Editar atención médica" : "Registrar atención médica";
 
     private bool EsConsulta => modelo.Tipo == "Consulta";
     private bool EsControl => modelo.Tipo == "Control";
 
     private AtencionModel modelo = new();
 
-    private readonly List<SelectOption<string>> tiposAtencion = new()
-    {
+    private readonly List<SelectOption<string>> tiposAtencion =
+    [
         new("Consulta", "Consulta"),
         new("Control", "Control"),
         new("Cirugia", "Cirugía")
-    };
+    ];
 
-    // Datos de la búsqueda de cita (se llenarán al conectar con el backend).
-    private readonly List<CitaBusqueda> citas = new();
+    // La lista permanece vacía mientras no haya citas cargadas.
+    private readonly List<CitaBusqueda> citas = [];
+
     private bool mostrarModalCita;
     private string? textoBusquedaCita;
     private int paginaCitas = 1;
 
     private IEnumerable<CitaBusqueda> CitasFiltradas =>
-        citas.Where(c => Coincide(textoBusquedaCita, c.Id.ToString(), c.Mascota));
+        citas.Where(c =>
+            Coincide(textoBusquedaCita, c.Id.ToString(), c.Mascota));
 
-    private static IEnumerable<T> Pagina<T>(IEnumerable<T> fuente, int pagina) =>
-        fuente.Skip((Math.Max(1, pagina) - 1) * TamPagina).Take(TamPagina);
+    private static IEnumerable<T> Pagina<T>(
+        IEnumerable<T> fuente,
+        int pagina) =>
+        fuente
+            .Skip((Math.Max(1, pagina) - 1) * TamPagina)
+            .Take(TamPagina);
 
     private static bool Coincide(string? texto, params string[] campos) =>
         string.IsNullOrWhiteSpace(texto) ||
-        campos.Any(c => c.Contains(texto.Trim(), StringComparison.OrdinalIgnoreCase));
+        campos.Any(c => c.Contains(
+            texto.Trim(),
+            StringComparison.OrdinalIgnoreCase));
 
-    private void AbrirModalCita() => mostrarModalCita = true;
-    private void CerrarModalCita() => mostrarModalCita = false;
+    private void AbrirModalCita()
+    {
+        textoBusquedaCita = string.Empty;
+        paginaCitas = 1;
+        mostrarModalCita = true;
+    }
+
+    private void CerrarModalCita() =>
+        mostrarModalCita = false;
 
     private void BuscarCita(string? texto)
     {
@@ -261,7 +436,8 @@
         paginaCitas = 1;
     }
 
-    private void LimpiarBusquedaCita() => BuscarCita(string.Empty);
+    private void LimpiarBusquedaCita() =>
+        BuscarCita(string.Empty);
 
     private void SeleccionarCita(CitaBusqueda cita)
     {
@@ -273,19 +449,27 @@
 
     private void Guardar()
     {
-        Toast.Info("Formulario validado. Falta conectar el servicio de guardado.");
+        Toast.Info(
+            "Formulario validado. El guardado se conectará al servicio correspondiente.");
     }
 
-    private sealed record CitaBusqueda(int Id, DateOnly Fecha, TimeOnly Hora, string Mascota, string Dueno, string Servicio);
+    private sealed record CitaBusqueda(
+        int Id,
+        DateOnly Fecha,
+        TimeOnly Hora,
+        string Mascota,
+        string Dueno,
+        string Servicio);
 
-    // Los límites de longitud salen de las validaciones de ConsultaBOImpl, ControlBOImpl y CirugiaBOImpl.
     private sealed class AtencionModel : IValidatableObject
     {
         [Required(ErrorMessage = "Seleccione una cita.")]
         public string IdCita { get; set; } = string.Empty;
+
         public string Mascota { get; set; } = string.Empty;
         public string Dueno { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Seleccione el tipo de atención.")]
         public string Tipo { get; set; } = "Consulta";
 
         [Required(ErrorMessage = "Ingrese la hora de inicio.")]
@@ -294,66 +478,113 @@
         [Required(ErrorMessage = "Ingrese la hora de fin.")]
         public string HoraFin { get; set; } = string.Empty;
 
-        [Range(0, double.MaxValue, ErrorMessage = "El peso actual no puede ser negativo.")]
-        public double PesoActual { get; set; }
+        [Range(0, double.MaxValue,
+            ErrorMessage = "El peso actual no puede ser negativo.")]
+        public double? PesoActual { get; set; }
 
-        [StringLength(500, ErrorMessage = "Las alergias no deben exceder los 500 caracteres.")]
+        [StringLength(500,
+            ErrorMessage = "Las alergias no deben exceder los 500 caracteres.")]
         public string Alergias { get; set; } = string.Empty;
 
-        [StringLength(255, ErrorMessage = "Las observaciones no deben exceder los 255 caracteres.")]
+        [StringLength(255,
+            ErrorMessage = "Las observaciones no deben exceder los 255 caracteres.")]
         public string Observaciones { get; set; } = string.Empty;
 
-        // Consulta
-        [StringLength(400, ErrorMessage = "El motivo de consulta no debe exceder los 400 caracteres.")]
+        [StringLength(400,
+            ErrorMessage = "El motivo de consulta no debe exceder los 400 caracteres.")]
         public string MotivoConsulta { get; set; } = string.Empty;
 
-        [StringLength(400, ErrorMessage = "El diagnóstico no debe exceder los 400 caracteres.")]
+        [StringLength(400,
+            ErrorMessage = "El diagnóstico no debe exceder los 400 caracteres.")]
         public string Diagnostico { get; set; } = string.Empty;
 
-        [StringLength(400, ErrorMessage = "El tratamiento no debe exceder los 400 caracteres.")]
+        [StringLength(400,
+            ErrorMessage = "El tratamiento no debe exceder los 400 caracteres.")]
         public string Tratamiento { get; set; } = string.Empty;
 
-        // Control
-        [StringLength(500, ErrorMessage = "La evolución no debe exceder los 500 caracteres.")]
+        [StringLength(500,
+            ErrorMessage = "La evolución no debe exceder los 500 caracteres.")]
         public string Evolucion { get; set; } = string.Empty;
 
-        [StringLength(500, ErrorMessage = "Las indicaciones no deben exceder los 500 caracteres.")]
+        [StringLength(500,
+            ErrorMessage = "Las indicaciones no deben exceder los 500 caracteres.")]
         public string Indicaciones { get; set; } = string.Empty;
 
-        // Cirugía
-        [StringLength(500, ErrorMessage = "El procedimiento no debe exceder los 500 caracteres.")]
+        [StringLength(500,
+            ErrorMessage = "El procedimiento no debe exceder los 500 caracteres.")]
         public string Procedimiento { get; set; } = string.Empty;
 
-        [StringLength(500, ErrorMessage = "Las indicaciones postoperatorias no deben exceder los 500 caracteres.")]
+        [StringLength(500,
+            ErrorMessage = "Las indicaciones postoperatorias no deben exceder los 500 caracteres.")]
         public string IndicacionesPostoperatorias { get; set; } = string.Empty;
 
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        public IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
         {
             var errores = new List<ValidationResult>();
 
-            if (string.CompareOrdinal(HoraInicio, HoraFin) >= 0)
-                errores.Add(new("La hora de inicio debe ser anterior a la hora de fin.", new[] { nameof(HoraFin) }));
+            if (!string.IsNullOrWhiteSpace(HoraInicio) &&
+                !string.IsNullOrWhiteSpace(HoraFin) &&
+                TimeOnly.TryParse(HoraInicio, out var inicio) &&
+                TimeOnly.TryParse(HoraFin, out var fin) &&
+                inicio >= fin)
+            {
+                errores.Add(new ValidationResult(
+                    "La hora de inicio debe ser anterior a la hora de fin.",
+                    new[] { nameof(HoraFin) }));
+            }
 
             void Obligatorio(string valor, string mensaje, string campo)
             {
                 if (string.IsNullOrWhiteSpace(valor))
-                    errores.Add(new(mensaje, new[] { campo }));
+                {
+                    errores.Add(new ValidationResult(
+                        mensaje,
+                        new[] { campo }));
+                }
             }
 
             switch (Tipo)
             {
                 case "Consulta":
-                    Obligatorio(MotivoConsulta, "El motivo de consulta es obligatorio.", nameof(MotivoConsulta));
-                    Obligatorio(Diagnostico, "El diagnóstico es obligatorio.", nameof(Diagnostico));
-                    Obligatorio(Tratamiento, "El tratamiento es obligatorio.", nameof(Tratamiento));
+                    Obligatorio(
+                        MotivoConsulta,
+                        "El motivo de consulta es obligatorio.",
+                        nameof(MotivoConsulta));
+
+                    Obligatorio(
+                        Diagnostico,
+                        "El diagnóstico es obligatorio.",
+                        nameof(Diagnostico));
+
+                    Obligatorio(
+                        Tratamiento,
+                        "El tratamiento es obligatorio.",
+                        nameof(Tratamiento));
                     break;
+
                 case "Control":
-                    Obligatorio(Evolucion, "La evolución es obligatoria.", nameof(Evolucion));
-                    Obligatorio(Indicaciones, "Las indicaciones son obligatorias.", nameof(Indicaciones));
+                    Obligatorio(
+                        Evolucion,
+                        "La evolución es obligatoria.",
+                        nameof(Evolucion));
+
+                    Obligatorio(
+                        Indicaciones,
+                        "Las indicaciones son obligatorias.",
+                        nameof(Indicaciones));
                     break;
-                default:
-                    Obligatorio(Procedimiento, "El procedimiento es obligatorio.", nameof(Procedimiento));
-                    Obligatorio(IndicacionesPostoperatorias, "Las indicaciones postoperatorias son obligatorias.", nameof(IndicacionesPostoperatorias));
+
+                case "Cirugia":
+                    Obligatorio(
+                        Procedimiento,
+                        "El procedimiento es obligatorio.",
+                        nameof(Procedimiento));
+
+                    Obligatorio(
+                        IndicacionesPostoperatorias,
+                        "Las indicaciones postoperatorias son obligatorias.",
+                        nameof(IndicacionesPostoperatorias));
                     break;
             }
 
@@ -361,3 +592,4 @@
         }
     }
 }
+
