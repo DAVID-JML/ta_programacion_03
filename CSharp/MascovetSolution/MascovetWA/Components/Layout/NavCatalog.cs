@@ -30,6 +30,7 @@ public static class NavCatalog
         // Veterinario (RF021-026, RF029)
         new("Inicio", "veterinario", "home", Vet),
         new("Mi agenda", "veterinario/agenda", "calendar", Vet),
+        new("Registrar atención", "veterinario/atencion", "file-text", Vet),   // <- nuevo
         new("Historias clínicas", "veterinario/historias", "file-text", Vet),
         new("Vacunación", "veterinario/vacunas", "check-circle", Vet),
         new("Recetas", "veterinario/recetas", "file-text", Vet),
