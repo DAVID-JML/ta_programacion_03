@@ -22,20 +22,20 @@ public static class NavCatalog
         new("Mi perfil", "cliente/perfil", "user", Cli, true),
        
         // Recepcionista (RF002, RF012-019)
-        new("Inicio", "recepcion/inicio", "home", Recep),
+        new("Inicio", "recepcion", "home", Recep),
         new("Clientes", "recepcion/clientes", "users", Recep),
         new("Mascotas", "recepcion/mascotas", "heart", Recep),
         new("Citas", "recepcion/citas", "calendar", Recep),
 
         // Veterinario (RF021-026, RF029)
-        new("Inicio", "veterinario/inicio", "home", Vet),
+        new("Inicio", "veterinario", "home", Vet),
         new("Mi agenda", "veterinario/agenda", "calendar", Vet),
         new("Historias clínicas", "veterinario/historias", "file-text", Vet),
         new("Vacunación", "veterinario/vacunas", "check-circle", Vet),
         new("Recetas", "veterinario/recetas", "file-text", Vet),
 
         // Administrador (RF001, RF006-011, RF027-029)
-        new("Inicio", "administrador/inicio", "home", Admin),
+        new("Inicio", "administrador", "home", Admin),
         new("Personal", "administrador/personal", "users", Admin),
         new("Horarios", "administrador/horarios", "clock", Admin),
         new("Servicios", "administrador/servicios", "grid", Admin),

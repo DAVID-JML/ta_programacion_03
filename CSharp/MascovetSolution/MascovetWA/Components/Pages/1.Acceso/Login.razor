@@ -1,6 +1,5 @@
 ﻿@page "/"
 @layout AuthLayout
-@using MascovetWA.Components.Layout
 @inject AuthService Auth
 @inject UserContext User
 @inject NavigationManager Navigation
@@ -38,7 +37,7 @@
                           Required="true"
                           @bind-Value="modelo.Usuario"
                           autocomplete="username" />
-
+                
                 <AppInput TValue="string"
                           Label="Contraseña"
                           Type="password"
@@ -112,7 +111,7 @@
     private bool mostrarModalRecuperacion;
     private string correoRecuperacion = string.Empty;
     private string errorRecuperacion = string.Empty;
-
+    
     private void AbrirModalRecuperacion()
     {
         errorRecuperacion = string.Empty;
@@ -159,4 +158,5 @@
         [Required(ErrorMessage = "Ingresa tu contraseña.")]
         public string Contrasena { get; set; } = string.Empty;
     }
+    
 }
