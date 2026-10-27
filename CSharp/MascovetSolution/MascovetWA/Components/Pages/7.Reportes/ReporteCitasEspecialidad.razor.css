@@ -1,0 +1,21 @@
+/* CSS for ReporteCitasEspecialidad component */
+.porcentaje {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-3);
+    min-width: 12rem;
+}
+
+.barra {
+    flex: 1;
+    height: 0.5rem;
+    overflow: hidden;
+    background: var(--ms-color-neutral-bg);
+    border-radius: 999px;
+}
+
+.barra__relleno {
+    height: 100%;
+    background: var(--ms-color-primary);
+    border-radius: 999px;
+}
