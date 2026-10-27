@@ -1,3 +1,5 @@
+﻿
+/* wwwroot/css/auth.css */
 
 .login-page {
     min-height: 100vh;
@@ -7,16 +9,14 @@
     align-items: center;
     justify-content: center;
     padding: var(--ms-space-8) var(--ms-space-4);
-    box-sizing: border-box;
     background: var(--ms-color-background-page);
-    font-family: var(--ms-font-family);
     color: var(--ms-color-text);
+    font-family: var(--ms-font-family);
 }
 
 .login-panel {
     width: 100%;
     max-width: 440px;
-    box-sizing: border-box;
     padding: var(--ms-space-10);
     background: var(--ms-color-surface);
     border: var(--ms-border-width) solid var(--ms-color-border);
@@ -26,7 +26,7 @@
 
 .login-brand {
     text-align: center;
-    margin-bottom: var(--ms-space-10);
+    margin-bottom: var(--ms-space-8);
 }
 
 .login-logo {
@@ -50,11 +50,10 @@
     color: var(--ms-color-primary-dark);
     font-size: var(--ms-font-size-title);
     font-weight: var(--ms-font-weight-bold);
-    line-height: var(--ms-line-height-tight);
 }
 
 .login-tagline {
-    margin: var(--ms-space-2) 0 0;
+    margin-top: var(--ms-space-2);
     color: var(--ms-color-text-muted);
     font-size: var(--ms-font-size-small);
 }
@@ -64,18 +63,13 @@
 }
 
     .login-heading h2 {
-        margin: 0 0 var(--ms-space-2);
-        color: var(--ms-color-text);
+        margin-bottom: var(--ms-space-2);
         font-size: var(--ms-font-size-section);
         font-weight: var(--ms-font-weight-bold);
-        line-height: var(--ms-line-height-tight);
     }
 
     .login-heading p {
-        margin: 0;
         color: var(--ms-color-text-muted);
-        font-size: var(--ms-font-size-body);
-        line-height: var(--ms-line-height-normal);
     }
 
 .login-fields {
@@ -104,32 +98,22 @@
             text-decoration: underline;
         }
 
-        .login-options a:focus-visible,
-        .login-footer a:focus-visible {
-            outline: 2px solid var(--ms-color-focus);
-            outline-offset: 3px;
-            border-radius: var(--ms-radius-sm);
-        }
-
 .login-submit {
     margin-top: var(--ms-space-6);
 }
 
-    .login-submit ::deep .ms-btn {
+    .login-submit button {
         width: 100%;
-        min-height: var(--ms-control-height);
-        justify-content: center;
     }
 
 .login-feedback {
-    margin: var(--ms-space-4) 0 0;
+    margin-top: var(--ms-space-4);
     padding: var(--ms-space-3);
     border: var(--ms-border-width) solid var(--ms-color-info-border);
     border-radius: var(--ms-radius-control);
     background: var(--ms-color-info-bg);
     color: var(--ms-color-info-text);
     font-size: var(--ms-font-size-small);
-    line-height: var(--ms-line-height-normal);
 }
 
 .login-footer {
@@ -150,7 +134,7 @@
     }
 
 .login-copyright {
-    margin: var(--ms-space-6) 0 0;
+    margin-top: var(--ms-space-6);
     color: var(--ms-color-text-muted);
     font-size: var(--ms-font-size-meta);
     text-align: center;
@@ -163,9 +147,5 @@
 
     .login-panel {
         padding: var(--ms-space-6);
-    }
-
-    .login-brand {
-        margin-bottom: var(--ms-space-8);
     }
 }

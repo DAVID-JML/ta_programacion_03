@@ -1,4 +1,125 @@
-﻿<h3>RegistroCliente</h3>
+﻿@page "/registro"
+@layout AuthLayout
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Crear cuenta | Mascovet</PageTitle>
+
+<main class="login-page">
+    <section class="login-panel">
+        <header class="login-brand">
+            <div class="login-logo" aria-hidden="true">
+                <span>🐾</span>
+            </div>
+            <h1>Mascovet</h1>
+            <p class="login-tagline">Crea tu cuenta para continuar.</p>
+        </header>
+
+        <div class="login-heading">
+            <h2>Crear cuenta</h2>
+            <p>Completa tus datos para registrarte.</p>
+        </div>
+
+        <EditForm Model="@modelo" OnValidSubmit="@Registrar">
+            <DataAnnotationsValidator />
+
+            <div class="login-fields">
+                <AppInput TValue="string"
+                          Label="DNI"
+                          Type="text"
+                          Placeholder="Ingresa tu DNI"
+                          Required="true"
+                          @bind-Value="modelo.Dni" />
+
+                <ValidationMessage For="@(() => modelo.Dni)" />
+
+                <AppInput TValue="string"
+                          Label="Nombres"
+                          Placeholder="Ingresa tus nombres"
+                          Required="true"
+                          @bind-Value="modelo.Nombres" />
+
+                <ValidationMessage For="@(() => modelo.Nombres)" />
+
+                <AppInput TValue="string"
+                          Label="Apellidos"
+                          Placeholder="Ingresa tus apellidos"
+                          Required="true"
+                          @bind-Value="modelo.Apellidos" />
+
+                <ValidationMessage For="@(() => modelo.Apellidos)" />
+
+                <AppInput TValue="string"
+                          Label="Nombre de usuario"
+                          Placeholder="Elige un nombre de usuario"
+                          Required="true"
+                          @bind-Value="modelo.NombreUsuario" />
+
+                <ValidationMessage For="@(() => modelo.NombreUsuario)" />
+
+                <AppInput TValue="string"
+                          Label="Contraseña"
+                          Type="password"
+                          Placeholder="Mínimo 8 caracteres"
+                          Required="true"
+                          @bind-Value="modelo.Contrasena" />
+
+                <ValidationMessage For="@(() => modelo.Contrasena)" />
+            </div>
+
+            <div class="login-submit">
+                <AppButton Type="submit"
+                           Variant="ButtonVariant.Primary"
+                           Size="ButtonSize.Medium">
+                    Crear cuenta
+                </AppButton>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <p class="login-feedback" role="status">@mensaje</p>
+            }
+        </EditForm>
+
+        <footer class="login-footer">
+            <span>¿Ya tienes una cuenta?</span>
+            <a href="/">Iniciar sesión</a>
+        </footer>
+    </section>
+</main>
+
+@code {
+    private RegistroModel modelo = new();
+    private string mensaje = string.Empty;
+
+    private void Registrar()
+    {
+        mensaje = "Formulario validado. Falta conectar el servicio de registro.";
+    }
+
+    private sealed class RegistroModel
+    {
+        [Required(ErrorMessage = "Ingresa tu DNI.")]
+        [RegularExpression(@"^\d{8}$",
+            ErrorMessage = "El DNI debe tener 8 dígitos.")]
+        public string Dni { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tus nombres.")]
+        public string Nombres { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tus apellidos.")]
+        public string Apellidos { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa un nombre de usuario.")]
+        [StringLength(30, MinimumLength = 3,
+            ErrorMessage = "Debe tener entre 3 y 30 caracteres.")]
+        public string NombreUsuario { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa una contraseña.")]
+        [MinLength(8,
+            ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
+        public string Contrasena { get; set; } = string.Empty;
+    }
+}
 
 @code {
 
