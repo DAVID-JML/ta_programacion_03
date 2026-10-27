@@ -5,7 +5,7 @@ namespace MascovetWA.Components.Layout;
 /// <summary>Sesión del usuario en este circuito. Provisional hasta usar autenticación real.</summary>
 public sealed class UserContext
 {
-        public UserRole Role { get; private set; } = UserRole.Cliente;
+    public UserRole Role { get; private set; } = UserRole.Cliente;
     public string Nombre { get; private set; } = string.Empty;
     public bool IsAuthenticated { get; private set; }
     public event Action? Changed;
