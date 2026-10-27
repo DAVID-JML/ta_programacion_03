@@ -4,18 +4,18 @@
 
 <PageTitle>Vacunación | Mascovet</PageTitle>
 
-<div class="mb-4">
+<div class="page-header">
     <h1>Gestionar vacunaciones</h1>
-    <p class="ms-type-secondary">Registra, modifica y anula las vacunaciones aplicadas a la mascota.</p>
+    <p class="page-subtitle">Registra, modifica y anula las vacunaciones aplicadas a la mascota.</p>
 </div>
 
 <EditForm Model="modelo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
 
-    <div class="mb-4">
+    <div class="seccion">
         <AppCard Title="Información de la cita y la mascota">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+            <div class="form-grid form-grid--end">
+                <div class="span-4">
                     <AppInput TValue="string"
                               Label="ID de la cita"
                               Placeholder="Seleccione una cita"
@@ -23,7 +23,7 @@
                               Disabled="true"
                               @bind-Value="modelo.IdCita" />
                 </div>
-                <div class="col-md-auto">
+                <div class="span-auto">
                     <AppButton Variant="ButtonVariant.Secondary"
                                Icon="search"
                                OnClick="AbrirModalCita">
@@ -32,21 +32,21 @@
                 </div>
             </div>
 
-            <div class="row g-3 mt-1">
-                <div class="col-md-6">
+            <div class="form-grid">
+                <div class="span-6">
                     <AppInput TValue="string" Label="Mascota" Disabled="true" @bind-Value="modelo.Mascota" />
                 </div>
-                <div class="col-md-6">
+                <div class="span-6">
                     <AppInput TValue="string" Label="Dueño" Disabled="true" @bind-Value="modelo.Dueno" />
                 </div>
             </div>
         </AppCard>
     </div>
 
-    <div class="mb-4">
+    <div class="seccion">
         <AppCard Title="@(EditandoId.HasValue ? "Modificar vacunación" : "Registro de vacunación")">
-            <div class="row g-3">
-                <div class="col-md-6">
+            <div class="form-grid">
+                <div class="span-6">
                     <AppSelect TValue="int?"
                                Label="Vacuna aplicada"
                                Placeholder="Seleccione una vacuna"
@@ -54,7 +54,7 @@
                                Options="vacunas"
                                @bind-Value="modelo.IdVacuna" />
                 </div>
-                <div class="col-md-6">
+                <div class="span-6">
                     <AppInput TValue="string"
                               Label="Dosis"
                               Placeholder="Ingrese la dosis aplicada"
@@ -64,23 +64,23 @@
                 </div>
             </div>
 
-            <div class="row g-3 mt-1">
-                <div class="col-md-3">
+            <div class="form-grid">
+                <div class="span-3">
                     <AppDatePicker Label="Fecha de aplicación" Required="true" @bind-Value="modelo.FechaAplicacion" />
                 </div>
-                <div class="col-md-3">
+                <div class="span-3">
                     <AppDatePicker Label="Fecha de próxima dosis" @bind-Value="modelo.ProximaDosis" />
                 </div>
-                <div class="col-md-3">
+                <div class="span-3">
                     <AppInput TValue="string" Type="time" Label="Hora de inicio" Required="true" @bind-Value="modelo.HoraInicio" />
                 </div>
-                <div class="col-md-3">
+                <div class="span-3">
                     <AppInput TValue="string" Type="time" Label="Hora de fin" Required="true" @bind-Value="modelo.HoraFin" />
                 </div>
             </div>
 
-            <div class="row g-3 mt-1">
-                <div class="col-12">
+            <div class="form-grid">
+                <div class="span-12">
                     <AppTextArea TValue="string"
                                  Label="Observaciones"
                                  Rows="3"
@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-end flex-wrap gap-2 mt-4">
+            <div class="acciones acciones--fin acciones--sup">
                 <AppButton Variant="ButtonVariant.Tertiary" OnClick="Limpiar">Limpiar</AppButton>
                 <AppButton Type="submit" Variant="ButtonVariant.Primary">
                     @(EditandoId.HasValue ? "Guardar cambios" : "Guardar vacunación")
@@ -100,7 +100,7 @@
     </div>
 </EditForm>
 
-<div class="mb-4">
+<div class="seccion">
     <AppCard Title="Vacunaciones registradas de la mascota">
         <AppTable Items="Pagina(vacunaciones, paginaVacunaciones)"
                   ColumnCount="6"
@@ -124,7 +124,7 @@
                     </AppBadge>
                 </td>
                 <td>
-                    <div class="d-flex gap-2">
+                    <div class="acciones-fila">
                         <AppButton Size="ButtonSize.Small"
                                    Variant="ButtonVariant.Secondary"
                                    Disabled="@v.Anulada"
@@ -158,48 +158,49 @@
 
 <AppModal @bind-Visible="mostrarModalCita" Title="Búsqueda de cita">
     <ChildContent>
-    <AppFilterBar SearchText="textoBusquedaCita"
-                  SearchTextChanged="BuscarCita"
-                  SearchLabel="ID de cita o nombre de mascota"
-                  SearchPlaceholder="Buscar cita…"
-                  OnClear="LimpiarBusquedaCita" />
+        <AppFilterBar SearchText="textoBusquedaCita"
+                      SearchTextChanged="BuscarCita"
+                      SearchLabel="ID de cita o nombre de mascota"
+                      SearchPlaceholder="Buscar cita…"
+                      OnClear="LimpiarBusquedaCita" />
 
-    <AppTable Items="Pagina(CitasFiltradas, paginaCitas)"
-              ColumnCount="6"
-              Caption="Citas disponibles">
-        <HeaderContent>
-            <th scope="col">ID</th>
-            <th scope="col">Fecha</th>
-            <th scope="col">Hora</th>
-            <th scope="col">Mascota</th>
-            <th scope="col">Servicio</th>
-            <th scope="col">Acciones</th>
-        </HeaderContent>
-        <RowTemplate Context="cita">
-            <td>@cita.Id</td>
-            <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
-            <td>@cita.Hora.ToString("HH:mm")</td>
-            <td>@cita.Mascota</td>
-            <td>@cita.Servicio</td>
-            <td>
-                <AppButton Size="ButtonSize.Small"
-                           Variant="ButtonVariant.Secondary"
-                           OnClick="() => SeleccionarCita(cita)">
-                    Seleccionar
-                </AppButton>
-            </td>
-        </RowTemplate>
-        <EmptyContent>
-            <AppEmptyState Icon="calendar"
-                           Title="No se encontraron citas"
-                           Description="Prueba con otro ID de cita o con el nombre de la mascota." />
-        </EmptyContent>
-    </AppTable>
+        <AppTable Items="Pagina(CitasFiltradas, paginaCitas)"
+                  ColumnCount="6"
+                  Caption="Citas disponibles">
+            <HeaderContent>
+                <th scope="col">ID</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Hora</th>
+                <th scope="col">Mascota</th>
+                <th scope="col">Servicio</th>
+                <th scope="col">Acciones</th>
+            </HeaderContent>
+            <RowTemplate Context="cita">
+                <td>@cita.Id</td>
+                <td>@cita.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@cita.Hora.ToString("HH:mm")</td>
+                <td>@cita.Mascota</td>
+                <td>@cita.Servicio</td>
+                <td>
+                    <AppButton Size="ButtonSize.Small"
+                               Variant="ButtonVariant.Secondary"
+                               OnClick="() => SeleccionarCita(cita)">
+                        Seleccionar
+                    </AppButton>
+                </td>
+            </RowTemplate>
+            <EmptyContent>
+                <AppEmptyState Icon="calendar"
+                               Title="No se encontraron citas"
+                               Description="Prueba con otro ID de cita o con el nombre de la mascota." />
+            </EmptyContent>
+        </AppTable>
 
-    <AppPagination @bind-CurrentPage="paginaCitas"
-                   TotalItems="CitasFiltradas.Count()"
-                   PageSize="TamPagina"
-                   AriaLabel="Paginación de citas" />
+        <AppPagination @bind-CurrentPage="paginaCitas"
+                       TotalItems="CitasFiltradas.Count()"
+                       PageSize="TamPagina"
+                       AriaLabel="Paginación de citas" />
+
     </ChildContent>
 
     <Actions>
@@ -215,7 +216,7 @@
     <p>¿Está seguro de anular el registro de vacunación seleccionado?</p>
     @if (vacunacionSeleccionada is not null)
     {
-        <p class="ms-type-secondary mt-2">
+        <p class="texto-secundario">
             @vacunacionSeleccionada.Vacuna · aplicada el @vacunacionSeleccionada.FechaAplicacion.ToString("dd/MM/yyyy")
         </p>
     }

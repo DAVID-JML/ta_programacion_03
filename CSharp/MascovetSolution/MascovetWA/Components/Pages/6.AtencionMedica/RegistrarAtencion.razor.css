@@ -1,197 +1,87 @@
+/* Estilos propios de RegistrarAtencion.razor · solo usa tokens de design-tokens.css */
 
-.atencion-page {
-    display: flex;
-    flex-direction: column;
-    gap: var(--ms-space-6);
-    width: 100%;
-    max-width: var(--ms-content-max-width);
-    margin-inline: auto;
+.page-header {
+    margin-bottom: var(--ms-space-6);
 }
 
-.atencion-sections {
-    display: flex;
-    flex-direction: column;
-    gap: var(--ms-space-6);
+.page-subtitle {
+    margin: var(--ms-space-1) 0 0;
+    font-size: var(--ms-font-size-body);
+    color: var(--ms-color-text-muted);
 }
 
-.atencion-section {
-    min-width: 0;
+.seccion {
+    margin-bottom: var(--ms-space-6);
 }
 
-    .atencion-section ::deep .ms-card {
-        min-width: 0;
-    }
-
-    .atencion-section ::deep .ms-card__body {
-        display: flex;
-        flex-direction: column;
-        gap: var(--ms-space-4);
-    }
-
-.atencion-grid {
+/* Rejilla de 12 columnas para los campos de formulario */
+.form-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: var(--ms-space-4);
-    min-width: 0;
 }
 
-.atencion-grid--appointment {
-    grid-template-columns: minmax(14rem, 0.65fr) auto;
+    .form-grid + .form-grid {
+        margin-top: var(--ms-space-4);
+    }
+
+.form-grid--end {
     align-items: end;
 }
 
-.atencion-grid--two-columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.span-2 {
+    grid-column: span 2;
 }
 
-.atencion-grid--general {
-    grid-template-columns: minmax(0, 1.25fr) repeat(2, minmax(0, 0.8fr)) minmax(0, 0.9fr);
+.span-3 {
+    grid-column: span 3;
 }
 
-.atencion-field {
-    min-width: 0;
+.span-4 {
+    grid-column: span 4;
 }
 
-    .atencion-field ::deep .ms-field {
-        width: 100%;
+.span-5 {
+    grid-column: span 5;
+}
+
+.span-6 {
+    grid-column: span 6;
+}
+
+.span-12 {
+    grid-column: span 12;
+}
+
+.span-auto {
+    grid-column: span 3;
+}
+
+@media (max-width: 48rem) {
+    .form-grid > * {
+        grid-column: 1 / -1;
     }
-
-.atencion-field--action {
-    display: flex;
-    align-items: flex-end;
-    padding-bottom: 0.1rem;
 }
 
-    .atencion-field--action ::deep .ms-btn {
-        white-space: nowrap;
-    }
-
-.atencion-validation-summary {
-    color: var(--ms-color-error-text);
-    font-size: var(--ms-font-size-small);
-}
-
-    .atencion-validation-summary ::deep ul {
-        margin: 0;
-        padding: var(--ms-space-3) var(--ms-space-4) var(--ms-space-3) var(--ms-space-8);
-        border: var(--ms-border-width) solid var(--ms-color-error-border);
-        border-radius: var(--ms-radius-control);
-        background: var(--ms-color-error-bg);
-    }
-
-.atencion-form-actions {
+.acciones {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--ms-space-4);
-    padding-top: var(--ms-space-2);
-}
-
-.atencion-form-actions__group {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
     flex-wrap: wrap;
     gap: var(--ms-space-2);
 }
 
-.atencion-modal-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--ms-space-4);
-    min-width: 0;
+.acciones--entre {
+    align-items: center;
+    justify-content: space-between;
 }
 
-.atencion-page ::deep .ms-modal {
-    width: min(72rem, calc(100vw - 2rem));
-    max-width: calc(100vw - 2rem);
+.acciones--fin {
+    justify-content: flex-end;
 }
 
-.atencion-page ::deep .ms-modal__body {
-    min-width: 0;
+.acciones--sup {
+    margin-top: var(--ms-space-6);
 }
 
-.atencion-modal-content ::deep .ms-filterbar {
-    margin-bottom: var(--ms-space-2);
-}
-
-.atencion-modal-content ::deep .ms-table-wrap {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: auto;
-}
-
-.atencion-modal-content ::deep .ms-table {
-    width: 100%;
-    min-width: 38rem;
-}
-
-    .atencion-modal-content ::deep .ms-table th,
-    .atencion-modal-content ::deep .ms-table td {
-        padding: var(--ms-space-3);
-        vertical-align: middle;
-    }
-
-@media (max-width: 1000px) {
-    .atencion-grid--general {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .atencion-page ::deep .ms-modal {
-        width: min(56rem, calc(100vw - 2rem));
-    }
-}
-
-@media (max-width: 700px) {
-    .atencion-page {
-        gap: var(--ms-space-4);
-    }
-
-    .atencion-sections {
-        gap: var(--ms-space-4);
-    }
-
-    .atencion-grid--appointment,
-    .atencion-grid--two-columns,
-    .atencion-grid--general {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .atencion-field--action {
-        padding-bottom: 0;
-    }
-
-        .atencion-field--action ::deep .ms-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-    .atencion-form-actions {
-        align-items: stretch;
-        flex-direction: column-reverse;
-    }
-
-        .atencion-form-actions > ::deep .ms-btn,
-        .atencion-form-actions__group ::deep .ms-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-    .atencion-form-actions__group {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .atencion-page ::deep .ms-modal {
-        width: calc(100vw - 1rem);
-        max-width: calc(100vw - 1rem);
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .atencion-page ::deep .ms-modal,
-    .atencion-page ::deep .ms-card {
-        transition: none;
-    }
+.acciones--barra {
+    margin-bottom: var(--ms-space-6);
 }

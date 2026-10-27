@@ -1,201 +1,108 @@
-﻿
-@page "/administrador/reportes"
+﻿@page "/administrador/reportes"
 @page "/administrador/reportes/servicio"
+@using System.ComponentModel.DataAnnotations
 @inject ToastService Toast
 
 <PageTitle>Reporte de citas por servicio | Mascovet</PageTitle>
 
-<div class="reporte-servicio">
-
-    <header class="reporte-servicio__header">
-        <h1>Reportes</h1>
-        <p>
-            Consulta y exporta los reportes de atención de la clínica.
-        </p>
-    </header>
-
-    <nav class="reporte-servicio__nav"
-         aria-label="Tipos de reporte">
-
-        <AppButton Href="/administrador/reportes/servicio"
-                   Variant="ButtonVariant.Primary"
-                   Icon="bar-chart">
-            Citas por servicio
-        </AppButton>
-
-        <AppButton Href="/administrador/reportes/especialidad"
-                   Variant="ButtonVariant.Secondary"
-                   Icon="bar-chart">
-            Citas por especialidad
-        </AppButton>
-
-    </nav>
-
-    <section class="reporte-servicio__filter-section"
-             aria-label="Filtros del reporte">
-
-        <EditForm Model="@filtro" OnValidSubmit="@Generar">
-            <DataAnnotationsValidator />
-
-            <AppCard Title="Reporte de citas por servicio"
-                     Subtitle="Cantidad de citas programadas, atendidas y canceladas, agrupadas por servicio.">
-
-                <ChildContent>
-                    <div class="reporte-servicio__filters">
-
-                        <div class="reporte-servicio__field">
-                            <AppDatePicker
-                                Id="fecha-inicio-servicio"
-                                Label="Fecha de inicio"
-                                Required="true"
-                                @bind-Value="filtro.FechaInicio" />
-                        </div>
-
-                        <div class="reporte-servicio__field">
-                            <AppDatePicker
-                                Id="fecha-fin-servicio"
-                                Label="Fecha de fin"
-                                Required="true"
-                                @bind-Value="filtro.FechaFin" />
-                        </div>
-
-                    </div>
-
-                    <div class="reporte-servicio__filter-actions">
-
-                        <AppButton Type="submit"
-                                   Variant="ButtonVariant.Primary"
-                                   Icon="bar-chart">
-                            Generar reporte
-                        </AppButton>
-
-                        <AppButton Type="button"
-                                   Variant="ButtonVariant.Secondary"
-                                   Icon="file-text"
-                                   OnClick="@ExportarPdf">
-                            Exportar a PDF
-                        </AppButton>
-
-                        <AppButton Type="button"
-                                   Variant="ButtonVariant.Tertiary"
-                                   OnClick="@Limpiar">
-                            Limpiar
-                        </AppButton>
-
-                    </div>
-                </ChildContent>
-
-            </AppCard>
-
-        </EditForm>
-
-    </section>
-
-    <section class="reporte-servicio__results"
-             aria-label="Resultados del reporte">
-
-        <AppCard Title="Resultados"
-                 Subtitle="Citas agrupadas según su estado y servicio">
-
-            <ChildContent>
-                <AppTable TItem="FilaServicio"
-                          Items="@Pagina(resumen, paginaResumen)"
-                          ColumnCount="5"
-                          Caption="Citas programadas, atendidas y canceladas por servicio">
-
-                    <HeaderContent>
-                        <th scope="col">Servicio</th>
-                        <th scope="col">Programadas</th>
-                        <th scope="col">Atendidas</th>
-                        <th scope="col">Canceladas</th>
-                        <th scope="col">Total</th>
-                    </HeaderContent>
-
-                    <RowTemplate Context="fila">
-
-                        <td>@fila.Servicio</td>
-
-                        <td class="reporte-servicio__number">
-                            @fila.Programadas
-                        </td>
-
-                        <td class="reporte-servicio__number">
-                            @fila.Atendidas
-                        </td>
-
-                        <td class="reporte-servicio__number">
-                            @fila.Canceladas
-                        </td>
-
-                        <td class="reporte-servicio__total-cell">
-                            @(fila.Programadas + fila.Atendidas + fila.Canceladas)
-                        </td>
-
-                    </RowTemplate>
-
-                    <EmptyContent>
-                        <AppEmptyState
-                            Icon="bar-chart"
-                            Title="Sin resultados para mostrar"
-                            Description="Selecciona un rango de fechas y genera el reporte cuando esté conectado el servicio correspondiente." />
-                    </EmptyContent>
-
-                </AppTable>
-            </ChildContent>
-
-            <Footer>
-                <div class="reporte-servicio__results-footer">
-
-                    <AppPagination
-                        @bind-CurrentPage="paginaResumen"
-                        TotalItems="@resumen.Count"
-                        PageSize="@TamPagina"
-                        AriaLabel="Paginación del reporte" />
-
-                    @if (hayResultados)
-                    {
-                        <p class="reporte-servicio__grand-total">
-                            Total de citas en el rango:
-                            <strong>
-                                @resumen.Sum(f =>
-                                    f.Programadas + f.Atendidas + f.Canceladas)
-                            </strong>
-                        </p>
-                    }
-
-                </div>
-            </Footer>
-
-        </AppCard>
-
-    </section>
-
+<div class="page-header">
+    <h1>Reportes</h1>
+    <p class="page-subtitle">Consulta y exporta los reportes de atención de la clínica.</p>
 </div>
 
+<div class="acciones acciones--barra">
+    <AppButton Href="/administrador/reportes/servicio" Variant="ButtonVariant.Primary" Icon="bar-chart">
+        Citas por servicio
+    </AppButton>
+    <AppButton Href="/administrador/reportes/especialidad" Variant="ButtonVariant.Secondary" Icon="bar-chart">
+        Citas por especialidad
+    </AppButton>
+</div>
+
+<EditForm Model="filtro" OnValidSubmit="Generar">
+    <DataAnnotationsValidator />
+
+    <div class="seccion">
+        <AppCard Title="Reporte de citas por servicio"
+                 Subtitle="Cantidad de citas programadas, atendidas y canceladas, agrupadas por servicio.">
+            <div class="form-grid">
+                <div class="span-3">
+                    <AppDatePicker Label="Fecha de inicio" Required="true" @bind-Value="filtro.FechaInicio" />
+                </div>
+                <div class="span-3">
+                    <AppDatePicker Label="Fecha de fin" Required="true" @bind-Value="filtro.FechaFin" />
+                </div>
+            </div>
+
+            <div class="acciones acciones--sup">
+                <AppButton Type="submit" Variant="ButtonVariant.Primary" Icon="bar-chart">Generar reporte</AppButton>
+                <AppButton Variant="ButtonVariant.Secondary"
+                           Icon="file-text"
+                           OnClick="ExportarPdf">
+                    Exportar a PDF
+                </AppButton>
+                <AppButton Variant="ButtonVariant.Tertiary" OnClick="Limpiar">Limpiar</AppButton>
+            </div>
+        </AppCard>
+    </div>
+</EditForm>
+
+<AppCard Title="Resultados">
+    <AppTable Items="Pagina(resumen, paginaResumen)"
+              ColumnCount="5"
+              Caption="Citas programadas, atendidas y canceladas por servicio">
+        <HeaderContent>
+            <th scope="col">Servicio</th>
+            <th scope="col">Programadas</th>
+            <th scope="col">Atendidas</th>
+            <th scope="col">Canceladas</th>
+            <th scope="col">Total</th>
+        </HeaderContent>
+        <RowTemplate Context="fila">
+            <td>@fila.Servicio</td>
+            <td>@fila.Programadas</td>
+            <td>@fila.Atendidas</td>
+            <td>@fila.Canceladas</td>
+            <td><strong>@(fila.Programadas + fila.Atendidas + fila.Canceladas)</strong></td>
+        </RowTemplate>
+        <EmptyContent>
+            <AppEmptyState Icon="bar-chart"
+                           Title="Sin resultados para mostrar"
+                           Description="Selecciona un rango de fechas y presiona «Generar reporte»." />
+        </EmptyContent>
+    </AppTable>
+
+    <AppPagination @bind-CurrentPage="paginaResumen"
+                   TotalItems="resumen.Count"
+                   PageSize="TamPagina"
+                   AriaLabel="Paginación del reporte" />
+
+    @if (hayResultados)
+    {
+        <p class="total">
+            Total de citas en el rango: <strong>@resumen.Sum(f => f.Programadas + f.Atendidas + f.Canceladas)</strong>
+        </p>
+    }
+</AppCard>
+
 @code {
+
     private const int TamPagina = 10;
 
     private FiltroModel filtro = new();
     private int paginaResumen = 1;
 
-    // Se llenará al conectar el servicio del backend.
+    // Resultado del reporte (se llenará al conectar con el backend).
     private readonly List<FilaServicio> resumen = new();
-
     private bool hayResultados => resumen.Count > 0;
 
-    private static IEnumerable<T> Pagina<T>(
-        IEnumerable<T> fuente,
-        int pagina) =>
-        fuente
-            .Skip((Math.Max(1, pagina) - 1) * TamPagina)
-            .Take(TamPagina);
+    private static IEnumerable<T> Pagina<T>(IEnumerable<T> fuente, int pagina) =>
+        fuente.Skip((Math.Max(1, pagina) - 1) * TamPagina).Take(TamPagina);
 
     private void Generar()
     {
         paginaResumen = 1;
-
-        Toast.Info(
-            "Rango de fechas validado. Falta conectar el servicio del reporte.");
+        Toast.Info("Rango de fechas validado. Falta conectar el servicio del reporte.");
     }
 
     private void ExportarPdf()
@@ -210,11 +117,7 @@
         paginaResumen = 1;
     }
 
-    private sealed record FilaServicio(
-        string Servicio,
-        int Programadas,
-        int Atendidas,
-        int Canceladas);
+    private sealed record FilaServicio(string Servicio, int Programadas, int Atendidas, int Canceladas);
 
     private sealed class FiltroModel : IValidatableObject
     {
@@ -224,17 +127,10 @@
         [Required(ErrorMessage = "Ingrese la fecha de fin.")]
         public DateOnly? FechaFin { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(
-            ValidationContext validationContext)
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (FechaInicio.HasValue &&
-                FechaFin.HasValue &&
-                FechaInicio > FechaFin)
-            {
-                yield return new ValidationResult(
-                    "La fecha de inicio no puede ser posterior a la fecha de fin.",
-                    new[] { nameof(FechaFin) });
-            }
+            if (FechaInicio.HasValue && FechaFin.HasValue && FechaInicio > FechaFin)
+                yield return new("La fecha de inicio no puede ser posterior a la fecha de fin.", new[] { nameof(FechaFin) });
         }
     }
 }

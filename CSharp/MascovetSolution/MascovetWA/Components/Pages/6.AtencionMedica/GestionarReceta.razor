@@ -4,18 +4,18 @@
 
 <PageTitle>Generar receta | Mascovet</PageTitle>
 
-<div class="mb-4">
+<div class="page-header">
     <h1>Generar receta</h1>
-    <p class="ms-type-secondary">Asocia una receta a una atención médica e indica los medicamentos recetados.</p>
+    <p class="page-subtitle">Asocia una receta a una atención médica e indica los medicamentos recetados.</p>
 </div>
 
 <EditForm Model="modelo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
 
-    <div class="mb-4">
+    <div class="seccion">
         <AppCard Title="Información de la atención médica">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
+            <div class="form-grid form-grid--end">
+                <div class="span-4">
                     <AppInput TValue="string"
                               Label="ID de la atención"
                               Placeholder="Seleccione una atención"
@@ -23,7 +23,7 @@
                               Disabled="true"
                               @bind-Value="modelo.IdAtencion" />
                 </div>
-                <div class="col-md-auto">
+                <div class="span-auto">
                     <AppButton Variant="ButtonVariant.Secondary"
                                Icon="search"
                                OnClick="AbrirModalAtencion">
@@ -32,56 +32,56 @@
                 </div>
             </div>
 
-            <div class="row g-3 mt-1">
-                <div class="col-md-4">
+            <div class="form-grid">
+                <div class="span-4">
                     <AppInput TValue="string" Label="Mascota" Disabled="true" @bind-Value="modelo.Mascota" />
                 </div>
-                <div class="col-md-4">
+                <div class="span-4">
                     <AppInput TValue="string" Label="Dueño" Disabled="true" @bind-Value="modelo.Dueno" />
                 </div>
-                <div class="col-md-4">
+                <div class="span-4">
                     <AppDatePicker Label="Fecha de la receta" Required="true" @bind-Value="modelo.Fecha" />
                 </div>
             </div>
         </AppCard>
     </div>
 
-    <div class="mb-4">
+    <div class="seccion">
         <AppCard Title="Detalle de la receta">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+            <div class="form-grid form-grid--end">
+                <div class="span-3">
                     <AppInput TValue="string"
                               Label="ID del medicamento"
                               Placeholder="Seleccione"
                               Disabled="true"
                               @bind-Value="linea.IdMedicamento" />
                 </div>
-                <div class="col-md-auto">
+                <div class="span-auto">
                     <AppButton Variant="ButtonVariant.Secondary"
                                Icon="search"
                                OnClick="AbrirModalMedicamento">
                         Buscar medicamento
                     </AppButton>
                 </div>
-                <div class="col-md-5">
+                <div class="span-5">
                     <AppInput TValue="string" Label="Nombre del medicamento" Disabled="true" @bind-Value="linea.Nombre" />
                 </div>
             </div>
 
-            <div class="row g-3 mt-1 align-items-end">
-                <div class="col-md-3">
+            <div class="form-grid form-grid--end">
+                <div class="span-3">
                     <AppInput TValue="string" Label="Dosis" Placeholder="Ej. 1 tableta" maxlength="200"
                               @bind-Value="linea.Dosis" />
                 </div>
-                <div class="col-md-3">
+                <div class="span-3">
                     <AppInput TValue="string" Label="Frecuencia" Placeholder="Ej. Cada 8 horas" maxlength="200"
                               @bind-Value="linea.Frecuencia" />
                 </div>
-                <div class="col-md-3">
+                <div class="span-3">
                     <AppInput TValue="string" Label="Duración del tratamiento" Placeholder="Ej. 7 días" maxlength="200"
                               @bind-Value="linea.Duracion" />
                 </div>
-                <div class="col-md-auto">
+                <div class="span-auto">
                     <AppButton Variant="ButtonVariant.Secondary" Icon="plus" OnClick="AgregarMedicamento">
                         Agregar
                     </AppButton>
@@ -90,12 +90,12 @@
 
             @if (!string.IsNullOrWhiteSpace(errorLinea))
             {
-                <div class="mt-3">
+                <div class="bloque">
                     <AppAlert Variant="SemanticVariant.Error">@errorLinea</AppAlert>
                 </div>
             }
 
-            <div class="mt-4">
+            <div class="bloque-grande">
                 <AppTable Items="Pagina(detalles, paginaDetalles)"
                           ColumnCount="5"
                           Caption="Medicamentos de la receta">
@@ -135,12 +135,12 @@
 
             @if (!string.IsNullOrWhiteSpace(errorDetalle))
             {
-                <div class="mt-3">
+                <div class="bloque">
                     <AppAlert Variant="SemanticVariant.Error">@errorDetalle</AppAlert>
                 </div>
             }
 
-            <div class="mt-4">
+            <div class="bloque-grande">
                 <AppTextArea TValue="string"
                              Label="Indicaciones"
                              Rows="3"
@@ -151,7 +151,7 @@
         </AppCard>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="acciones acciones--entre">
         <AppButton Href="/veterinario/atencion" Variant="ButtonVariant.Secondary">Regresar</AppButton>
         <AppButton Type="submit" Variant="ButtonVariant.Primary">Guardar receta</AppButton>
     </div>
