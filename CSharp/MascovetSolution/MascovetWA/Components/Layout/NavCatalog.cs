@@ -18,7 +18,6 @@ public static class NavCatalog
         new("Mis mascotas", "cliente/mascotas", "heart", Cli),
         new("Reservar cita", "cliente/reservar", "plus", Cli),
         new("Mis citas", "cliente/citas", "calendar", Cli),
-        new("Historial médico", "cliente/historial", "file-text", Cli),
         new("Mi perfil", "cliente/perfil", "user", Cli, true),
        
         // Recepcionista (RF002, RF012-019)

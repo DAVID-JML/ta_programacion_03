@@ -1,0 +1,182 @@
+
+.reserva-cita {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.reserva-cita__header h1 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.reserva-cita__header p {
+    max-width: 720px;
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+}
+
+.reserva-cita__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.9fr);
+    align-items: start;
+    gap: var(--ms-space-6);
+}
+
+.reserva-cita__main,
+.reserva-cita__aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    min-width: 0;
+}
+
+.reserva-cita__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-8);
+}
+
+
+.reserva-cita__field {
+    min-width: 0;
+}
+
+    .reserva-cita__field ::deep .ms-field {
+        width: 100%;
+    }
+
+.reserva-cita__availability {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.reserva-cita__summary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-4);
+}
+
+.reserva-cita__summary-item {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: var(--ms-space-3);
+}
+
+.reserva-cita__summary-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: var(--ms-border-width) solid var(--ms-color-border);
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary);
+}
+
+.reserva-cita__summary-item > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-1);
+    min-width: 0;
+}
+
+.reserva-cita__summary-item span:not(.reserva-cita__summary-icon) {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+}
+
+.reserva-cita__summary-item strong {
+    color: var(--ms-color-text);
+    font-size: var(--ms-font-size-body);
+    font-weight: var(--ms-font-weight-semibold);
+    overflow-wrap: anywhere;
+}
+
+.reserva-cita__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ms-space-3);
+    margin-top: var(--ms-space-5);
+    padding: var(--ms-space-4);
+    border: var(--ms-border-width) solid var(--ms-color-info-border);
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-info-bg);
+    color: var(--ms-color-info-text);
+}
+
+    .reserva-cita__notice ::deep .ms-icon {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .reserva-cita__notice p {
+        margin: 0;
+        font-size: var(--ms-font-size-small);
+        line-height: var(--ms-line-height-normal);
+    }
+
+.reserva-cita__summary-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-2);
+    width: 100%;
+}
+
+    .reserva-cita__summary-actions ::deep .ms-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+.reserva-cita__footer {
+    display: flex;
+    justify-content: flex-start;
+}
+
+@media (max-width: 900px) {
+    .reserva-cita__layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .reserva-cita__aside {
+        order: -1;
+    }
+
+    .reserva-cita__summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reserva-cita__notice {
+        margin-top: var(--ms-space-4);
+    }
+}
+
+@media (max-width: 600px) {
+    .reserva-cita {
+        gap: var(--ms-space-4);
+    }
+
+    .reserva-cita__main,
+    .reserva-cita__aside {
+        gap: var(--ms-space-4);
+    }
+
+    .reserva-cita__fields,
+    .reserva-cita__summary {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--ms-space-4);
+    }
+}

@@ -1,0 +1,164 @@
+﻿
+@page "/cliente/mascotas/nueva"
+@layout MainLayout
+
+@inject ToastService Toast
+
+<PageTitle>Registrar mascota | Mascovet</PageTitle>
+
+<div class="registrar-mascota">
+
+    <header class="registrar-mascota__header">
+        <h1>Registrar mascota</h1>
+        <p>
+            Registra a tu compañero para llevar el seguimiento de sus citas y su salud.
+        </p>
+    </header>
+    <EditForm Model="@modelo" OnValidSubmit="@Registrar">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="registrar-mascota__validation" />
+
+        <AppCard Title="Información de la mascota"
+                 Subtitle="Completa los datos de tu mascota. Los campos desconocidos pueden dejarse sin especificar.">
+
+            <ChildContent>
+                <div class="registrar-mascota__grid">
+
+                    <div class="registrar-mascota__field">
+                        <AppInput TValue="string"
+                                  Id="mascota-nombre"
+                                  Label="Nombre"
+                                  Placeholder="Nombre de tu mascota"
+                                  Required="true"
+                                  maxlength="100"
+                                  autocomplete="off"
+                                  @bind-Value="modelo.Nombre" />
+                    </div>
+
+                    <div class="registrar-mascota__field">
+                        <AppDatePicker Id="mascota-fecha-nacimiento"
+                                       Label="Fecha de nacimiento"
+                                       HelpText="Opcional si no conoces la fecha exacta."
+                                       Max="@FechaMaxima"
+                                       @bind-Value="modelo.FechaNacimiento" />
+                    </div>
+
+                    <div class="registrar-mascota__field">
+                        <AppSelect TValue="string"
+                                   Id="mascota-especie"
+                                   Label="Especie"
+                                   Placeholder="Selecciona la especie"
+                                   Required="true"
+                                   Options="@OpcionesEspecie"
+                                   @bind-Value="modelo.Especie" />
+                    </div>
+
+                    <div class="registrar-mascota__field">
+                        <AppInput TValue="string"
+                                  Id="mascota-raza"
+                                  Label="Raza"
+                                  Placeholder="Ej. Mestiza, Labrador"
+                                  maxlength="100"
+                                  HelpText="Si no conoces la raza, puedes dejarlo en blanco."
+                                  @bind-Value="modelo.Raza" />
+                    </div>
+
+                    <div class="registrar-mascota__field">
+                        <AppSelect TValue="string"
+                                   Id="mascota-sexo"
+                                   Label="Sexo"
+                                   Placeholder="Selecciona el sexo"
+                                   Required="true"
+                                   Options="@OpcionesSexo"
+                                   @bind-Value="modelo.Sexo" />
+                    </div>
+
+                </div>
+
+            </ChildContent>
+
+            <Footer>
+                <div class="registrar-mascota__actions">
+
+                    <AppButton Href="/cliente/mascotas"
+                               Variant="ButtonVariant.Secondary"
+                               Icon="chevron-left">
+                        Cancelar
+                    </AppButton>
+
+                    <AppButton Type="submit"
+                               Variant="ButtonVariant.Primary"
+                               Icon="check-circle">
+                        Registrar mascota
+                    </AppButton>
+
+                </div>
+            </Footer>
+
+        </AppCard>
+    </EditForm>
+
+</div>
+
+@code {
+    private readonly MascotaModel modelo = new();
+
+    private DateOnly FechaMaxima =>
+        DateOnly.FromDateTime(DateTime.Today);
+
+    private readonly List<SelectOption<string>> OpcionesEspecie =
+    [
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Otro", "Otro"),
+        new("No especificado", "No especificado")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesSexo =
+    [
+        new("Macho", "Macho"),
+        new("Hembra", "Hembra"),
+        new("No identificado", "No identificado")
+    ];
+
+    private void Registrar()
+    {
+        // La validación de la interfaz ya se ha ejecutado.
+        // El registro real se implementará cuando conectemos el backend.
+        Toast.Success(
+            "Formulario validado. El registro se habilitará al conectar el backend.");
+    }
+
+    private sealed class MascotaModel : IValidatableObject
+    {
+        [Required(ErrorMessage = "Ingresa el nombre de la mascota.")]
+        [StringLength(100,
+            ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
+        public string Nombre { get; set; } = string.Empty;
+
+        public DateOnly? FechaNacimiento { get; set; }
+
+        [Required(ErrorMessage = "Selecciona una especie.")]
+        public string Especie { get; set; } = string.Empty;
+
+        [StringLength(100,
+            ErrorMessage = "La raza no puede superar los 100 caracteres.")]
+        public string Raza { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Selecciona una opción para el sexo.")]
+        public string Sexo { get; set; } = string.Empty;
+
+        public IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
+        {
+            if (FechaNacimiento.HasValue &&
+                FechaNacimiento.Value >
+                DateOnly.FromDateTime(DateTime.Today))
+            {
+                yield return new ValidationResult(
+                    "La fecha de nacimiento no puede ser futura.",
+                    [nameof(FechaNacimiento)]);
+            }
+        }
+    }
+}
