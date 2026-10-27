@@ -1,5 +1,103 @@
-﻿<h3>Login</h3>
+﻿@page "/"
+@layout AuthLayout
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Iniciar sesión | Mascovet</PageTitle>
+
+<main class="login-page">
+    <section class="login-panel" aria-labelledby="login-title">
+
+        <header class="login-brand">
+            <div class="login-logo" aria-hidden="true">
+                <span>🐾</span>
+            </div>
+
+            <h1>Mascovet</h1>
+            <p class="login-tagline">
+                Cuidamos a quienes más quieres.
+            </p>
+        </header>
+
+        <div class="login-heading">
+            <h2 id="login-title">¡Bienvenido!</h2>
+            <p>Ingresa tus datos para acceder a tu cuenta.</p>
+        </div>
+
+        <EditForm Model="@modelo" OnValidSubmit="@IniciarSesion">
+            <DataAnnotationsValidator />
+
+            <div class="login-fields">
+                <AppInput TValue="string"
+                          Label="Correo electrónico"
+                          Type="email"
+                          Placeholder="nombre@correo.com"
+                          Required="true"
+                          @bind-Value="modelo.Correo"
+                          autocomplete="username" />
+
+                <AppInput TValue="string"
+                          Label="Contraseña"
+                          Type="password"
+                          Placeholder="Ingresa tu contraseña"
+                          Required="true"
+                          @bind-Value="modelo.Contrasena"
+                          autocomplete="current-password" />
+            </div>
+
+            <div class="login-options">
+                <a href="/recuperar-contrasena">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <div class="login-submit">
+                <AppButton Type="submit"
+                           Variant="ButtonVariant.Primary"
+                           Size="ButtonSize.Medium"
+                           Disabled="@enviando"
+                           Loading="@enviando">
+                    Iniciar sesión
+                </AppButton>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <p class="login-feedback" role="status">
+                    @mensaje
+                </p>
+            }
+        </EditForm>
+
+        <footer class="login-footer">
+            <span>¿Todavía no tienes una cuenta?</span>
+            <a href="/registro">Crear una cuenta</a>
+        </footer>
+    </section>
+
+    <p class="login-copyright">
+        © 2026 Mascovet. Todos los derechos reservados.
+    </p>
+</main>
 
 @code {
+    private LoginModel modelo = new();
+    private bool enviando;
+    private string mensaje = string.Empty;
 
+    private void IniciarSesion()
+    {
+        // Pendiente: conectar con el servicio de autenticación.
+        // No se deben validar credenciales únicamente en el cliente.
+        mensaje = "La interfaz está lista, pero falta conectar el servicio de autenticación.";
+    }
+
+    private sealed class LoginModel
+    {
+        [Required(ErrorMessage = "Ingresa tu correo electrónico.")]
+        [EmailAddress(ErrorMessage = "Ingresa un correo electrónico válido.")]
+        public string Correo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu contraseña.")]
+        public string Contrasena { get; set; } = string.Empty;
+    }
 }
