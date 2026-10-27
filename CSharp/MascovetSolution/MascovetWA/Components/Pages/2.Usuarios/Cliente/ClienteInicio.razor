@@ -97,7 +97,10 @@
                 {
                     <AppCard>
                         <div class="pet">
-                            <div class="pet__avatar" aria-hidden="true">@m.Emoji</div>
+                            <div class="pet__avatar" aria-hidden="true">
+                                <AppIcon Name="@ObtenerIconoEspecie(m.Especie)"
+                                         Size="32" />
+                            </div>
                             <div>
                                 <h3>@m.Nombre</h3>
                                 <p>@m.Especie · @m.Edad</p>
@@ -114,7 +117,7 @@
 </div>
 
 @code {
-    private sealed record Mascota(string Nombre, string Especie, string Edad, string Emoji);
+    private sealed record Mascota(string Nombre, string Especie, string Edad);
     private sealed record Cita(DateOnly Fecha, string Hora, string Servicio, string Mascota, string Especie, string Veterinario, string Estado);
     private sealed record Resumen(string Titulo, int Valor, string Icono, string Enlace, string Href);
 
@@ -123,8 +126,8 @@
     // Datos de ejemplo: se reemplazarán por los del cliente autenticado.
     private static readonly Mascota[] Mascotas =
     {
-        new("Luna", "Perro", "3 años", "🐶"),
-        new("Michi", "Gato", "2 años", "🐱"),
+        new("Luna", "Perro", "3 años"),
+        new("Michi", "Gato", "2 años"),
     };
 
     private static readonly Cita[] Citas =
@@ -147,7 +150,13 @@
         new Resumen("Citas próximas", Citas.Count(c => c.Estado is "Reservada" or "Confirmada"), "calendar", "Ver mis citas", "/cliente/citas"),
         new Resumen("Atenciones realizadas", AtencionesRealizadas, "check-circle", "Ver historial", "/cliente/historial"),
     };
-
+    private static string ObtenerIconoEspecie(string especie) =>
+    especie.Trim().ToLowerInvariant() switch
+    {
+        "gato" => "cat",
+        "perro" => "dog",
+        _ => "paw-print"
+    };
     // Estados del RF020: Reservada, Confirmada, Atendida, Cancelada
     private static SemanticVariant EstadoVariant(string estado) => estado switch
     {

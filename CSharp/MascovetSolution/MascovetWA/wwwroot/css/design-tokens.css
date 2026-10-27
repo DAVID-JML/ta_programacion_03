@@ -5,99 +5,91 @@
    ===================================================================== */
 :root {
     /* ---- Paleta de marca -------------------------------------------- */
-    --ms-color-primary-dark: #174F73;      /* Sidebar, navegación, contraste */
-    --ms-color-primary: #247FA0;           /* Acciones primarias, enlaces, activos */
-    --ms-color-primary-hover: #1D6C89;     /* Derivado: hover de acciones primarias */
-    --ms-color-primary-active: #17566F;    /* Derivado: estado presionado */
-    --ms-color-accent: #55C2C0;            /* Acentos e indicadores */
-    --ms-color-background-soft: #E8F7F6;   /* Zonas secundarias y resaltados */
-    --ms-color-background-page: #F5F9FB;   /* Derivado: fondo del área principal */
-    --ms-color-surface: #FFFFFF;           /* Tarjetas, paneles, formularios */
-    --ms-color-text: #263746;              /* Texto principal */
-    --ms-color-text-muted: #546677;        /* Texto secundario (≥ 4.5:1 sobre blanco) */
-    --ms-color-border: #D9E2E8;            /* Bordes y divisores */
-    --ms-color-border-strong: #7B8D9E;     /* Borde de controles (≥ 3:1 sobre blanco) */
-    --ms-color-on-dark: #FFFFFF;           /* Texto sobre primary-dark */
-    --ms-color-on-dark-muted: #C9DEEA;     /* Texto secundario sobre primary-dark */
-
+    --ms-color-primary-dark: #174F73; /* Marca, títulos y elementos de contraste */
+    --ms-color-primary: #247FA0; /* Acciones primarias, enlaces, activos */
+    --ms-color-primary-hover: #1D6C89; /* Derivado: hover de acciones primarias */
+    --ms-color-primary-active: #17566F; /* Derivado: estado presionado */
+    --ms-color-accent: #55C2C0; /* Acentos e indicadores */
+    --ms-color-background-soft: #E8F7F6; /* Zonas secundarias y resaltados */
+    --ms-color-background-page: #F5F9FB; /* Derivado: fondo del área principal */
+    --ms-color-surface: #FFFFFF; /* Tarjetas, paneles, formularios */
+    --ms-color-text: #263746; /* Texto principal */
+    --ms-color-text-muted: #546677; /* Texto secundario (≥ 4.5:1 sobre blanco) */
+    --ms-color-border: #D9E2E8; /* Bordes y divisores */
+    --ms-color-border-strong: #7B8D9E; /* Borde de controles (≥ 3:1 sobre blanco) */
+    --ms-color-on-dark: #FFFFFF; /* Texto sobre primary-dark */
+    --ms-color-on-dark-muted: #C9DEEA; /* Texto secundario sobre primary-dark */
     /* ---- Colores semánticos (independientes de la marca) ------------ */
     --ms-color-success: #1E7B4F;
     --ms-color-success-bg: #E7F5EE;
     --ms-color-success-border: #A8D5BD;
     --ms-color-success-text: #165C3A;
-
     --ms-color-warning: #D98E04;
     --ms-color-warning-bg: #FFF5DC;
     --ms-color-warning-border: #F0CF8A;
     --ms-color-warning-text: #7A4E00;
-
     --ms-color-error: #B3261E;
     --ms-color-error-bg: #FDECEA;
     --ms-color-error-border: #F2B8B5;
     --ms-color-error-text: #8C1D18;
-
     --ms-color-info: #3556B8;
     --ms-color-info-bg: #ECEFFB;
     --ms-color-info-border: #B8C4EE;
     --ms-color-info-text: #26408C;
-
     --ms-color-neutral-bg: #EEF2F5;
     --ms-color-neutral-border: #D9E2E8;
     --ms-color-neutral-text: #3A4B5A;
-
     --ms-color-disabled-bg: #EEF2F5;
     --ms-color-disabled-text: #7D8B97;
     --ms-color-disabled-border: #D9E2E8;
-
-    --ms-color-focus: #1F5FD1;             /* Anillo de foco sobre fondos claros */
-    --ms-color-focus-inverse: #FFFFFF;     /* Anillo de foco sobre fondos oscuros */
-
+    --ms-color-focus: #1F5FD1; /* Anillo de foco sobre fondos claros */
+    --ms-color-focus-inverse: #FFFFFF; /* Anillo de foco sobre fondos oscuros */
     /* ---- Tipografía -------------------------------------------------- */
     --ms-font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --ms-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-
-    --ms-font-size-title: 1.75rem;     /* 28 px · título principal */
-    --ms-font-size-section: 1.375rem;  /* 22 px · encabezados de sección */
+    --ms-font-size-title: 1.75rem; /* 28 px · título principal */
+    --ms-font-size-section: 1.375rem; /* 22 px · encabezados de sección */
     --ms-font-size-subtitle: 1.125rem; /* 18 px · subtítulos */
-    --ms-font-size-body: 0.9375rem;    /* 15 px · texto normal */
-    --ms-font-size-label: 0.875rem;    /* 14 px · etiquetas de formulario */
-    --ms-font-size-small: 0.8125rem;   /* 13 px · texto secundario */
-    --ms-font-size-meta: 0.75rem;      /* 12 px · metadatos */
+    --ms-font-size-body: 0.9375rem; /* 15 px · texto normal */
+    --ms-font-size-label: 0.875rem; /* 14 px · etiquetas de formulario */
+    --ms-font-size-small: 0.8125rem; /* 13 px · texto secundario */
+    --ms-font-size-meta: 0.75rem; /* 12 px · metadatos */
 
     --ms-font-weight-regular: 400;
     --ms-font-weight-medium: 500;
     --ms-font-weight-semibold: 600;
     --ms-font-weight-bold: 700;
-
     --ms-line-height-tight: 1.25;
     --ms-line-height-normal: 1.55;
-
     /* ---- Espaciado (múltiplos de 4 px) ------------------------------- */
-    --ms-space-1: 0.25rem;  /* 4 px  */
-    --ms-space-2: 0.5rem;   /* 8 px  */
-    --ms-space-3: 0.75rem;  /* 12 px */
-    --ms-space-4: 1rem;     /* 16 px */
-    --ms-space-6: 1.5rem;   /* 24 px */
-    --ms-space-8: 2rem;     /* 32 px */
-    --ms-space-10: 2.5rem;  /* 40 px */
-    --ms-space-12: 3rem;    /* 48 px */
-
+    --ms-space-1: 0.25rem; /* 4 px  */
+    --ms-space-2: 0.5rem; /* 8 px  */
+    --ms-space-3: 0.75rem; /* 12 px */
+    --ms-space-4: 1rem; /* 16 px */
+    --ms-space-6: 1.5rem; /* 24 px */
+    --ms-space-8: 2rem; /* 32 px */
+    --ms-space-10: 2.5rem; /* 40 px */
+    --ms-space-12: 3rem; /* 48 px */
     /* ---- Bordes y formas --------------------------------------------- */
-    --ms-radius-control: 8px;  /* Inputs y botones */
-    --ms-radius-card: 12px;    /* Tarjetas, modales, paneles */
-    --ms-radius-sm: 6px;       /* Badges y elementos pequeños */
+    --ms-radius-control: 8px; /* Inputs y botones */
+    --ms-radius-card: 12px; /* Tarjetas, modales, paneles */
+    --ms-radius-sm: 6px; /* Badges y elementos pequeños */
     --ms-border-width: 1px;
-
     /* ---- Sombras suaves ---------------------------------------------- */
     --ms-shadow-sm: 0 1px 2px rgba(23, 79, 115, 0.08);
     --ms-shadow-md: 0 2px 8px rgba(23, 79, 115, 0.10);
     --ms-shadow-lg: 0 8px 24px rgba(23, 79, 115, 0.16);
-
     /* ---- Dimensiones de componentes ---------------------------------- */
-    --ms-control-height: 2.5rem;     /* 40 px */
-    --ms-control-height-sm: 2rem;    /* 32 px */
-    --ms-sidebar-width: 16.25rem;    /* 260 px */
-    --ms-content-max-width: 80rem;   /* 1280 px */
+    --ms-control-height: 2.5rem; /* 40 px */
+    --ms-control-height-sm: 2rem; /* 32 px */
+    --ms-sidebar-width: 16.25rem; /* 260 px */
+    --ms-content-max-width: 80rem; /* 1280 px */
     --ms-z-toast: 1100;
     --ms-z-modal: 1000;
+    /* ---- Navegación ---- */
+    --ms-nav-bg: var(--ms-color-surface);
+    --ms-nav-text: var(--ms-color-text-muted);
+    --ms-nav-active-bg: var(--ms-color-background-soft);
+    --ms-nav-active-text: var(--ms-color-primary-dark);
+    --ms-nav-active-indicator: var(--ms-color-primary);
 }

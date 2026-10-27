@@ -40,10 +40,7 @@ public static class NavCatalog
         new("Horarios", "administrador/horarios", "clock", Admin),
         new("Servicios", "administrador/servicios", "grid", Admin),
         new("Medicamentos", "administrador/medicamentos", "file-text", Admin),
-        new("Reportes", "administrador/reportes", "bar-chart", Admin),
-
-        // Solo desarrollo: visible para todos. Quítalo antes de entregar.
-        new("Design System", "design-system", "grid"),
+        new("Reportes", "administrador/reportes", "bar-chart", Admin)
     };
 
     public static IEnumerable<NavItem> For(UserRole role) =>
