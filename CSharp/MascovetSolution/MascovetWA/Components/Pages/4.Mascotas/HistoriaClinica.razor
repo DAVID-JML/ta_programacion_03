@@ -1,4 +1,5 @@
-﻿@page "/cliente/mascotas/{IdMascota:int}/historial"
+﻿@* @page "/cliente/mascotas/{IdMascota:int}/historial"
+@page "/recepcion/mascotas/{IdMascota:int}/historial"
 @layout MainLayout
 
 <PageTitle>Historial médico | Mascovet</PageTitle>
@@ -72,4 +73,531 @@
 @code{
     [Parameter]
     public int IdMascota { get; set; }
+}
+ *@
+
+
+
+@page "/cliente/mascotas/{IdMascota:int}/historial"
+@page "/recepcion/mascotas/{IdMascota:int}/historial"
+@page "/veterinario/historias/{IdMascota:int}"
+@layout MainLayout
+
+@using System.Globalization
+@using System.Linq
+@using MascovetWA.Components.Layout
+@using MascovetWA.Components.DesignSystem
+@using MascovetWA.Components.DesignSystem.Buttons
+@using MascovetWA.Components.DesignSystem.DataDisplay
+@using MascovetWA.Components.DesignSystem.Icons
+@using Microsoft.JSInterop
+
+@inject UserContext User
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Historia clínica | MascoVet</PageTitle>
+
+<main class="historial-medico">
+
+    @* Lista de pacientes para veterinario y administrador *@
+    @if (IdMascota == 0 && (EsVeterinario || EsAdministrador))
+    {
+        <header class="historial-medico__header">
+            <div>
+                <span class="historial-medico__eyebrow">
+                    REGISTROS MÉDICOS
+                </span>
+
+                <h1>Historias clínicas</h1>
+
+                <p>
+                    Selecciona una mascota para consultar su historial médico.
+                </p>
+            </div>
+        </header>
+
+        <section class="historial-medico__section">
+            <AppCard Title="Mascotas registradas"
+                     Subtitle="Selecciona un paciente para consultar su historia">
+
+                <ChildContent>
+                    @if (ListaMascotas.Count == 0)
+                    {
+                        <AppEmptyState Icon="heart"
+                                       Title="No hay mascotas registradas"
+                                       Description="Cuando existan mascotas registradas, aparecerán aquí." />
+                    }
+                    else
+                    {
+                        <div class="historial-medico__table-wrapper">
+                            <table class="historial-medico__table">
+                                <thead>
+                                    <tr>
+                                        <th>Mascota</th>
+                                        <th>Especie</th>
+                                        <th>Raza</th>
+                                        <th>Atenciones</th>
+                                        <th>Vacunas</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var mascota in ListaMascotas)
+                                    {
+                                        <tr>
+                                            <td>@mascota.Nombre</td>
+                                            <td>@mascota.Especie</td>
+                                            <td>@mascota.Raza</td>
+                                            <td>@mascota.Atenciones.Count</td>
+                                            <td>@mascota.Vacunaciones.Count</td>
+                                            <td>
+                                                <AppButton Href="@($"/veterinario/historias/{mascota.Id}")"
+                                                           Variant="ButtonVariant.Primary"
+                                                           Icon="file-text">
+                                                    Ver historia
+                                                </AppButton>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+    }
+    @* Mensaje cuando no se encuentra el paciente *@
+    else if (Mascota is null)
+    {
+        <header class="historial-medico__header">
+            <div>
+                <h1>Mascota no encontrada</h1>
+
+                <p>
+                    No se encontró una mascota con el identificador solicitado.
+                </p>
+            </div>
+
+            @if (EsVeterinario || EsAdministrador)
+            {
+                <AppButton Href="/veterinario/historias"
+                           Variant="ButtonVariant.Secondary"
+                           Icon="chevron-left">
+                    Volver a las historias
+                </AppButton>
+            }
+            else if (EsRecepcion)
+            {
+                <AppButton Href="/recepcion/mascotas"
+                           Variant="ButtonVariant.Secondary"
+                           Icon="chevron-left">
+                    Volver a mascotas
+                </AppButton>
+            }
+            else
+            {
+                <AppButton Href="/cliente/mascotas"
+                           Variant="ButtonVariant.Secondary"
+                           Icon="chevron-left">
+                    Mis mascotas
+                </AppButton>
+            }
+        </header>
+    }
+    @* Historia clínica de una mascota *@
+    else
+    {
+        <header class="historial-medico__header">
+            <div>
+                <span class="historial-medico__eyebrow">
+                    HISTORIAL DEL PACIENTE
+                </span>
+
+                <h1>Historia clínica de @Mascota!.Nombre</h1>
+
+                <p>
+                    @Mascota.Especie · @Mascota.Raza
+                    · Código MV-@Mascota.Id.ToString("D3")
+                </p>
+            </div>
+
+            <div class="historial-medico__actions">
+                @if (EsVeterinario || EsAdministrador)
+                {
+                    <AppButton Href="/veterinario/historias"
+                               Variant="ButtonVariant.Secondary"
+                               Icon="chevron-left">
+                        Lista de pacientes
+                    </AppButton>
+
+                    <AppButton Variant="ButtonVariant.Primary"
+                               Icon="file-text"
+                               OnClick="ImprimirReporte">
+                        Generar reporte
+                    </AppButton>
+                }
+                else if (EsRecepcion)
+                {
+                    <AppButton Href="/recepcion/mascotas"
+                               Variant="ButtonVariant.Secondary"
+                               Icon="chevron-left">
+                        Volver a mascotas
+                    </AppButton>
+                }
+                else
+                {
+
+                   
+                    <AppButton Href="/cliente/mascotas"
+                               Variant="ButtonVariant.Tertiary"
+                               Icon="heart">
+                        Mis mascotas
+                    </AppButton>
+                }
+            </div>
+        </header>
+
+        <section class="historial-medico__resumen"
+                 aria-label="Resumen de la historia clínica">
+
+            <article class="historial-medico__stat">
+                <span class="historial-medico__stat-icon">
+                    <AppIcon Name="stethoscope" Size="22" />
+                </span>
+
+                <div>
+                    <strong>@Mascota.Atenciones.Count</strong>
+                    <span>Atenciones médicas</span>
+                </div>
+            </article>
+
+            <article class="historial-medico__stat">
+                <span class="historial-medico__stat-icon">
+                    <AppIcon Name="heart" Size="22" />
+                </span>
+
+                <div>
+                    <strong>@Mascota.Vacunaciones.Count</strong>
+                    <span>Vacunaciones</span>
+                </div>
+            </article>
+
+            <article class="historial-medico__stat">
+                <span class="historial-medico__stat-icon">
+                    <AppIcon Name="file-text" Size="22" />
+                </span>
+
+                <div>
+                    <strong>@Mascota.Recetas.Count</strong>
+                    <span>Recetas médicas</span>
+                </div>
+            </article>
+        </section>
+
+        @* Atenciones médicas *@
+        <section class="historial-medico__section">
+            <AppCard Title="Atenciones médicas"
+                     Subtitle="Consultas, controles y procedimientos veterinarios">
+
+                <ChildContent>
+                    @if (Mascota.Atenciones.Count == 0)
+                    {
+                        <AppEmptyState Icon="stethoscope"
+                                       Title="Sin atenciones médicas"
+                                       Description="Todavía no hay consultas ni atenciones registradas para esta mascota." />
+                    }
+                    else
+                    {
+                        <div class="historial-medico__table-wrapper">
+                            <table class="historial-medico__table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Veterinario</th>
+                                        <th>Motivo</th>
+                                        <th>Diagnóstico</th>
+                                        <th>Tratamiento y observaciones</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var atencion in Mascota.Atenciones.OrderByDescending(a => a.Fecha))
+                                    {
+                                        <tr>
+                                            <td>@FormatoFecha(atencion.Fecha)</td>
+                                            <td>@atencion.Veterinario</td>
+                                            <td>@atencion.Motivo</td>
+                                            <td>@atencion.Diagnostico</td>
+                                            <td>@atencion.Tratamiento</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        @* Vacunaciones *@
+        <section class="historial-medico__section">
+            <AppCard Title="Vacunaciones"
+                     Subtitle="Vacunas aplicadas y próximas dosis">
+
+                <ChildContent>
+                    @if (Mascota.Vacunaciones.Count == 0)
+                    {
+                        <AppEmptyState Icon="check-circle"
+                                       Title="Sin vacunaciones registradas"
+                                       Description="Las vacunas aplicadas aparecerán en esta sección cuando existan registros." />
+                    }
+                    else
+                    {
+                        <div class="historial-medico__table-wrapper">
+                            <table class="historial-medico__table">
+                                <thead>
+                                    <tr>
+                                        <th>Vacuna</th>
+                                        <th>Fecha de aplicación</th>
+                                        <th>Próxima dosis</th>
+                                        <th>Veterinario</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var vacuna in Mascota.Vacunaciones.OrderByDescending(v => v.Fecha))
+                                    {
+                                        <tr>
+                                            <td>@vacuna.Nombre</td>
+                                            <td>@FormatoFecha(vacuna.Fecha)</td>
+                                            <td>
+                                                @(vacuna.ProximaDosis.HasValue
+                                                    ? FormatoFecha(vacuna.ProximaDosis.Value)
+                                                    : "No registrada")
+                                            </td>
+                                            <td>@vacuna.Veterinario</td>
+                                            <td>@EstadoVacuna(vacuna.ProximaDosis)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        @* Recetas médicas *@
+        <section class="historial-medico__section">
+            <AppCard Title="Recetas médicas"
+                     Subtitle="Medicamentos e indicaciones prescritas">
+
+                <ChildContent>
+                    @if (Mascota.Recetas.Count == 0)
+                    {
+                        <AppEmptyState Icon="file-text"
+                                       Title="Sin recetas médicas"
+                                       Description="Las recetas y las indicaciones del veterinario aparecerán aquí cuando se registren." />
+                    }
+                    else
+                    {
+                        <div class="historial-medico__table-wrapper">
+                            <table class="historial-medico__table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Medicamento</th>
+                                        <th>Dosis y frecuencia</th>
+                                        <th>Duración</th>
+                                        <th>Indicaciones</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach (var receta in Mascota.Recetas.OrderByDescending(r => r.Fecha))
+                                    {
+                                        <tr>
+                                            <td>@FormatoFecha(receta.Fecha)</td>
+                                            <td>@receta.Medicamento</td>
+                                            <td>@receta.DosisFrecuencia</td>
+                                            <td>@receta.Duracion</td>
+                                            <td>@receta.Indicaciones</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        <footer class="historial-medico__footer">
+            @if (EsVeterinario || EsAdministrador)
+            {
+                <AppButton Href="/veterinario/historias"
+                           Variant="ButtonVariant.Tertiary"
+                           Icon="chevron-left">
+                    Volver a las historias clínicas
+                </AppButton>
+            }
+            else if (EsRecepcion)
+            {
+                <AppButton Href="/recepcion/mascotas"
+                           Variant="ButtonVariant.Tertiary"
+                           Icon="chevron-left">
+                    Volver a mascotas
+                </AppButton>
+            }
+
+        </footer>
+    }
+</main>
+
+@code {
+    [Parameter]
+    public int IdMascota { get; set; }
+
+    private bool EsVeterinario =>
+        User.IsAuthenticated &&
+        User.Role == UserRole.Veterinario;
+
+    private bool EsAdministrador =>
+        User.IsAuthenticated &&
+        User.Role == UserRole.Administrador;
+
+    // La ruta permite distinguir el acceso desde recepción sin depender
+    // de un nombre concreto para el rol en el enum UserRole.
+    private bool EsRecepcion =>
+        Navigation.ToBaseRelativePath(Navigation.Uri)
+            .StartsWith("recepcion/", StringComparison.OrdinalIgnoreCase);
+
+    private HistorialMascotaDemo? Mascota =>
+        ListaMascotas.FirstOrDefault(m => m.Id == IdMascota);
+
+    private static string FormatoFecha(DateOnly fecha) =>
+        fecha.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture);
+
+    private static string EstadoVacuna(DateOnly? proximaDosis)
+    {
+        if (proximaDosis is null)
+            return "Sin fecha programada";
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+
+        return proximaDosis.Value < hoy
+            ? "Dosis pendiente"
+            : proximaDosis.Value == hoy
+                ? "Dosis programada para hoy"
+                : "Registrada";
+    }
+
+    private async Task ImprimirReporte()
+    {
+        await JS.InvokeVoidAsync("window.print");
+    }
+
+    private sealed record HistorialMascotaDemo(
+        int Id,
+        string Nombre,
+        string Especie,
+        string Raza,
+        List<AtencionDemo> Atenciones,
+        List<VacunacionDemo> Vacunaciones,
+        List<RecetaDemo> Recetas
+    );
+
+    private sealed record AtencionDemo(
+        DateOnly Fecha,
+        string Veterinario,
+        string Motivo,
+        string Diagnostico,
+        string Tratamiento
+    );
+
+    private sealed record VacunacionDemo(
+        string Nombre,
+        DateOnly Fecha,
+        DateOnly? ProximaDosis,
+        string Veterinario
+    );
+
+    private sealed record RecetaDemo(
+        DateOnly Fecha,
+        string Medicamento,
+        string DosisFrecuencia,
+        string Duracion,
+        string Indicaciones
+    );
+
+    private static readonly List<HistorialMascotaDemo> ListaMascotas =
+    [
+        new(
+            1,
+            "Luna",
+            "Perro",
+            "Mestiza",
+            [
+                new(
+                    new DateOnly(2026, 10, 15),
+                    "Dra. Valeria Ruiz",
+                    "Consulta general",
+                    "Evaluación general",
+                    "Control preventivo"
+                ),
+                new(
+                    new DateOnly(2026, 6, 18),
+                    "Dr. Carlos Ramírez",
+                    "Control de vacunación",
+                    "Evaluación preventiva",
+                    "Aplicación de vacuna antirrábica"
+                )
+            ],
+            [
+                new(
+                    "Antirrábica",
+                    new DateOnly(2026, 6, 18),
+                    new DateOnly(2027, 6, 18),
+                    "Dr. Carlos Ramírez"
+                )
+            ],
+            [
+                new(
+                    new DateOnly(2026, 10, 15),
+                    "Antiparasitario",
+                    "Según prescripción veterinaria",
+                    "Según receta",
+                    "Administrar únicamente según indicación del veterinario."
+                )
+            ]
+        ),
+        new(
+            2,
+            "Michi",
+            "Gato",
+            "Doméstico de pelo corto",
+            [
+                new(
+                    new DateOnly(2026, 7, 7),
+                    "Dra. Valeria Ruiz",
+                    "Consulta de vacunación",
+                    "Evaluación preventiva",
+                    "Control preventivo"
+                )
+            ],
+            [
+                new(
+                    "Triple felina",
+                    new DateOnly(2026, 7, 7),
+                    new DateOnly(2026, 11, 7),
+                    "Dra. Valeria Ruiz"
+                )
+            ],
+            []
+        )
+    ];
 }

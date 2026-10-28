@@ -1,0 +1,101 @@
+@page "/recepcion/citas/{Id:int}/{Accion}"
+@page "/cliente/citas/{Id:int}/{Accion}"
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<PageTitle>Acción sobre cita | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>@(Accion == "reprogramar" ? "Reprogramar cita" : "Cancelar cita")</h1>
+            <p>RF018 y RF020 · Los datos de la cita seleccionada son de solo lectura.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    @if (Cita is null)
+    {
+        <AppCard Title="Cita no encontrada">
+            <p>No existe información de ejemplo para la cita indicada.</p>
+            <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver a citas</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Cita seleccionada" Subtitle="RF018 · La cita se identifica automáticamente desde la acción del listado.">
+                <div class="ms-feature-grid">
+                    <label class="ms-demo-field"><span>ID de cita</span><input class="ms-demo-input" value="@Id" readonly /></label>
+                    <label class="ms-demo-field"><span>Mascota</span><input class="ms-demo-input" value="@Cita.Mascota" readonly /></label>
+                    <label class="ms-demo-field"><span>Veterinario</span><input class="ms-demo-input" value="@Cita.Veterinario" readonly /></label>
+                    <label class="ms-demo-field"><span>Tipo de atención</span><input class="ms-demo-input" value="@Cita.Tipo" readonly /></label>
+                    <label class="ms-demo-field"><span>Fecha y hora actuales</span><input class="ms-demo-input" value="@Cita.FechaHora" readonly /></label>
+                    <label class="ms-demo-field"><span>Estado actual</span><input class="ms-demo-input" value="@Cita.Estado" readonly /></label>
+                </div>
+            </AppCard>
+        </div>
+        @if (!AccionPermitida)
+        {
+            <div class="ms-demo-note">
+                <AppIcon Name="check-circle" Size="16" />
+                <span>La acción solicitada no está disponible para una cita en estado @Cita.Estado.</span>
+            </div>
+        }
+        else if (Accion == "reprogramar")
+        {
+            <div class="seccion">
+                <AppCard Title="Nueva fecha y hora" Subtitle="Solo puedes cambiar el horario de la cita; sus otros datos no se modifican.">
+                    <div class="ms-feature-grid">
+                        <label class="ms-demo-field"><span>Nueva fecha</span><input type="date" class="ms-demo-input" @bind="nuevaFecha" /></label>
+                        <label class="ms-demo-field"><span>Nueva hora</span><input type="time" class="ms-demo-input" @bind="nuevaHora" /></label>
+                    </div>
+                    <div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Reprogramar cita</AppButton></div>
+                </AppCard>
+            </div>
+        }
+        else if (Accion == "cancelar")
+        {
+            <div class="seccion">
+                <AppCard Title="Motivo de cancelación" Subtitle="Registra el motivo de la cancelación de la cita seleccionada.">
+                    <label class="ms-demo-field"><span>Motivo de cancelación</span><textarea class="ms-demo-input" @bind="motivo" rows="3" placeholder="Escribe el motivo"></textarea></label>
+                    <div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Cancelar cita</AppButton></div>
+                </AppCard>
+            </div>
+        }
+    }
+    <div class="ms-demo-actions">
+        <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver a citas</AppButton>
+        <AppButton Href="@DisponibilidadHref" Variant="ButtonVariant.Tertiary">Consultar disponibilidad</AppButton>
+    </div>
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public string Accion { get; set; } = "reprogramar";
+
+    private bool EsCliente => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .StartsWith("cliente/", StringComparison.OrdinalIgnoreCase);
+    private string VolverHref => EsCliente ? "/cliente/citas" : "/recepcion/citas";
+    private string DisponibilidadHref => EsCliente ? "/cliente/disponibilidad" : "/recepcion/disponibilidad";
+
+    private CitaDemo? Cita => (EsCliente, Id) switch
+    {
+        (_, 101) => new("Luna", "Dra. Lucía Paredes", "Consulta", "29/10/2026 09:00", "Reservada"),
+        (_, 102) => new("Max", "Dr. Mateo Silva", "Control", "30/10/2026 11:30", "Confirmada"),
+        (true, 103) => new("Luna", "Dr. Mateo Silva", "Vacunación", "22/10/2026 10:00", "Atendida"),
+        (false, 103) => new("Nina", "Dra. Lucía Paredes", "Vacunación", "22/10/2026 10:00", "Atendida"),
+        (false, 104) => new("Milo", "Dr. Mateo Silva", "Consulta", "20/10/2026 16:00", "Cancelada"),
+        _ => null
+    };
+    private bool AccionPermitida => Cita is not null &&
+        ((Accion == "reprogramar" && Cita.Estado == "Reservada") ||
+         (Accion == "cancelar" && (Cita.Estado == "Reservada" || Cita.Estado == "Confirmada")));
+
+    private DateOnly nuevaFecha = DateOnly.FromDateTime(DateTime.Today.AddDays(2));
+    private TimeOnly nuevaHora = new(10, 0);
+    private string motivo = string.Empty;
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+
+    private sealed record CitaDemo(string Mascota, string Veterinario, string Tipo, string FechaHora, string Estado);
+}

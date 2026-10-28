@@ -1,0 +1,11 @@
+@page "/recepcion/clientes"
+@layout MainLayout
+
+<PageTitle>Gestión de clientes | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Gestión de clientes</h1><p>Registra y consulta clientes de la clínica.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Clientes registrados" Subtitle="RF002 y RF013 · La recepcionista gestiona datos personales y contacto, no contraseñas."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Cliente</th><th scope="col">DNI</th><th scope="col">Teléfono</th><th scope="col">Correo</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>Ana Martínez López</td><td>74859612</td><td>987 765 432</td><td>ana@correo.com</td><td>Activo</td><td><AppButton Href="/recepcion/clientes/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton></td></tr><tr><td>Carlos Vega Ruiz</td><td>72654321</td><td>987 456 321</td><td>carlos@correo.com</td><td>Activo</td><td><AppButton Href="/recepcion/clientes/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div><div class="ms-demo-actions"><AppButton Href="/recepcion/clientes/nuevo" Variant="ButtonVariant.Primary">Registrar cliente</AppButton></div>
+</div>

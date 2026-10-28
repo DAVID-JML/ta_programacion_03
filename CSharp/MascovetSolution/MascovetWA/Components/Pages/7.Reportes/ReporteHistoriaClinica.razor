@@ -1,5 +1,14 @@
-﻿<h3>ReporteHistoriaClinica</h3>
+@page "/administrador/reportes/historial"
 
-@code {
-
-}
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Reporte de historia clínica | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Reporte de historia clínica</h1><p>Consolidación cronológica de atenciones de una mascota.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Seleccionar mascota y periodo" Subtitle="RF029 · Reporte del historial con fecha, veterinario, diagnóstico y tratamiento."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Mascota</span><select class="ms-demo-input" ><option value="Luna — Ana Martínez">Luna — Ana Martínez</option><option value="Max — Carlos Vega">Max — Carlos Vega</option></select></label><label class="ms-demo-field"><span>Desde</span><input class="ms-demo-input" type="date" placeholder="" value="" /></label><label class="ms-demo-field"><span>Hasta</span><input class="ms-demo-input" type="date" placeholder="" value="" /></label></div><div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Generar reporte</AppButton><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Exportar PDF</AppButton></div></ChildContent></AppCard></div><div class="seccion"><AppCard Title="Vista previa del historial" Subtitle="Información de ejemplo, no obtenida de la base de datos."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Fecha</th><th scope="col">Veterinario</th><th scope="col">Tipo</th><th scope="col">Diagnóstico</th><th scope="col">Tratamiento</th></tr></thead><tbody><tr><td>23/10/2026</td><td>Dra. Lucía Paredes</td><td>Consulta</td><td>Revisión general</td><td>Control de seguimiento</td></tr></tbody></table></div></ChildContent></AppCard></div>
+</div>
+@code { // Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
+ private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java."); }

@@ -1,0 +1,15 @@
+@page "/recepcion/clientes/nuevo"
+@page "/recepcion/clientes/editar/{Id:int}"
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Registrar / Editar cliente | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Registrar / Editar cliente</h1><p>Formulario de datos personales y contacto para recepción.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Datos del cliente" Subtitle="RF002 y RF013 · La recepcionista no puede consultar ni modificar la contraseña del cliente."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Nombres</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Apellido paterno</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Apellido materno</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>DNI</span><input class="ms-demo-input" type="text" placeholder="" value="" maxlength="8"/></label><label class="ms-demo-field"><span>Teléfono</span><input class="ms-demo-input" type="tel" placeholder="" value="" /></label><label class="ms-demo-field"><span>Correo electrónico</span><input class="ms-demo-input" type="email" placeholder="" value="" /></label></div><div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cliente</AppButton><AppButton Href="/recepcion/clientes" Variant="ButtonVariant.Secondary">Volver</AppButton></div></ChildContent></AppCard></div>
+</div>
+@code { [Parameter] public int? Id {get;set;}
+// Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
+ private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java."); }

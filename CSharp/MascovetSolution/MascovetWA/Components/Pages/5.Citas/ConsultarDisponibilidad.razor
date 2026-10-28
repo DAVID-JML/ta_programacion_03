@@ -1,5 +1,56 @@
-﻿<h3>ConsultarDisponibilidad</h3>
+@page "/cliente/disponibilidad"
+@page "/recepcion/disponibilidad"
+@layout MainLayout
+@inject UserContext User
 
-@code {
-
-}
+<PageTitle>Consultar disponibilidad | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Consultar disponibilidad</h1><p>Busca horarios por especialidad, veterinario o fecha.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Criterio de búsqueda" Subtitle="RF015 · Elige uno de los tres criterios de búsqueda. Los demás se ocultan."><ChildContent>
+    <div class="ms-feature-grid">
+        <label class="ms-demo-field"><span>Buscar por</span>
+        <select class="ms-demo-input" @bind="criterio" @bind:after="LimpiarCriterios">
+            <option value="especialidad">Especialidad</option><option value="veterinario">Veterinario</option><option value="fecha">Fecha</option>
+        </select></label>
+        @if (criterio == "especialidad")
+        {
+            <label class="ms-demo-field"><span>Especialidad</span><select class="ms-demo-input" @bind="especialidad"><option>Medicina general</option><option>Cirugía</option><option>Dermatología</option></select></label>
+        }
+        else if (criterio == "veterinario")
+        {
+            <label class="ms-demo-field"><span>Veterinario</span><select class="ms-demo-input" @bind="veterinario"><option>Dra. Lucía Paredes</option><option>Dr. Mateo Silva</option><option>Dra. Valeria Luna</option></select></label>
+        }
+        else
+        {
+            <label class="ms-demo-field"><span>Fecha</span><input type="date" class="ms-demo-input" @bind="fecha" /></label>
+        }
+    </div><div class="ms-demo-note"><AppIcon Name="check-circle" Size="16" /> <span>Los resultados son ilustrativos. La disponibilidad real y las citas duplicadas se validarán en Java.</span></div></ChildContent></AppCard></div><div class="seccion"><AppCard Title="Veterinarios y horarios" Subtitle="La lista responde al criterio seleccionado en esta demostración.">
+    <AppTable Items="Resultados" ColumnCount="4" Caption="Disponibilidad de atención">
+       <HeaderContent><th scope="col">Veterinario</th><th scope="col">Especialidad</th><th scope="col">Horario</th><th scope="col">Acción</th></HeaderContent>
+       <RowTemplate Context="v"><td>@v.Nombre</td><td>@v.Especialidad</td><td>@v.Horario</td><td><AppButton Href="@(User.Role == UserRole.Recepcionista ? "/recepcion/citas/nueva" : "/cliente/reservar")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Elegir horario</AppButton></td></RowTemplate>
+    </AppTable>
+    </AppCard></div>
+</div>
+@code { private string criterio="especialidad";
+private string especialidad="Medicina general";
+private string veterinario="Dra. Lucía Paredes";
+private DateOnly fecha = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+private sealed record VetDisponible(string Nombre,string Especialidad,string Horario, DayOfWeek Dia);
+private readonly List<VetDisponible> veterinarios = new()
+{
+    new("Dra. Lucía Paredes","Cirugía","Lun 08:00–12:00",DayOfWeek.Monday),
+    new("Dr. Mateo Silva","Medicina general","Mar 09:00–13:00",DayOfWeek.Tuesday),
+    new("Dra. Valeria Luna","Dermatología","Mié 10:00–14:00",DayOfWeek.Wednesday)
+};
+private IEnumerable<VetDisponible> Resultados => criterio switch
+{
+    "especialidad" => veterinarios.Where(v => v.Especialidad == especialidad),
+    "veterinario" => veterinarios.Where(v => v.Nombre == veterinario),
+    "fecha" => veterinarios.Where(v => v.Dia == fecha.DayOfWeek),
+    _ => veterinarios
+};
+private void LimpiarCriterios(){ especialidad="Medicina general"; veterinario="Dra. Lucía Paredes"; fecha=DateOnly.FromDateTime(DateTime.Today.AddDays(1)); }
+ }
