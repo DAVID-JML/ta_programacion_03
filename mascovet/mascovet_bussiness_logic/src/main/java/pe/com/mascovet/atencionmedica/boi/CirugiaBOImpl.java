@@ -5,15 +5,19 @@ import pe.com.mascovet.atencionmedica.dao.CirugiaDAO;
 import pe.com.mascovet.atencionmedica.impl.CirugiaImpl;
 import pe.com.mascovet.atencionmedica.model.Cirugia;
 import pe.com.mascovet.config.TransactionContext;
+import pe.com.mascovet.cita.dao.CitaDAO;
+import pe.com.mascovet.cita.impl.CitaImpl;
 
 import java.util.List;
 
 public class CirugiaBOImpl implements ICirugiaBO {
 
     private CirugiaDAO daoCirugia;
+    private CitaDAO daoCita;
 
     public CirugiaBOImpl() {
         daoCirugia = new CirugiaImpl();
+        daoCita = new CitaImpl();
     }
 
     private void validarCirugia(Cirugia cirugia) {
@@ -48,12 +52,28 @@ public class CirugiaBOImpl implements ICirugiaBO {
         validarCirugia(cirugia);
 
         try {
+            daoCita.marcarAtendida(
+                    cirugia.getCita().getIdCita(),
+                    cirugia.getMascota().getIdMascota()
+            );
+
             int resultado = daoCirugia.insertar(cirugia);
+
+            if (resultado <= 0) {
+                throw new RuntimeException(
+                        "No se pudo registrar la cirugía"
+                );
+            }
+
             TransactionContext.commit();
             return resultado;
+
         } catch (Exception ex) {
             TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
+            throw new RuntimeException(
+                    "Error al registrar la cirugía", ex
+            );
+
         } finally {
             TransactionContext.close();
         }

@@ -8,6 +8,7 @@ import pe.com.mascovet.mascota.model.Mascota;
 import pe.com.mascovet.usuario.model.Cliente;
 import pe.com.mascovet.usuario.model.Recepcionista;
 import pe.com.mascovet.usuario.model.Veterinario;
+import pe.com.mascovet.config.TransactionContext;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -58,7 +59,11 @@ public class CitaImpl implements CitaDAO {
 
     @Override
     public int modificar(Cita cita) {
-        String sql = "UPDATE CITA SET id_mascota=?, fecha=?, hora=?, estado=?, id_usuario=?, id_recepcionista=?, id_veterinario=? WHERE id_cita=?";
+        String sql =
+                "UPDATE CITA SET "
+                        + "id_mascota=?, fecha=?, hora=?, estado=?, "
+                        + "id_usuario=?, id_recepcionista=?, id_veterinario=? "
+                        + "WHERE id_cita=? AND activo = TRUE";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, cita.getMascota().getIdMascota());
@@ -89,21 +94,32 @@ public class CitaImpl implements CitaDAO {
 
     @Override
     public int eliminar(int idCita) {
-        String sql = "DELETE FROM CITA WHERE id_cita=?";
+        String sql =
+                "UPDATE CITA SET activo = FALSE "
+                        + "WHERE id_cita = ? AND activo = TRUE";
+
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, idCita);
+
             return ps.executeUpdate();
+
         } catch (Exception ex) {
-            System.out.println("ERROR AL ELIMINAR CITA: " + ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new RuntimeException(
+                    "Error al eliminar lógicamente la cita", ex
+            );
         }
     }
 
     @Override
     public Cita obtenerPorId(int idCita) {
         Cita cita = null;
-        String sql = "SELECT id_cita, id_mascota, fecha, hora, estado, id_usuario, id_recepcionista, id_veterinario FROM CITA WHERE id_cita=?";
+        String sql =
+                "SELECT id_cita, id_mascota, fecha, hora, estado, "
+                        + "id_usuario, id_recepcionista, id_veterinario "
+                        + "FROM CITA "
+                        + "WHERE id_cita = ? AND activo = TRUE";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, idCita);
@@ -149,7 +165,11 @@ public class CitaImpl implements CitaDAO {
     @Override
     public List<Cita> listarTodos() {
         List<Cita> citas = new ArrayList<>();
-        String sql = "SELECT id_cita, id_mascota, fecha, hora, estado, id_usuario, id_recepcionista, id_veterinario FROM CITA";
+        String sql =
+                "SELECT id_cita, id_mascota, fecha, hora, estado, "
+                        + "id_usuario, id_recepcionista, id_veterinario "
+                        + "FROM CITA "
+                        + "WHERE activo = TRUE";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -189,6 +209,75 @@ public class CitaImpl implements CitaDAO {
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR CITAS: " + ex.getMessage());
             throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void marcarAtendida(int idCita, int idMascota) {
+
+        String consultar =
+                "SELECT estado, id_mascota FROM CITA "
+                        + "WHERE id_cita = ? AND activo = TRUE FOR UPDATE";
+
+        String actualizar =
+                "UPDATE CITA SET estado = ? "
+                        + "WHERE id_cita = ? AND activo = TRUE";
+
+        try {
+            Connection con = TransactionContext.getConnection();
+
+            EstadoCita estadoActual;
+
+            try (PreparedStatement ps = con.prepareStatement(consultar)) {
+                ps.setInt(1, idCita);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new RuntimeException(
+                                "La cita no existe o fue eliminada"
+                        );
+                    }
+
+                    if (rs.getInt("id_mascota") != idMascota) {
+                        throw new RuntimeException(
+                                "La mascota de la atención no coincide "
+                                        + "con la mascota de la cita"
+                        );
+                    }
+
+                    estadoActual = EstadoCita.valueOf(
+                            rs.getString("estado")
+                    );
+                }
+            }
+
+            // Permite agregar otra atención a una cita ya atendida.
+            if (estadoActual == EstadoCita.ATENDIDA) {
+                return;
+            }
+
+            if (estadoActual != EstadoCita.CONFIRMADA) {
+                throw new RuntimeException(
+                        "Solo se puede registrar una atención "
+                                + "para una cita confirmada o ya atendida"
+                );
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(actualizar)) {
+                ps.setString(1, EstadoCita.ATENDIDA.name());
+                ps.setInt(2, idCita);
+
+                if (ps.executeUpdate() != 1) {
+                    throw new RuntimeException(
+                            "No se pudo actualizar el estado de la cita"
+                    );
+                }
+            }
+
+        } catch (Exception ex) {
+            throw new RuntimeException(
+                    "Error al marcar la cita como atendida", ex
+            );
         }
     }
 }

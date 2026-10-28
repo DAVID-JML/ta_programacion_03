@@ -5,15 +5,19 @@ import pe.com.mascovet.atencionmedica.dao.ControlDAO;
 import pe.com.mascovet.atencionmedica.impl.ControlImpl;
 import pe.com.mascovet.atencionmedica.model.Control;
 import pe.com.mascovet.config.TransactionContext;
+import pe.com.mascovet.cita.dao.CitaDAO;
+import pe.com.mascovet.cita.impl.CitaImpl;
 
 import java.util.List;
 
 public class ControlBOImpl implements IControlBO {
 
     private ControlDAO daoControl;
+    private CitaDAO daoCita;
 
     public ControlBOImpl() {
         daoControl = new ControlImpl();
+        daoCita = new CitaImpl();
     }
 
     private void validarControl(Control control) {
@@ -48,12 +52,28 @@ public class ControlBOImpl implements IControlBO {
         validarControl(control);
 
         try {
+            daoCita.marcarAtendida(
+                    control.getCita().getIdCita(),
+                    control.getMascota().getIdMascota()
+            );
+
             int resultado = daoControl.insertar(control);
+
+            if (resultado <= 0) {
+                throw new RuntimeException(
+                        "No se pudo registrar el control"
+                );
+            }
+
             TransactionContext.commit();
             return resultado;
+
         } catch (Exception ex) {
             TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
+            throw new RuntimeException(
+                    "Error al registrar el control", ex
+            );
+
         } finally {
             TransactionContext.close();
         }

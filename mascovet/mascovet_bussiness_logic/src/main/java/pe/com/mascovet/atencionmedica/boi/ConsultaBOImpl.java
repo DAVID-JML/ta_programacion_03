@@ -5,15 +5,18 @@ import pe.com.mascovet.atencionmedica.dao.ConsultaDAO;
 import pe.com.mascovet.atencionmedica.impl.ConsultaImpl;
 import pe.com.mascovet.atencionmedica.model.Consulta;
 import pe.com.mascovet.config.TransactionContext;
+import pe.com.mascovet.cita.dao.CitaDAO;
+import pe.com.mascovet.cita.impl.CitaImpl;
 
 import java.util.List;
 
 public class ConsultaBOImpl implements IConsultaBO {
 
     private ConsultaDAO daoConsulta;
-
+    private CitaDAO daoCita;
     public ConsultaBOImpl() {
         daoConsulta = new ConsultaImpl();
+        daoCita = new CitaImpl();
     }
 
     private void validarConsulta(Consulta consulta) {
@@ -52,12 +55,28 @@ public class ConsultaBOImpl implements IConsultaBO {
         validarConsulta(consulta);
 
         try {
+            daoCita.marcarAtendida(
+                    consulta.getCita().getIdCita(),
+                    consulta.getMascota().getIdMascota()
+            );
+
             int resultado = daoConsulta.insertar(consulta);
+
+            if (resultado <= 0) {
+                throw new RuntimeException(
+                        "No se pudo registrar la consulta"
+                );
+            }
+
             TransactionContext.commit();
             return resultado;
+
         } catch (Exception ex) {
             TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
+            throw new RuntimeException(
+                    "Error al registrar la consulta", ex
+            );
+
         } finally {
             TransactionContext.close();
         }

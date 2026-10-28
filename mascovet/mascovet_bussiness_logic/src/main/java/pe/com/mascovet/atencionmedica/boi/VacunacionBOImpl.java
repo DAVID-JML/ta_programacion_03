@@ -8,6 +8,8 @@ import pe.com.mascovet.atencionmedica.impl.VacunacionImpl;
 import pe.com.mascovet.atencionmedica.model.Vacuna;
 import pe.com.mascovet.atencionmedica.model.Vacunacion;
 import pe.com.mascovet.config.TransactionContext;
+import pe.com.mascovet.cita.dao.CitaDAO;
+import pe.com.mascovet.cita.impl.CitaImpl;
 
 import java.util.List;
 
@@ -15,10 +17,12 @@ public class VacunacionBOImpl implements IVacunacionBO {
 
     private VacunacionDAO daoVacunacion;
     private VacunaDAO daoVacuna;
+    private CitaDAO daoCita;
 
     public VacunacionBOImpl() {
         daoVacunacion = new VacunacionImpl();
         daoVacuna = new VacunaImpl();
+        daoCita = new CitaImpl();
     }
 
     private void validarVacunacion(Vacunacion vacunacion) {
@@ -68,12 +72,28 @@ public class VacunacionBOImpl implements IVacunacionBO {
         validarVacunacion(vacunacion);
 
         try {
+            daoCita.marcarAtendida(
+                    vacunacion.getCita().getIdCita(),
+                    vacunacion.getMascota().getIdMascota()
+            );
+
             int resultado = daoVacunacion.insertar(vacunacion);
+
+            if (resultado <= 0) {
+                throw new RuntimeException(
+                        "No se pudo registrar la vacunación"
+                );
+            }
+
             TransactionContext.commit();
             return resultado;
+
         } catch (Exception ex) {
             TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
+            throw new RuntimeException(
+                    "Error al registrar la vacunación", ex
+            );
+
         } finally {
             TransactionContext.close();
         }
@@ -119,22 +139,51 @@ public class VacunacionBOImpl implements IVacunacionBO {
     @Override
     public int insertarConVacunas(Vacunacion vacunacion) {
         validarVacunacion(vacunacion);
-        if (vacunacion.getVacunas() == null || vacunacion.getVacunas().isEmpty())
-            throw new RuntimeException("La vacunación debe tener al menos una vacuna");
-        for (Vacuna vacuna : vacunacion.getVacunas())
+
+        if (vacunacion.getVacunas() == null
+                || vacunacion.getVacunas().isEmpty()) {
+            throw new RuntimeException(
+                    "La vacunación debe tener al menos una vacuna"
+            );
+        }
+
+        for (Vacuna vacuna : vacunacion.getVacunas()) {
             validarVacuna(vacuna);
+        }
 
         try {
-            daoVacunacion.insertar(vacunacion);
+            daoCita.marcarAtendida(
+                    vacunacion.getCita().getIdCita(),
+                    vacunacion.getMascota().getIdMascota()
+            );
+
+            int resultado = daoVacunacion.insertar(vacunacion);
+
+            if (resultado <= 0) {
+                throw new RuntimeException(
+                        "No se pudo registrar la vacunación"
+                );
+            }
+
             for (Vacuna vacuna : vacunacion.getVacunas()) {
                 vacuna.setVacunacion(vacunacion);
-                daoVacuna.insertar(vacuna);
+
+                if (daoVacuna.insertar(vacuna) <= 0) {
+                    throw new RuntimeException(
+                            "No se pudo registrar una de las vacunas"
+                    );
+                }
             }
+
             TransactionContext.commit();
             return 1;
+
         } catch (Exception ex) {
             TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
+            throw new RuntimeException(
+                    "Error al registrar la vacunación con vacunas", ex
+            );
+
         } finally {
             TransactionContext.close();
         }

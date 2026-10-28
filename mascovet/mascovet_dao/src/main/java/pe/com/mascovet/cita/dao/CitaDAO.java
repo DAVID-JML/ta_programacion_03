@@ -4,5 +4,5 @@ import pe.com.mascovet.cita.model.Cita;
 import pe.com.mascovet.dao.IDAO;
 
 public interface CitaDAO extends IDAO<Cita> {
-
+    void marcarAtendida(int idCita, int idMascota);
 }

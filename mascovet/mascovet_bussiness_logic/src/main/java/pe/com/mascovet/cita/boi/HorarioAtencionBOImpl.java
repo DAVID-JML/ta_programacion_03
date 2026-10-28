@@ -29,16 +29,61 @@ public class HorarioAtencionBOImpl implements IHorarioAtencionBO {
             throw new RuntimeException("La hora de inicio debe ser anterior a la hora de fin");
     }
 
+    private void validarSuperposicion(
+            HorarioAtencion nuevo, int idHorarioExcluir) {
+
+        List<HorarioAtencion> horarios = daoHorarioAtencion.listarTodos();
+
+        for (HorarioAtencion existente : horarios) {
+
+            // Al modificar, no comparar el horario consigo mismo.
+            if (existente.getIdHorario() == idHorarioExcluir) {
+                continue;
+            }
+
+            boolean mismoVeterinario =
+                    nuevo.getVeterinario().getIdUsuario()
+                            == existente.getVeterinario().getIdUsuario();
+
+            boolean mismoDia = nuevo.getDia() == existente.getDia();
+
+            if (!mismoVeterinario || !mismoDia) {
+                continue;
+            }
+
+            boolean seSuperponen =
+                    nuevo.getHoraInicio().isBefore(existente.getHoraFin())
+                            && nuevo.getHoraFin().isAfter(existente.getHoraInicio());
+
+            if (seSuperponen) {
+                throw new RuntimeException(
+                        "El veterinario ya tiene un horario el "
+                                + existente.getDia()
+                                + " de " + existente.getHoraInicio()
+                                + " a " + existente.getHoraFin()
+                                + ". El horario ingresado se superpone."
+                );
+            }
+        }
+    }
+
+
     @Override
     public int insertar(HorarioAtencion horarioAtencion) {
         validarHorarioAtencion(horarioAtencion);
+        validarSuperposicion(horarioAtencion, 0);
+
         try {
             int resultado = daoHorarioAtencion.insertar(horarioAtencion);
             TransactionContext.commit();
             return resultado;
+
         } catch (Exception ex) {
             TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
+            throw new RuntimeException(
+                    "Error al insertar el horario: " + ex.getMessage(), ex
+            );
+
         } finally {
             TransactionContext.close();
         }
@@ -47,8 +92,17 @@ public class HorarioAtencionBOImpl implements IHorarioAtencionBO {
     @Override
     public int modificar(HorarioAtencion horarioAtencion) {
         validarHorarioAtencion(horarioAtencion);
-        if (horarioAtencion.getIdHorario() <= 0)
-            throw new RuntimeException("El identificador del horario no es válido");
+
+        if (horarioAtencion.getIdHorario() <= 0) {
+            throw new RuntimeException(
+                    "El identificador del horario no es válido"
+            );
+        }
+
+        validarSuperposicion(
+                horarioAtencion, horarioAtencion.getIdHorario()
+        );
+
         return daoHorarioAtencion.modificar(horarioAtencion);
     }
 
