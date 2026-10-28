@@ -125,4 +125,22 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void asignarHorarioVeterinarioSP(String dni, String dia, java.sql.Time horaInicio, java.sql.Time horaFin) {
+        String sql = "{CALL asignar_horario_veterinario(?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dni);
+                cs.setString(2, dia);
+                cs.setTime(3, horaInicio);
+                cs.setTime(4, horaFin);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR asignar_horario_veterinario: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

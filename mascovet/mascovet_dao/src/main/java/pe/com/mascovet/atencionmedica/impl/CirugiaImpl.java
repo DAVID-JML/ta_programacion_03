@@ -212,4 +212,24 @@ public class CirugiaImpl implements CirugiaDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void registrarCirugiaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String procedimiento, String indicacionesPostOperatorias) {
+        String sql = "{CALL registrar_cirugia(?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setDate(3, fecha);
+                cs.setTime(4, hora);
+                cs.setString(5, procedimiento);
+                cs.setString(6, indicacionesPostOperatorias);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_cirugia: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

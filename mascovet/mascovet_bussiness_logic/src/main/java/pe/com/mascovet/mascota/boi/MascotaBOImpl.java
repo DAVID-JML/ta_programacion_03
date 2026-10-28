@@ -1,5 +1,6 @@
 package pe.com.mascovet.mascota.boi;
 
+import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.mascota.bo.IMascotaBO;
 import pe.com.mascovet.mascota.dao.MascotaDAO;
 import pe.com.mascovet.mascota.impl.MascotaImpl;
@@ -68,5 +69,32 @@ public class MascotaBOImpl implements IMascotaBO {
         if (idMascota <= 0)
             throw new RuntimeException("El identificador de la mascota no es válido");
         return daoMascota.obtenerPorId(idMascota);
+    }
+
+    @Override
+    public void vincularMascotaSP(String dni, String nombre, java.sql.Date fechaNacimiento, String especie, String raza, String sexo) {
+        try {
+            daoMascota.vincularMascotaSP(dni, nombre, fechaNacimiento, especie, raza, sexo);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en vincularMascotaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
+
+    @Override
+    public void cambiarEstadoMascotaSP(String dniCliente, String nombreMascota, boolean activo) {
+        try {
+            daoMascota.cambiarEstadoMascotaSP(dniCliente, nombreMascota, activo);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en cambiarEstadoMascotaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
     }
 }

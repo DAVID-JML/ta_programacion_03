@@ -165,4 +165,18 @@ public class VacunacionBOImpl implements IVacunacionBO {
             TransactionContext.close();
         }
     }
+
+
+    @Override
+    public void registrarVacunacionSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaAplicacion, java.sql.Date fechaProximaDosis, String dosis) {
+        try {
+            daoVacunacion.registrarVacunacionSP(dniCliente, nombreMascota, fechaCita, horaCita, fechaAplicacion, fechaProximaDosis, dosis);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarVacunacionSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

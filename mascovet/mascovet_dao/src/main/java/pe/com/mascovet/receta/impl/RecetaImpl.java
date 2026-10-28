@@ -161,4 +161,24 @@ public class RecetaImpl implements RecetaDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void registrarRecetaSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaReceta, String indicaciones) {
+        String sql = "{CALL registrar_receta(?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setDate(3, fechaCita);
+                cs.setTime(4, horaCita);
+                cs.setDate(5, fechaReceta);
+                cs.setString(6, indicaciones);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_receta: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

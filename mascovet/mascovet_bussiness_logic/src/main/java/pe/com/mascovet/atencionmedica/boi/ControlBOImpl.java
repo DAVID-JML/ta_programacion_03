@@ -115,4 +115,17 @@ public class ControlBOImpl implements IControlBO {
             throw new RuntimeException("El identificador del control no es válido");
         return daoControl.obtenerPorId(idControl);
     }
+
+    @Override
+    public void registrarControlSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String evolucion, String indicaciones) {
+        try {
+            daoControl.registrarControlSP(dniCliente, nombreMascota, fecha, hora, evolucion, indicaciones);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarControlSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

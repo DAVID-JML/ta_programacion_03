@@ -142,4 +142,18 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
             TransactionContext.close();
         }
     }
+
+
+    @Override
+    public void asignarVeterinarioSP(String dni, String numColegiatura, String especialidad) {
+        try {
+            daoVeterinario.asignarVeterinarioSP(dni, numColegiatura, especialidad);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en asignarVeterinarioSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

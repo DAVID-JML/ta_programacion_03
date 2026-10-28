@@ -96,4 +96,17 @@ public class AdministradorBOImpl implements IAdministradorBO {
             throw new RuntimeException("El identificador del administrador no es válido");
         return daoAdministrador.obtenerPorId(idAdministrador);
     }
+
+    @Override
+    public void asignarAdministradorSP(String dni, String cargo) {
+        try {
+            daoAdministrador.asignarAdministradorSP(dni, cargo);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en asignarAdministradorSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

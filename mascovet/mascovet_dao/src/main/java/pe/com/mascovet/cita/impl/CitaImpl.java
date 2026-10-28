@@ -284,4 +284,24 @@ public class CitaImpl implements CitaDAO {
             );
         }
     }
+
+    @Override
+    public void registrarCitaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String estado, String dniVeterinario) {
+        String sql = "{CALL registrar_cita(?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setDate(3, fecha);
+                cs.setTime(4, hora);
+                cs.setString(5, estado);
+                cs.setString(6, dniVeterinario);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_cita: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

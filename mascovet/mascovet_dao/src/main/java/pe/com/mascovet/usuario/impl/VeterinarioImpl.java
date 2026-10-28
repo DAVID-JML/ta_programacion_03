@@ -135,4 +135,21 @@ public class VeterinarioImpl implements VeterinarioDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void asignarVeterinarioSP(String dni, String numColegiatura, String especialidad) {
+        String sql = "{CALL asignar_veterinario(?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dni);
+                cs.setString(2, numColegiatura);
+                cs.setString(3, especialidad);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR asignar_veterinario: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

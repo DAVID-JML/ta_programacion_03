@@ -1,6 +1,7 @@
 package pe.com.mascovet.receta.impl;
 
 import pe.com.mascovet.config.DBManager;
+import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.receta.dao.MedicamentoDAO;
 import pe.com.mascovet.receta.model.Medicamento;
 
@@ -106,6 +107,25 @@ public class MedicamentoImpl implements MedicamentoDAO {
             return medicamentos;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR MEDICAMENTOS: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+
+    public void registrarMedicamentoSP(String nombre, String descripcion, double monto, java.sql.Date fechaVencimiento) {
+        String sql = "{CALL registrar_medicamento(?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, nombre);
+                cs.setString(2, descripcion);
+                cs.setDouble(3, monto);
+                cs.setDate(4, fechaVencimiento);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_medicamento: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

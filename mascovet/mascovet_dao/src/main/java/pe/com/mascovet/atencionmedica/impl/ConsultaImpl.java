@@ -216,4 +216,25 @@ public class ConsultaImpl implements ConsultaDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void registrarConsultaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String motivoConsulta, String diagnostico, String tratamiento) {
+        String sql = "{CALL registrar_consulta(?, ?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setDate(3, fecha);
+                cs.setTime(4, hora);
+                cs.setString(5, motivoConsulta);
+                cs.setString(6, diagnostico);
+                cs.setString(7, tratamiento);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_consulta: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

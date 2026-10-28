@@ -124,4 +124,17 @@ public class HorarioAtencionBOImpl implements IHorarioAtencionBO {
             throw new RuntimeException("El identificador del horario no es válido");
         return daoHorarioAtencion.obtenerPorId(idHorario);
     }
+
+    @Override
+    public void asignarHorarioVeterinarioSP(String dni, String dia, java.sql.Time horaInicio, java.sql.Time horaFin) {
+        try {
+            daoHorarioAtencion.asignarHorarioVeterinarioSP(dni, dia, horaInicio, horaFin);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en asignarHorarioVeterinarioSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }
