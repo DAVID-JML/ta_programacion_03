@@ -1,5 +1,14 @@
-﻿<h3>GestionarUsuarios</h3>
-
-@code {
-
-}
+﻿@page "/administrador/cuentas"
+@page "/administrador/cuentas/gestionar"
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Cuentas y roles | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Cuentas y roles</h1><p>Consulta cuentas, cambia los roles y controla el acceso al sistema.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Cuentas del sistema" Subtitle="RF007 · Habilitar, deshabilitar o actualizar el rol del personal."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Usuario</th><th scope="col">Rol actual</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>admin</td><td>Administrador</td><td>Habilitado</td><td><AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton></td></tr><tr><td>vet.paredes</td><td>Veterinario</td><td>Habilitado</td><td><AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton></td></tr><tr><td>recepcion</td><td>Recepcionista</td><td>Habilitado</td><td><AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div><div class="seccion"><AppCard Title="Administrar acceso" Subtitle="Los cambios se muestran solo como demostración visual."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Nombre de usuario</span><input class="ms-demo-input" type="text" placeholder="" value="vet.paredes" /></label><label class="ms-demo-field"><span>Rol</span><select class="ms-demo-input" ><option value="Administrador">Administrador</option><option value="Veterinario">Veterinario</option><option value="Recepcionista">Recepcionista</option></select></label><label class="ms-demo-field"><span>Acceso</span><select class="ms-demo-input" ><option value="Habilitado">Habilitado</option><option value="Deshabilitado">Deshabilitado</option></select></label></div><div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton></div></ChildContent></AppCard></div>
+</div>
+@code { // Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
+ private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java."); }

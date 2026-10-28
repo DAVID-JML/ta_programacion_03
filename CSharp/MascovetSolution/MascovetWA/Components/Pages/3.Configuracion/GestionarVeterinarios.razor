@@ -1,5 +1,19 @@
-﻿<h3>GestionarVeterinarios</h3>
-
-@code {
-
+﻿@page "/administrador/personal"
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Gestión de personal | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Gestión de personal</h1><p>Administración de veterinarios y recepcionistas.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Registrar personal" Subtitle="RF001 · Define el rol antes de completar el formulario."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Tipo de personal</span><select class="ms-demo-input" @bind="tipoPersonal" ><option value="Veterinario">Veterinario</option><option value="Recepcionista">Recepcionista</option></select></label><label class="ms-demo-field"><span>Nombres</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Apellido paterno</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Apellido materno</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>DNI</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Teléfono</span><input class="ms-demo-input" type="tel" placeholder="" value="" /></label><label class="ms-demo-field"><span>Correo electrónico</span><input class="ms-demo-input" type="email" placeholder="" value="" /></label><label class="ms-demo-field"><span>Nombre de usuario</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Contraseña</span><input class="ms-demo-input" type="password" placeholder="" value="" /></label></div>
+@if (tipoPersonal == "Veterinario")
+{
+    <div class="ms-feature-grid"><label class="ms-demo-field"><span>Especialidad</span><select class="ms-demo-input" ><option value="Medicina general">Medicina general</option><option value="Cirugía">Cirugía</option><option value="Dermatología">Dermatología</option><option value="Odontología">Odontología</option></select></label><label class="ms-demo-field"><span>Número de colegiatura</span><input class="ms-demo-input" type="text" placeholder="" value="" maxlength="10"/></label></div>
 }
+<div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar personal</AppButton><AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Limpiar formulario</AppButton></div></ChildContent></AppCard></div><div class="seccion"><AppCard Title="Personal registrado" Subtitle="RF006 · Consulta, modifica o inactiva cuentas del personal."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Nombre completo</th><th scope="col">Rol</th><th scope="col">Teléfono</th><th scope="col">Correo</th><th scope="col">Especialidad</th><th scope="col">Colegiatura</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>Lucía Paredes Ríos</td><td>Veterinario</td><td>987 654 321</td><td>lucia@mascovet.pe</td><td>Cirugía</td><td>CMPV-125</td><td>Activo</td><td><AppButton Href="/administrador/personal/ver/1" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton> <AppButton Href="/administrador/personal/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton></td></tr><tr><td>Diego Ruiz Soto</td><td>Recepcionista</td><td>955 321 456</td><td>diego@mascovet.pe</td><td>—</td><td>—</td><td>Activo</td><td><AppButton Href="/administrador/personal/ver/2" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton> <AppButton Href="/administrador/personal/editar/2" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div>
+</div>
+@code { // Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
+ private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+ private string tipoPersonal="Veterinario"; }

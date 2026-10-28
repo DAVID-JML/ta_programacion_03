@@ -1,0 +1,90 @@
+﻿@page "/administrador/atenciones/ver/{Id:int}"
+@page "/administrador/atenciones/editar/{Id:int}"
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<PageTitle>@(EsEdicion ? "Editar atención" : "Ver atención") | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>@(EsEdicion ? "Editar atención" : "Ver atención")</h1>
+            <p>RF009 · @(EsEdicion ? "Formulario de la atención seleccionada." : "Información de la atención en modo solo lectura.")</p>
+        </div>
+        <span class="ms-demo-pill">@(EsEdicion ? "Vista de demostración" : "Solo lectura")</span>
+    </header>
+    @if (Atencion is null)
+    {
+        <AppCard Title="Atención no encontrada">
+            <p>El registro solicitado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Detalle de atención" Subtitle="@(EsEdicion ? "Campos de edición ilustrativos; no se registran cambios." : "Los datos no pueden modificarse desde esta vista.")">
+                <div class="ms-feature-grid">
+                    <label class="ms-demo-field"><span>ID de atención</span><input class="ms-demo-input" value="@($"AT-{Id}")" readonly /></label>
+                    <label class="ms-demo-field"><span>Mascota</span><input class="ms-demo-input" value="@Atencion.Mascota" readonly /></label>
+                    @if (EsEdicion)
+                    {
+                        <label class="ms-demo-field"><span>Tipo de atención</span>
+                            <select class="ms-demo-input">
+                                <option selected="@(Atencion.Tipo == "Consulta")">Consulta</option>
+                                <option selected="@(Atencion.Tipo == "Control")">Control</option>
+                                <option selected="@(Atencion.Tipo == "Cirugía")">Cirugía</option>
+                                <option selected="@(Atencion.Tipo == "Vacunación")">Vacunación</option>
+                            </select>
+                        </label>
+                    }
+                    else
+                    {
+                        <label class="ms-demo-field"><span>Tipo de atención</span><input class="ms-demo-input" value="@Atencion.Tipo" readonly /></label>
+                    }
+                    <label class="ms-demo-field"><span>Veterinario</span><input class="ms-demo-input" value="@Atencion.Veterinario" readonly /></label>
+                    @if (EsEdicion)
+                    {
+                        <label class="ms-demo-field"><span>Fecha de atención</span><input class="ms-demo-input" type="date" value="@Atencion.FechaISO" /></label>
+                    }
+                    else
+                    {
+                        <label class="ms-demo-field"><span>Fecha de atención</span><input class="ms-demo-input" value="@Atencion.Fecha" readonly /></label>
+                    }
+                    <label class="ms-demo-field ms-demo-wide"><span>Observaciones</span>
+                        <textarea class="ms-demo-input" rows="3" readonly="@(!EsEdicion)">@Atencion.Observaciones</textarea>
+                    </label>
+                </div>
+                <div class="ms-demo-actions">
+                    @if (EsEdicion)
+                    {
+                        <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
+                        <AppButton Href="@($"/administrador/atenciones/ver/{Id}")" Variant="ButtonVariant.Tertiary">Ver detalle</AppButton>
+                    }
+                    else
+                    {
+                        <AppButton Href="@($"/administrador/atenciones/editar/{Id}")" Variant="ButtonVariant.Secondary">Editar</AppButton>
+                    }
+                    <AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+    private bool EsEdicion => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .StartsWith("administrador/atenciones/editar/", StringComparison.OrdinalIgnoreCase);
+
+    // Datos de demostración: el ID de la ruta determina el registro visible.
+    private AtencionDemo? Atencion => Id switch
+    {
+        101 => new("Luna", "Consulta", "Dra. Lucía Paredes", "23/10/2026", "2026-10-23", "Revisión general y control de evolución."),
+        102 => new("Max", "Vacunación", "Dr. Mateo Silva", "25/10/2026", "2026-10-25", "Aplicación de vacuna y control de próximas dosis."),
+        _ => null
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+
+    private sealed record AtencionDemo(string Mascota, string Tipo, string Veterinario, string Fecha, string FechaISO, string Observaciones);
+}

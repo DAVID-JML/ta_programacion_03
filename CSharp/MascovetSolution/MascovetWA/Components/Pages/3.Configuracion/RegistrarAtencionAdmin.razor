@@ -1,0 +1,41 @@
+﻿@page "/administrador/atenciones/nueva"
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Gestionar atención | Mascovet</PageTitle>
+<div class="ms-feature-page">
+  <header class="ms-feature-header"><div><h1>Gestionar atención médica</h1><p>RF009 · Registra, modifica o inactiva atenciones por tipo.</p></div><span class="ms-demo-pill">Vista de demostración</span></header>
+  <div class="seccion"><AppCard Title="Datos generales de la atención" Subtitle="Campos compartidos de las clases de atención médica.">
+    <div class="ms-feature-grid">
+      <label class="ms-demo-field"><span>Tipo de atención</span><select class="ms-demo-input" @bind="tipo"><option>Consulta</option><option>Control</option><option>Cirugía</option><option>Vacunación</option></select></label>
+      <label class="ms-demo-field"><span>Cita asociada</span><select class="ms-demo-input"><option>101 — Luna</option><option>102 — Max</option></select></label>
+      <label class="ms-demo-field"><span>Peso actual (kg)</span><input type="number" step="0.01" min="0" class="ms-demo-input" /></label>
+      <label class="ms-demo-field"><span>Hora de inicio</span><input type="time" class="ms-demo-input" /></label>
+      <label class="ms-demo-field"><span>Hora de fin</span><input type="time" class="ms-demo-input" /></label>
+      <label class="ms-demo-field ms-demo-wide"><span>Alergias</span><textarea rows="2" class="ms-demo-input"></textarea></label>
+      <label class="ms-demo-field ms-demo-wide"><span>Observaciones</span><textarea rows="2" class="ms-demo-input"></textarea></label>
+    </div>
+    </AppCard></div>
+  <div class="seccion"><AppCard Title="Datos específicos" Subtitle="Los campos cambian según el tipo de atención seleccionado.">
+  <div class="ms-feature-grid">
+  @if (tipo == "Consulta") {
+    <label class="ms-demo-field ms-demo-wide"><span>Motivo de consulta</span><textarea class="ms-demo-input"></textarea></label>
+    <label class="ms-demo-field ms-demo-wide"><span>Diagnóstico</span><textarea class="ms-demo-input"></textarea></label>
+    <label class="ms-demo-field ms-demo-wide"><span>Tratamiento</span><textarea class="ms-demo-input"></textarea></label>
+  } else if (tipo == "Control") {
+    <label class="ms-demo-field ms-demo-wide"><span>Evolución</span><textarea class="ms-demo-input"></textarea></label>
+    <label class="ms-demo-field ms-demo-wide"><span>Indicaciones</span><textarea class="ms-demo-input"></textarea></label>
+  } else if (tipo == "Cirugía") {
+    <label class="ms-demo-field ms-demo-wide"><span>Procedimiento</span><textarea class="ms-demo-input"></textarea></label>
+    <label class="ms-demo-field ms-demo-wide"><span>Indicaciones postoperatorias</span><textarea class="ms-demo-input"></textarea></label>
+  } else {
+    <label class="ms-demo-field"><span>Vacuna aplicada</span><select class="ms-demo-input"><option>Antirrábica</option><option>Séxtuple</option><option>Triple felina</option></select></label>
+    <label class="ms-demo-field"><span>Fecha de aplicación</span><input type="date" class="ms-demo-input" /></label>
+    <label class="ms-demo-field"><span>Próxima dosis</span><input type="date" class="ms-demo-input" /></label>
+  }
+  </div><div class="ms-demo-actions"><AppButton OnClick="MostrarAviso">Guardar atención</AppButton><AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton></div>
+  </AppCard></div>
+</div>
+@code {
+  private string tipo = "Consulta";
+  private void MostrarAviso() => Toast.Info("La operación es demostrativa. Se integrará con el backend Java.");
+}

@@ -10,7 +10,7 @@ CALL asignar_veterinario(
 );
 CALL asignar_recepcionista(
     '34567812',
-    'Mañana'
+    'MANANA'
 );
 CALL asignar_administrador(
     '45678123',
