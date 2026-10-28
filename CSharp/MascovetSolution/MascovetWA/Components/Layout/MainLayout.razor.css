@@ -1,0 +1,113 @@
+.ms-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.ms-sidebar {
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    flex: 0 0 var(--ms-sidebar-width);
+    width: var(--ms-sidebar-width);
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--ms-nav-bg);
+    border-right: var(--ms-border-width) solid var(--ms-color-border);
+}
+
+.ms-main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.ms-content {
+    flex: 1 0 auto;
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin: 0 auto;
+    padding: var(--ms-space-8) var(--ms-space-10);
+}
+
+    .ms-content:focus {
+        outline: none;
+    }
+
+.ms-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--ms-space-2) var(--ms-space-6);
+    padding: var(--ms-space-4) var(--ms-space-10);
+    border-top: var(--ms-border-width) solid var(--ms-color-border);
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
+}
+
+.ms-skip-link {
+    position: absolute;
+    left: var(--ms-space-4);
+    top: -4rem;
+    z-index: 2000;
+    padding: var(--ms-space-2) var(--ms-space-4);
+    background: var( --ms-nav-bg);
+    color: var(--ms-color-primary-dark);
+    border-radius: var(--ms-radius-control);
+    box-shadow: var(--ms-shadow-lg);
+    font-weight: var(--ms-font-weight-semibold);
+}
+
+    .ms-skip-link:focus {
+        top: var(--ms-space-4);
+    }
+
+.ms-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+    min-height: 82px;
+    padding: var(--ms-space-4) var(--ms-space-10);
+    background: var(--ms-nav-bg);
+    border-bottom: var(--ms-border-width) solid var(--ms-color-border);
+}
+
+.ms-topbar__caption {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
+    font-weight: var(--ms-font-weight-semibold);
+    letter-spacing: 0.06em;
+}
+
+.ms-topbar p {
+    margin-top: 4px;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+}
+
+.ms-topbar__user {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-3);
+}
+
+    .ms-topbar__user strong, .ms-topbar__user small {
+        display: block;
+    }
+
+    .ms-topbar__user small {
+        margin-top: 3px;
+        color: var(--ms-color-text-muted);
+    }
+
+.ms-topbar__avatar {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--ms-nav-active-bg);
+    color: var(--ms-nav-active-text);
+    font-weight: var(--ms-font-weight-bold);
+}

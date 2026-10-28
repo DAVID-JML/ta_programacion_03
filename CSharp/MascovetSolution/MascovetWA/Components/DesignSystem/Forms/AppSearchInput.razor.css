@@ -1,0 +1,31 @@
+.ms-search { position: relative; display: flex; align-items: center; }
+
+.ms-search__input { --ms-control-padding-x: 2.5rem; }
+
+/* Oculta el botón de limpiar nativo: se usa el propio del componente */
+.ms-search__input::-webkit-search-cancel-button { display: none; }
+
+.ms-search__icon {
+    position: absolute;
+    left: var(--ms-space-3);
+    display: inline-flex;
+    color: var(--ms-color-text-muted);
+    pointer-events: none;
+}
+
+.ms-search__clear {
+    position: absolute;
+    right: var(--ms-space-1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: var(--ms-radius-control);
+    background: transparent;
+    color: var(--ms-color-text-muted);
+    cursor: pointer;
+}
+
+.ms-search__clear:hover { background: var(--ms-color-background-soft); color: var(--ms-color-text); }

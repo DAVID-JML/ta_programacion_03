@@ -1,0 +1,18 @@
+<span class="ms-badge ms-badge--@Variant.ToCss()">
+    @if (ShowIcon && Variant.IconName() is { } icon)
+    {
+        <AppIcon Name="@icon" Size="14" />
+    }
+    @ChildContent
+</span>
+
+@code {
+    /// <summary>Variante semántica. Neutral para categorías sin significado de estado.</summary>
+    [Parameter] public SemanticVariant Variant { get; set; } = SemanticVariant.Neutral;
+
+    /// <summary>Muestra el icono de la variante junto al texto (refuerza el significado más allá del color).</summary>
+    [Parameter] public bool ShowIcon { get; set; } = true;
+
+    /// <summary>Texto del badge. Siempre debe indicar el estado con palabras.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

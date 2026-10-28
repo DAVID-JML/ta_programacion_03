@@ -1,0 +1,75 @@
+﻿@page "/cliente/mascotas/{IdMascota:int}/historial"
+@layout MainLayout
+
+<PageTitle>Historial médico | Mascovet</PageTitle>
+
+<div class="historial-medico">
+
+    <header class="historial-medico__header">
+        <div>
+            <h1>Historial médico</h1>
+            <p>
+                Consulta los registros clínicos, las vacunaciones y
+                las recetas de tus mascotas.
+            </p>
+        </div>
+
+        <AppButton Href="/cliente/mascotas"
+                   Variant="ButtonVariant.Secondary"
+                   Icon="heart">
+            Mis mascotas
+        </AppButton>
+    </header>
+
+    <section class="historial-medico__sections"
+             aria-label="Secciones del historial médico">
+
+        <article class="historial-medico__section">
+            <AppCard Title="Atenciones médicas"
+                     Subtitle="Consultas, controles y cirugías">
+
+                <ChildContent>
+                    <div class="historial-medico__empty">
+                        <AppEmptyState Icon="file-text"
+                                       Title="Atenciones pendientes de carga"
+                                       Description="Las fechas de atención, los diagnósticos, las observaciones y los tratamientos aparecerán aquí cuando se carguen los registros." />
+                    </div>
+                </ChildContent>
+            </AppCard>
+        </article>
+
+        <article class="historial-medico__section">
+            <AppCard Title="Vacunaciones"
+                     Subtitle="Vacunas aplicadas y próximas dosis">
+
+                <ChildContent>
+                    <div class="historial-medico__empty">
+                        <AppEmptyState Icon="check-circle"
+                                       Title="Vacunaciones pendientes de carga"
+                                       Description="Aquí podrás consultar las vacunas registradas, sus fechas de aplicación y las próximas dosis indicadas." />
+                    </div>
+                </ChildContent>
+            </AppCard>
+        </article>
+
+        <article class="historial-medico__section">
+            <AppCard Title="Recetas médicas"
+                     Subtitle="Medicamentos y tratamientos prescritos">
+
+                <ChildContent>
+                    <div class="historial-medico__empty">
+                        <AppEmptyState Icon="file-text"
+                                       Title="Recetas pendientes de carga"
+                                       Description="Aquí aparecerán los medicamentos prescritos, las dosis, la frecuencia, la duración y las indicaciones del veterinario." />
+                    </div>
+                </ChildContent>
+            </AppCard>
+        </article>
+
+    </section>
+
+</div>
+@code{
+    [Parameter]
+    public int IdMascota { get; set; }
+}

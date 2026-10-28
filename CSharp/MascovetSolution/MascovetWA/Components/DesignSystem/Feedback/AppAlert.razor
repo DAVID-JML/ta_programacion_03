@@ -1,0 +1,28 @@
+<div class="ms-alert ms-alert--@Variant.ToCss()" role="@Role" @attributes="AdditionalAttributes">
+    <span class="ms-alert__icon"><AppIcon Name="@(Variant.IconName() ?? "info")" Size="20" /></span>
+    <div class="ms-alert__content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <p class="ms-alert__title">@Title</p>
+        }
+        <div class="ms-alert__message">
+            <span class="ms-visually-hidden">@Variant.Label(): </span>@ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Success, Warning, Error, Info (o Neutral).</summary>
+    [Parameter] public SemanticVariant Variant { get; set; } = SemanticVariant.Info;
+
+    /// <summary>Título opcional en negrita.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Mensaje de la alerta.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // Errores y advertencias se anuncian de inmediato; el resto de forma cortés.
+    private string Role => Variant is SemanticVariant.Error or SemanticVariant.Warning ? "alert" : "status";
+}

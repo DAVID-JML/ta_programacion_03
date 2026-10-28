@@ -1,0 +1,162 @@
+﻿@page "/"
+@layout AuthLayout
+@inject AuthService Auth
+@inject UserContext User
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Iniciar sesión | Mascovet</PageTitle>
+
+<main class="login-page">
+    <section class="login-panel" aria-labelledby="login-title">
+
+        <header class="login-brand">
+            <div class="login-logo" aria-hidden="true">
+                <span>🐾</span>
+            </div>
+
+            <h1>Mascovet</h1>
+            <p class="login-tagline">
+                Cuidamos a quienes más quieres.
+            </p>
+        </header>
+
+        <div class="login-heading">
+            <h2 id="login-title">¡Bienvenido!</h2>
+            <p>Ingresa tus datos para acceder a tu cuenta.</p>
+        </div>
+
+        <EditForm Model="@modelo" OnValidSubmit="@IniciarSesion">
+            <DataAnnotationsValidator />
+
+            <div class="login-fields">
+                <AppInput TValue="string"
+                          Label="Usuario o correo electrónico"
+                          Type="text"
+                          Placeholder="usuario o nombre@correo.com"
+                          Required="true"
+                          @bind-Value="modelo.Usuario"
+                          autocomplete="username" />
+                
+                <AppInput TValue="string"
+                          Label="Contraseña"
+                          Type="password"
+                          Placeholder="Ingresa tu contraseña"
+                          Required="true"
+                          @bind-Value="modelo.Contrasena"
+                          autocomplete="current-password" />
+            </div>
+
+            <div class="login-options">
+                <a href="#" @onclick="AbrirModalRecuperacion"
+                   @onclick:preventDefault="true">
+                    ¿Olvidaste tu contraseña?
+                </a>
+            </div>
+
+            <div class="login-submit">
+                <AppButton Type="submit"
+                           Variant="ButtonVariant.Primary"
+                           Size="ButtonSize.Medium"
+                           Disabled="@enviando"
+                           Loading="@enviando">
+                    Iniciar sesión
+                </AppButton>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <p class="login-feedback" role="status">
+                    @mensaje
+                </p>
+            }
+        </EditForm>
+
+        <footer class="login-footer">
+            <span>¿Todavía no tienes una cuenta?</span>
+            <a href="/registro">Crear una cuenta</a>
+        </footer>
+    </section>
+
+    <p class="login-copyright">
+        © 2026 Mascovet. Todos los derechos reservados.
+    </p>
+    <AppModal @bind-Visible="mostrarModalRecuperacion"
+          Title="Recuperar contraseña"
+          ConfirmText="Enviar instrucciones"
+          CancelText="Cancelar"
+          OnConfirm="EnviarSolicitudRecuperacion">
+
+    <p>Ingresa tu correo electrónico para recuperar tu cuenta.</p>
+
+    <AppInput TValue="string"
+              Label="Correo electrónico"
+              Type="email"
+              Placeholder="nombre@correo.com"
+              Required="true"
+              @bind-Value="correoRecuperacion"
+              autocomplete="email" />
+
+    @if (!string.IsNullOrWhiteSpace(errorRecuperacion))
+    {
+        <p class="login-feedback">@errorRecuperacion</p>
+    }
+    </AppModal>
+</main>
+
+@code {
+    private LoginModel modelo = new();
+    private bool enviando;
+    private string mensaje = string.Empty;
+    private bool mostrarModalRecuperacion;
+    private string correoRecuperacion = string.Empty;
+    private string errorRecuperacion = string.Empty;
+    
+    private void AbrirModalRecuperacion()
+    {
+        errorRecuperacion = string.Empty;
+        mostrarModalRecuperacion = true;
+    }
+
+    private void EnviarSolicitudRecuperacion()
+    {
+        if (!new System.ComponentModel.DataAnnotations
+            .EmailAddressAttribute().IsValid(correoRecuperacion))
+        {
+            errorRecuperacion = "Ingresa un correo electrónico válido.";
+            return;
+        }
+
+        mostrarModalRecuperacion = false;
+        mensaje = "Formulario validado. Falta conectar el servicio de recuperación.";
+    }
+    private async Task IniciarSesion()
+    {
+        enviando = true;
+        mensaje = string.Empty;
+        await Task.Delay(400); // simula latencia; se quita con el servicio real
+
+        var resultado = Auth.Validar(modelo.Usuario, modelo.Contrasena);
+        enviando = false;
+
+        if (resultado is null)
+        {
+            mensaje = "Usuario o contraseña incorrectos.";
+            modelo.Contrasena = string.Empty;
+            return;
+        }
+
+        User.SignIn(resultado.Role, resultado.Nombre);
+        Navigation.NavigateTo(NavCatalog.HomeFor(resultado.Role));
+    }
+
+    private sealed class LoginModel
+    {
+        [Required(ErrorMessage = "Ingresa tu usuario o correo electrónico.")]
+        public string Usuario { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu contraseña.")]
+        public string Contrasena { get; set; } = string.Empty;
+    }
+    
+}

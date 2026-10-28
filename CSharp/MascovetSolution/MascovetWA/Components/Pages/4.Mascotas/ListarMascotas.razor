@@ -1,0 +1,303 @@
+﻿@page "/cliente/mascotas"
+@layout MainLayout
+
+@using System.Globalization
+@using MascovetWA.Components.Layout
+@using MascovetWA.Components.DesignSystem
+@using MascovetWA.Components.DesignSystem.Buttons
+@using MascovetWA.Components.DesignSystem.DataDisplay
+@using MascovetWA.Components.DesignSystem.Forms
+@using MascovetWA.Components.DesignSystem.Icons
+
+<PageTitle>Mis mascotas | Mascovet</PageTitle>
+
+<div class="pets-page">
+    <header class="pets-page__header">
+        <div class="pets-page__heading">
+            <span class="pets-page__eyebrow">MI ESPACIO MASCOVET</span>
+            <h1>Mis mascotas</h1>
+            <p>
+                Consulta la información de tus compañeros y mantén
+                al día el seguimiento de su salud.
+            </p>
+        </div>
+
+        <div class="pets-page__header-action">
+            <AppButton Href="/cliente/mascotas/nueva" Icon="plus">
+                Registrar mascota
+            </AppButton>
+        </div>
+    </header>
+
+    @{
+        var mascotasVisibles = MascotasFiltradas.ToList();
+    }
+
+    <section class="pets-toolbar"
+             aria-label="Buscar y consultar mascotas">
+
+        <div class="pets-results" aria-live="polite">
+            <div class="pets-results__count">
+                <strong>@mascotasVisibles.Count</strong>
+                <span>
+                    @(mascotasVisibles.Count == 1
+                        ? "mascota encontrada"
+                        : "mascotas encontradas")
+                </span>
+            </div>
+
+            <p>
+                de @ListaMascotas.Count registradas
+            </p>
+        </div>
+
+        <div class="pets-search">
+            <AppSearchInput @bind-Value="Busqueda"
+                            Id="buscar-mascotas"
+                            Label="Buscar mascota"
+                            Placeholder="Nombre, especie o raza"
+                            AriaLabel="Buscar mascotas por nombre, especie o raza" />
+        </div>
+    </section>
+
+    @if (ListaMascotas.Count == 0)
+    {
+        <section class="pets-empty">
+            <AppEmptyState Icon="heart"
+                           Title="Aún no tienes mascotas registradas"
+                           Description="Registra a tu compañero para poder consultar su información.">
+                <AppButton Href="/cliente/mascotas/nueva" Icon="plus">
+                    Registrar mascota
+                </AppButton>
+            </AppEmptyState>
+        </section>
+    }
+    else if (mascotasVisibles.Count == 0)
+    {
+        <section class="pets-empty">
+            <AppEmptyState Icon="search"
+                           Title="No encontramos mascotas"
+                           Description="Prueba con otro nombre, especie o raza." />
+        </section>
+    }
+    else
+    {
+        <section class="pets-grid" aria-label="Mis mascotas">
+            @foreach (var mascota in MascotasFiltradas)
+            {
+                <article class="pet-card" @key="mascota.Id">
+                    <AppCard Title="@mascota.Nombre"
+                             Subtitle="@($"{mascota.Especie} · {mascota.Raza}")">
+
+                        <Actions>
+                            <div class="pet-card__avatar" aria-hidden="true">
+                                <AppIcon Name="@ObtenerIconoEspecie(mascota.Especie)"
+                                         Size="32" />
+                            </div>
+                        </Actions>
+
+                        <ChildContent>
+                            <div class="pet-card__content">
+                                <div class="pet-card__badges">
+                                    <AppBadge Variant="SemanticVariant.Neutral"
+                                              ShowIcon="false">
+                                        @mascota.Sexo
+                                    </AppBadge>
+                                </div>
+
+                                <div class="pet-card__details">
+                                    <div class="pet-detail">
+                                        <span class="pet-detail__label">
+                                            <AppIcon Name="calendar" Size="15" />
+                                            Fecha de nacimiento
+                                        </span>
+                                        <strong>
+                                            @FormatoFecha(mascota.FechaNacimiento)
+                                        </strong>
+                                    </div>
+
+                                    <div class="pet-detail">
+                                        <span class="pet-detail__label">
+                                            <AppIcon Name="clock" Size="15" />
+                                            Edad
+                                        </span>
+                                        <strong>
+                                            @CalcularEdad(mascota.FechaNacimiento)
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <div class="pet-card__health">
+                                    <div class="pet-health-item">
+                                        <span class="pet-detail__label">
+                                            <AppIcon Name="heart" Size="15" />
+                                            Última vacuna
+                                        </span>
+
+                                        <strong>
+                                            @mascota.UltimaVacuna
+                                        </strong>
+
+                                        <small>
+                                            @FormatoFecha(mascota.FechaUltimaVacuna)
+                                        </small>
+                                    </div>
+
+                                    <div class="pet-health-item">
+                                        <span class="pet-detail__label">
+                                            <AppIcon Name="calendar" Size="15" />
+                                            Próxima cita
+                                        </span>
+
+                                        @if (mascota.FechaProximaCita is DateOnly fechaCita)
+                                        {
+                                            <strong>
+                                                @FormatoFecha(fechaCita)
+                                            </strong>
+
+                                            <small>
+                                                @mascota.HoraProximaCita
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <strong class="pet-health-item__empty">
+                                                Sin citas programadas
+                                            </strong>
+
+                                            <small>
+                                                Puedes reservar una atención.
+                                            </small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </ChildContent>
+
+                        <Footer>
+                            <div class="pet-card__actions">
+                                <AppButton Href="@HistorialHref(mascota.Id)"
+                                           Variant="ButtonVariant.Secondary"
+                                           Size="ButtonSize.Small"
+                                           Icon="file-text">
+                                    Ver historial
+                                </AppButton>
+
+                                <AppButton Href="@ReservaHref(mascota.Id)"
+                                           Size="ButtonSize.Small"
+                                           Icon="calendar">
+                                    Reservar cita
+                                </AppButton>
+                            </div>
+                        </Footer>
+                    </AppCard>
+                </article>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    private string? Busqueda { get; set; } = string.Empty;
+
+    // Datos temporales de demostración.
+    // Posteriormente se sustituirán por la consulta al servicio de mascotas.
+    private List<MascotaDemo> ListaMascotas { get; } =
+    [
+        new(
+            1,
+            "Luna",
+            "Perro",
+            "Mestiza",
+            "Hembra",
+            new DateOnly(2022, 3, 14),
+            "Antirrábica",
+            new DateOnly(2026, 6, 18),
+            new DateOnly(2026, 11, 12),
+            "10:30 a. m."
+        ),
+        new(
+            2,
+            "Michi",
+            "Gato",
+            "Doméstico de pelo corto",
+            "Macho",
+            new DateOnly(2024, 2, 3),
+            "Triple felina",
+            new DateOnly(2026, 7, 7),
+            null,
+            null
+        )
+    ];
+
+    private IEnumerable<MascotaDemo> MascotasFiltradas =>
+    ListaMascotas.Where(m =>
+        string.IsNullOrWhiteSpace(Busqueda) ||
+        Coincide(m.Nombre) ||
+        Coincide(m.Especie) ||
+        Coincide(m.Raza));
+
+    private bool Coincide(string texto) =>
+        texto.Contains(
+            Busqueda?.Trim() ?? string.Empty,
+            StringComparison.OrdinalIgnoreCase);
+
+    private static string FormatoFecha(DateOnly? fecha) =>
+        fecha?.ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)
+        ?? "No registrada";
+
+    private static string CalcularEdad(DateOnly? nacimiento)
+    {
+        if (nacimiento is null)
+            return "No registrada";
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var fecha = nacimiento.Value;
+
+        if (fecha > hoy)
+            return "Por verificar";
+
+        var anios = hoy.Year - fecha.Year;
+
+        if (fecha > hoy.AddYears(-anios))
+            anios--;
+
+        if (anios > 0)
+            return anios == 1 ? "1 año" : $"{anios} años";
+
+        var meses = (hoy.Year - fecha.Year) * 12
+                    + hoy.Month - fecha.Month;
+
+        if (hoy.Day < fecha.Day)
+            meses--;
+
+        return meses <= 0
+            ? "Menos de un mes"
+            : meses == 1 ? "1 mes" : $"{meses} meses";
+    }
+    private static string ObtenerIconoEspecie(string especie) =>
+    especie.Trim().ToLowerInvariant() switch
+    {
+        "gato" => "cat",
+        "perro" => "dog",
+        _ => "paw-print"
+    };
+    private static string HistorialHref(int mascotaId) =>
+    $"/cliente/mascotas/{mascotaId}/historial";
+
+    private static string ReservaHref(int mascotaId) =>
+        $"/cliente/reservar?mascotaId={mascotaId}";
+
+    private sealed record MascotaDemo(
+        int Id,
+        string Nombre,
+        string Especie,
+        string Raza,
+        string Sexo,
+        DateOnly? FechaNacimiento,
+        string UltimaVacuna,
+        DateOnly? FechaUltimaVacuna,
+        DateOnly? FechaProximaCita,
+        string? HoraProximaCita
+    );
+}

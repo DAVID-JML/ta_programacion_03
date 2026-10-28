@@ -1,0 +1,132 @@
+﻿@page "/administrador/reportes/especialidad"
+@using System.ComponentModel.DataAnnotations
+@inject ToastService Toast
+
+<PageTitle>Reporte de citas por especialidad | Mascovet</PageTitle>
+
+<div class="page-header">
+    <h1>Reportes</h1>
+    <p class="page-subtitle">Consulta y exporta los reportes de atención de la clínica.</p>
+</div>
+
+<div class="acciones acciones--barra">
+    <AppButton Href="/administrador/reportes/servicio" Variant="ButtonVariant.Secondary" Icon="bar-chart">
+        Citas por servicio
+    </AppButton>
+    <AppButton Href="/administrador/reportes/especialidad" Variant="ButtonVariant.Primary" Icon="bar-chart">
+        Citas por especialidad
+    </AppButton>
+</div>
+
+<EditForm Model="filtro" OnValidSubmit="Generar">
+    <DataAnnotationsValidator />
+
+    <div class="seccion">
+        <AppCard Title="Reporte de citas por especialidad"
+                 Subtitle="Cantidad de citas registradas, agrupadas por especialidad médica.">
+            <div class="form-grid">
+                <div class="span-3">
+                    <AppDatePicker Label="Fecha de inicio" Required="true" @bind-Value="filtro.FechaInicio" />
+                </div>
+                <div class="span-3">
+                    <AppDatePicker Label="Fecha de fin" Required="true" @bind-Value="filtro.FechaFin" />
+                </div>
+            </div>
+
+            <div class="acciones acciones--sup">
+                <AppButton Type="submit" Variant="ButtonVariant.Primary" Icon="bar-chart">Generar reporte</AppButton>
+                <AppButton Variant="ButtonVariant.Tertiary" OnClick="Limpiar">Limpiar</AppButton>
+            </div>
+        </AppCard>
+    </div>
+</EditForm>
+
+<AppCard Title="Resultados">
+    <AppTable Items="Pagina(resumen, paginaResumen)"
+              ColumnCount="3"
+              Caption="Citas registradas por especialidad médica">
+        <HeaderContent>
+            <th scope="col">Especialidad</th>
+            <th scope="col">Cantidad de citas</th>
+            <th scope="col">Porcentaje</th>
+        </HeaderContent>
+        <RowTemplate Context="fila">
+            <td>@fila.Especialidad</td>
+            <td>@fila.Cantidad</td>
+            <td>
+                <div class="porcentaje">
+                    <div class="barra" aria-hidden="true">
+                        <div class="barra__relleno" style="width: @(Porcentaje(fila).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture))%"></div>
+                    </div>
+                    <span>@Porcentaje(fila).ToString("0.#")%</span>
+                </div>
+            </td>
+        </RowTemplate>
+        <EmptyContent>
+            <AppEmptyState Icon="bar-chart"
+                           Title="Sin resultados para mostrar"
+                           Description="Selecciona un rango de fechas y presiona «Generar reporte»." />
+        </EmptyContent>
+    </AppTable>
+
+    <AppPagination @bind-CurrentPage="paginaResumen"
+                   TotalItems="resumen.Count"
+                   PageSize="TamPagina"
+                   AriaLabel="Paginación del reporte" />
+
+    @if (resumen.Count > 0)
+    {
+        <p class="total">
+            Total de citas en el rango: <strong>@TotalCitas</strong>
+        </p>
+    }
+</AppCard>
+
+@code {
+
+    private const int TamPagina = 10;
+
+    private FiltroModel filtro = new();
+    private int paginaResumen = 1;
+
+    // Resultado del reporte (se llenará al conectar con el backend).
+    private readonly List<FilaEspecialidad> resumen = new();
+
+    private int TotalCitas => resumen.Sum(f => f.Cantidad);
+
+    private double Porcentaje(FilaEspecialidad fila) =>
+        TotalCitas == 0 ? 0 : fila.Cantidad * 100.0 / TotalCitas;
+
+    private static IEnumerable<T> Pagina<T>(IEnumerable<T> fuente, int pagina) =>
+        fuente.Skip((Math.Max(1, pagina) - 1) * TamPagina).Take(TamPagina);
+
+    private void Generar()
+    {
+        paginaResumen = 1;
+        Toast.Info("Rango de fechas validado. Falta conectar el servicio del reporte.");
+    }
+
+    private void Limpiar()
+    {
+        filtro = new FiltroModel();
+        resumen.Clear();
+        paginaResumen = 1;
+    }
+
+    private sealed record FilaEspecialidad(string Especialidad, int Cantidad);
+
+    private sealed class FiltroModel : IValidatableObject
+    {
+        [Required(ErrorMessage = "Ingrese la fecha de inicio.")]
+        public DateOnly? FechaInicio { get; set; }
+
+        [Required(ErrorMessage = "Ingrese la fecha de fin.")]
+        public DateOnly? FechaFin { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (FechaInicio.HasValue && FechaFin.HasValue && FechaInicio > FechaFin)
+                yield return new("La fecha de inicio no puede ser posterior a la fecha de fin.", new[] { nameof(FechaFin) });
+        }
+    }
+}

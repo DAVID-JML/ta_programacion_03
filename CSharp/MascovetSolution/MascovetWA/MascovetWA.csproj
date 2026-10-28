@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Components\DesignSystem\DataDisplay\" />
+    <Folder Include="Components\Pages\2.Inicio\Recepcion\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppDatePicker.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppFieldWrapper.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppInput.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppSearchInput.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppSelect.razor" />
+    <AdditionalFiles Include="Components\DesignSystem\Forms\AppTextArea.razor" />
+  </ItemGroup>
+
+</Project>

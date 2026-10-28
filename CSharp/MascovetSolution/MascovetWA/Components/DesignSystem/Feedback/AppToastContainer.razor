@@ -1,0 +1,22 @@
+@implements IDisposable
+@inject ToastService Toasts
+
+<div class="ms-toast-container" role="region" aria-label="Notificaciones" aria-live="polite" aria-relevant="additions">
+    @foreach (var toast in Toasts.Items)
+    {
+        <AppToast @key="toast.Id"
+                  Variant="toast.Variant"
+                  Title="toast.Title"
+                  Message="@toast.Message"
+                  DurationMs="toast.DurationMs"
+                  OnClose="() => Toasts.Dismiss(toast.Id)" />
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => Toasts.Changed += HandleChanged;
+
+    private void HandleChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Toasts.Changed -= HandleChanged;
+}

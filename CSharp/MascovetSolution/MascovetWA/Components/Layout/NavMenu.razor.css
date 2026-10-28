@@ -1,0 +1,82 @@
+.ms-nav {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: var(--ms-space-6) var(--ms-space-4);
+}
+
+.ms-nav__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-3);
+    margin-bottom: var(--ms-space-10);
+    color: var(--ms-color-primary-dark);
+    font-size: 1.35rem;
+    font-weight: var(--ms-font-weight-bold);
+    text-decoration: none;
+}
+
+.ms-nav__logo {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-background-soft);
+}
+
+.ms-nav__label {
+    margin: 0 0 var(--ms-space-3) var(--ms-space-3);
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
+    font-weight: var(--ms-font-weight-semibold);
+    letter-spacing: 0.06em;
+}
+
+.ms-nav__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-2);
+    padding: 0;
+    list-style: none;
+}
+
+    /* Enlaces (NavLink) y botón de cerrar sesión comparten aspecto */
+    .ms-nav__list ::deep .ms-nav__link,
+    .ms-nav__logout {
+        display: flex;
+        align-items: center;
+        gap: var(--ms-space-3);
+        width: 100%;
+        padding: 12px;
+        border: 0;
+        border-radius: var(--ms-radius-control);
+        background: transparent;
+        color: var(--ms-color-text-muted);
+        font: inherit;
+        font-size: var(--ms-font-size-body);
+        text-align: left;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
+    }
+
+        .ms-nav__list ::deep .ms-nav__link:hover,
+        .ms-nav__logout:hover {
+            background: var(--ms-color-background-soft);
+            color: var(--ms-color-primary-dark);
+        }
+
+        /* Activo: fondo + barra lateral + peso (no depende solo del color) */
+        .ms-nav__list ::deep .ms-nav__link.active {
+            background: var(--ms-color-background-soft);
+            color: var(--ms-color-primary-dark);
+            font-weight: var(--ms-font-weight-semibold);
+            box-shadow: inset 3px 0 0 var(--ms-color-primary);
+        }
+
+.ms-nav__bottom {
+    margin-top: auto;
+    padding-top: var(--ms-space-6);
+    border-top: var(--ms-border-width) solid var(--ms-color-border);
+}

@@ -1,0 +1,148 @@
+﻿@page "/cliente/citas"
+@layout MainLayout
+
+<PageTitle>Mis citas | Mascovet</PageTitle>
+
+<div class="mis-citas">
+
+    <header class="mis-citas__header">
+        <div>
+            <h1>Mis citas</h1>
+            <p>
+                Consulta tus citas veterinarias y revisa el estado
+                de cada atención.
+            </p>
+        </div>
+
+        <AppButton Href="/cliente/reservar"
+                   Variant="ButtonVariant.Primary"
+                   Icon="plus">
+            Reservar cita
+        </AppButton>
+    </header>
+
+    <section class="mis-citas__content"
+             aria-label="Listado de citas">
+
+        <AppCard Title="Listado de citas"
+                 Subtitle="Consulta las fechas, los servicios y el estado de tus reservas.">
+
+            <ChildContent>
+                <AppTable TItem="CitaFila"
+                          Items="@Pagina(citas, paginaActual)"
+                          ColumnCount="6"
+                          Caption="Mis citas veterinarias">
+
+                    <HeaderContent>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Hora</th>
+                        <th scope="col">Mascota</th>
+                        <th scope="col">Servicio</th>
+                        <th scope="col">Veterinario</th>
+                        <th scope="col">Estado</th>
+                    </HeaderContent>
+
+                    <RowTemplate Context="cita">
+                        <td class="mis-citas__date">
+                            @cita.Fecha.ToString("dd/MM/yyyy")
+                        </td>
+
+                        <td class="mis-citas__time">
+                            @cita.Hora.ToString("HH:mm")
+                        </td>
+
+                        <td>
+                            <span class="mis-citas__pet">
+                                <AppIcon Name="@ObtenerIconoEspecie(cita.Especie)"
+                                         Size="18" />
+                                <span>@cita.Mascota</span>
+                            </span>
+                        </td>
+
+                        <td>@cita.Servicio</td>
+
+                        <td>@cita.Veterinario</td>
+
+                        <td>
+                            <AppBadge Variant="@VarianteEstado(cita.Estado)"
+                                      ShowIcon="false">
+                                @cita.Estado
+                            </AppBadge>
+                        </td>
+                    </RowTemplate>
+
+                    <EmptyContent>
+                        <AppEmptyState Icon="calendar"
+                                       Title="No hay citas para mostrar"
+                                       Description="Aquí aparecerán tus citas cuando se cargue la información de tu cuenta.">
+
+                            <AppButton Href="/cliente/reservar"
+                                       Variant="ButtonVariant.Secondary"
+                                       Icon="plus">
+                                Reservar una cita
+                            </AppButton>
+
+                        </AppEmptyState>
+                    </EmptyContent>
+
+                </AppTable>
+            </ChildContent>
+
+            <Footer>
+                <div class="mis-citas__pagination">
+                    <AppPagination @bind-CurrentPage="paginaActual"
+                                   TotalItems="@citas.Count"
+                                   PageSize="@TamPagina"
+                                   AriaLabel="Paginación de mis citas" />
+                </div>
+            </Footer>
+
+        </AppCard>
+
+    </section>
+
+</div>
+
+@code {
+    private const int TamPagina = 10;
+
+    private int paginaActual = 1;
+
+    // Sin citas ficticias: la lista permanece vacía.
+    private readonly List<CitaFila> citas = [];
+
+    private static IEnumerable<T> Pagina<T>(
+        IEnumerable<T> fuente,
+        int pagina) =>
+        fuente
+            .Skip((Math.Max(1, pagina) - 1) * TamPagina)
+            .Take(TamPagina);
+
+    private static SemanticVariant VarianteEstado(string estado) =>
+        estado switch
+        {
+            "Reservada" => SemanticVariant.Warning,
+            "Confirmada" => SemanticVariant.Success,
+            "Atendida" => SemanticVariant.Info,
+            "Cancelada" => SemanticVariant.Error,
+            _ => SemanticVariant.Neutral
+        };
+
+    private static string ObtenerIconoEspecie(string especie) =>
+        especie.Trim().ToLowerInvariant() switch
+        {
+            "gato" => "cat",
+            "perro" => "dog",
+            _ => "paw-print"
+        };
+
+    private sealed record CitaFila(
+        int Id,
+        DateOnly Fecha,
+        TimeOnly Hora,
+        string Mascota,
+        string Especie,
+        string Servicio,
+        string Veterinario,
+        string Estado);
+}

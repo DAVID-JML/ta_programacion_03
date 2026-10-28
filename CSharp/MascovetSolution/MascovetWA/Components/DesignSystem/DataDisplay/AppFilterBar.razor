@@ -1,0 +1,33 @@
+<div class="ms-filterbar" role="search">
+    <div class="ms-filterbar__search">
+        <AppSearchInput Label="@SearchLabel" Placeholder="@SearchPlaceholder"
+                        Value="@SearchText" ValueChanged="SearchTextChanged" />
+    </div>
+
+    @if (ChildContent is not null)
+    {
+        <div class="ms-filterbar__filters">@ChildContent</div>
+    }
+
+    @if (OnClear.HasDelegate)
+    {
+        <div class="ms-filterbar__clear">
+            <AppButton Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small" OnClick="OnClear">Limpiar filtros</AppButton>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Texto de búsqueda. Úsalo con @bind-SearchText.</summary>
+    [Parameter] public string? SearchText { get; set; }
+    [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
+
+    [Parameter] public string SearchLabel { get; set; } = "Buscar";
+    [Parameter] public string? SearchPlaceholder { get; set; } = "Buscar…";
+
+    /// <summary>Filtros configurables (AppSelect u otros controles).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Si tiene manejador, se muestra el botón "Limpiar filtros".</summary>
+    [Parameter] public EventCallback OnClear { get; set; }
+}

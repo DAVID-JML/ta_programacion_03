@@ -1,0 +1,27 @@
+@typeparam TValue
+@inherits AppFieldBase<TValue>
+
+<AppFieldWrapper FieldId="@FieldId" Label="@Label" HelpText="@HelpText" Required="@Required" Errors="@Errors">
+    <select @attributes="AdditionalAttributes"
+            id="@FieldId"
+            class="@ControlClass"
+            disabled="@Disabled"
+            aria-required="@(Required ? "true" : null)"
+            aria-invalid="@(HasError ? "true" : null)"
+            aria-describedby="@DescribedBy"
+            @bind="CurrentValueAsString">
+        @if (Placeholder is not null)
+        {
+            <option value="">@Placeholder</option>
+        }
+        @foreach (var option in Options)
+        {
+            <option value="@FormatValueAsString(option.Value)" disabled="@option.Disabled">@option.Text</option>
+        }
+    </select>
+</AppFieldWrapper>
+
+@code {
+    /// <summary>Opciones configurables. El componente no define ninguna por sí mismo.</summary>
+    [Parameter, EditorRequired] public IEnumerable<SelectOption<TValue>> Options { get; set; } = Array.Empty<SelectOption<TValue>>();
+}

@@ -1,0 +1,168 @@
+﻿@page "/cliente"
+@inject UserContext User
+
+<PageTitle>Inicio | MascoVet</PageTitle>
+
+<div class="dashboard">
+    <section class="dashboard-welcome" aria-labelledby="bienvenida-titulo">
+        <div>
+            <span class="dashboard-eyebrow">TU ESPACIO MASCOVET</span>
+            <h1 id="bienvenida-titulo">¡Hola, @Nombre!</h1>
+            <p>Gestiona las citas y cuida la salud de tus mascotas desde un solo lugar.</p>
+        </div>
+
+        <AppButton Href="/cliente/reservar" Icon="plus">Reservar una cita</AppButton>
+    </section>
+
+    <section class="dashboard-stats" aria-label="Resumen de tu cuenta">
+        @foreach (var r in Resumenes)
+        {
+            <AppCard>
+                <div class="stat">
+                    <span class="stat__icon"><AppIcon Name="@r.Icono" Size="22" /></span>
+                    <div>
+                        <p class="stat__label">@r.Titulo</p>
+                        <strong class="stat__value">@r.Valor</strong>
+                    </div>
+                </div>
+                <AppButton Href="@r.Href" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">@r.Enlace</AppButton>
+            </AppCard>
+        }
+    </section>
+
+    <section class="dashboard-section" aria-labelledby="proxima-titulo">
+        <div class="dashboard-section-heading">
+            <div>
+                <h2 id="proxima-titulo">Tu próxima cita</h2>
+                <p>Ten a mano los detalles de la próxima atención.</p>
+            </div>
+            <AppButton Href="/cliente/citas" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver todas</AppButton>
+        </div>
+
+        @if (Proxima is { } c)
+        {
+            <AppCard>
+                <div class="dashboard-appointment">
+                    <div class="appointment-date" aria-hidden="true">
+                        <span>@Meses[c.Fecha.Month - 1]</span>
+                        <strong>@c.Fecha.Day</strong>
+                    </div>
+
+                    <div class="appointment-details">
+                        <h3>@c.Servicio</h3>
+                        <p>@c.Mascota · @c.Especie</p>
+                        <p>
+                            <time datetime="@c.Fecha.ToString("yyyy-MM-dd")">@c.Fecha.ToString("dd/MM/yyyy")</time>
+                            · @c.Hora · @c.Veterinario
+                        </p>
+                    </div>
+
+                    <AppBadge Variant="EstadoVariant(c.Estado)">@c.Estado</AppBadge>
+                </div>
+            </AppCard>
+        }
+        else
+        {
+            <AppCard>
+                <AppEmptyState Icon="calendar" Title="No tienes citas próximas"
+                               Description="Cuando reserves una cita aparecerá aquí.">
+                    <AppButton Href="/cliente/reservar" Icon="plus">Reservar una cita</AppButton>
+                </AppEmptyState>
+            </AppCard>
+        }
+    </section>
+
+    <section class="dashboard-section" aria-labelledby="mascotas-titulo">
+        <div class="dashboard-section-heading">
+            <div>
+                <h2 id="mascotas-titulo">Mis mascotas</h2>
+                <p>Accede rápidamente a la información de tus compañeros.</p>
+            </div>
+            <AppButton Href="/cliente/mascotas" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver todas</AppButton>
+        </div>
+
+        @if (Mascotas.Length == 0)
+        {
+            <AppCard>
+                <AppEmptyState Icon="heart" Title="Aún no registras mascotas"
+                               Description="Registra a tu primera mascota para poder reservar citas.">
+                    <AppButton Href="/cliente/mascotas" Icon="plus">Registrar mascota</AppButton>
+                </AppEmptyState>
+            </AppCard>
+        }
+        else
+        {
+            <div class="dashboard-pets">
+                @foreach (var m in Mascotas)
+                {
+                    <AppCard>
+                        <div class="pet">
+                            <div class="pet__avatar" aria-hidden="true">
+                                <AppIcon Name="@ObtenerIconoEspecie(m.Especie)"
+                                         Size="32" />
+                            </div>
+                            <div>
+                                <h3>@m.Nombre</h3>
+                                <p>@m.Especie · @m.Edad</p>
+                            </div>
+                            <div class="pet__action">
+                                <AppButton Href="/cliente/mascotas" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver ficha</AppButton>
+                            </div>
+                        </div>
+                    </AppCard>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@code {
+    private sealed record Mascota(string Nombre, string Especie, string Edad);
+    private sealed record Cita(DateOnly Fecha, string Hora, string Servicio, string Mascota, string Especie, string Veterinario, string Estado);
+    private sealed record Resumen(string Titulo, int Valor, string Icono, string Enlace, string Href);
+
+    private static readonly string[] Meses = { "ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC" };
+
+    // Datos de ejemplo: se reemplazarán por los del cliente autenticado.
+    private static readonly Mascota[] Mascotas =
+    {
+        new("Luna", "Perro", "3 años"),
+        new("Michi", "Gato", "2 años"),
+    };
+
+    private static readonly Cita[] Citas =
+    {
+        new(new DateOnly(2026, 11, 12), "10:30 a. m.", "Consulta general", "Luna", "Canina", "Dr. Carlos Ramírez", "Reservada"),
+    };
+
+    private const int AtencionesRealizadas = 4;
+
+    private string Nombre => string.IsNullOrWhiteSpace(User.Nombre) ? "Cliente" : User.Nombre;
+
+    private Cita? Proxima => Citas
+        .Where(c => c.Estado is "Reservada" or "Confirmada")
+        .OrderBy(c => c.Fecha)
+        .FirstOrDefault();
+
+    private IEnumerable<Resumen> Resumenes => new[]
+    {
+        new Resumen("Mis mascotas", Mascotas.Length, "heart", "Ver mascotas", "/cliente/mascotas"),
+        new Resumen("Citas próximas", Citas.Count(c => c.Estado is "Reservada" or "Confirmada"), "calendar", "Ver mis citas", "/cliente/citas"),
+        new Resumen("Atenciones realizadas", AtencionesRealizadas, "check-circle", "Ver historial", "/cliente/historial"),
+    };
+    private static string ObtenerIconoEspecie(string especie) =>
+    especie.Trim().ToLowerInvariant() switch
+    {
+        "gato" => "cat",
+        "perro" => "dog",
+        _ => "paw-print"
+    };
+    // Estados del RF020: Reservada, Confirmada, Atendida, Cancelada
+    private static SemanticVariant EstadoVariant(string estado) => estado switch
+    {
+        "Reservada" => SemanticVariant.Info,
+        "Confirmada" => SemanticVariant.Success,
+        "Cancelada" => SemanticVariant.Error,
+        _ => SemanticVariant.Neutral
+    };
+}
