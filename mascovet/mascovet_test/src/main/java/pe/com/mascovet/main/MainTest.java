@@ -33,6 +33,7 @@ public class MainTest {
             probarVeterinario(sufijo);
             probarRecepcionista(sufijo);
             probarAdministrador(sufijo);
+            PruebasNuevas.ejecutar();
 
             System.out.println("\n====================================================");
             System.out.println("LAS 4 PRUEBAS CRUD FINALIZARON CORRECTAMENTE");
