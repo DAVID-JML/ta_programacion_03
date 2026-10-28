@@ -7,6 +7,7 @@ import pe.com.mascovet.cita.impl.CitaImpl;
 import pe.com.mascovet.cita.impl.HorarioAtencionImpl;
 import pe.com.mascovet.cita.model.Cita;
 import pe.com.mascovet.cita.model.HorarioAtencion;
+import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.enums.model.Dia;
 import pe.com.mascovet.enums.model.EstadoCita;
 
@@ -272,5 +273,19 @@ public class CitaBOImpl implements ICitaBO {
         if (idCita <= 0)
             throw new RuntimeException("El identificador de la cita no es válido");
         return daoCita.obtenerPorId(idCita);
+    }
+
+
+    @Override
+    public void registrarCitaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String estado, String dniVeterinario) {
+        try {
+            daoCita.registrarCitaSP(dniCliente, nombreMascota, fecha, hora, estado, dniVeterinario);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarCitaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
     }
 }

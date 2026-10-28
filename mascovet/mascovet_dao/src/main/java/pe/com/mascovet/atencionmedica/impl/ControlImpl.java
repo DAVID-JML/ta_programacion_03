@@ -212,4 +212,24 @@ public class ControlImpl implements ControlDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void registrarControlSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String evolucion, String indicaciones) {
+        String sql = "{CALL registrar_control(?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setDate(3, fecha);
+                cs.setTime(4, hora);
+                cs.setString(5, evolucion);
+                cs.setString(6, indicaciones);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_control: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

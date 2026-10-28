@@ -128,4 +128,20 @@ public class RecepcionistaImpl implements RecepcionistaDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void asignarRecepcionistaSP(String dni, String turno) {
+        String sql = "{CALL asignar_recepcionista(?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dni);
+                cs.setString(2, turno);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR asignar_recepcionista: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

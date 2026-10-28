@@ -111,4 +111,20 @@ public class VacunaImpl implements VacunaDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void registrarVacunaSP(String nombre, String descripcion) {
+        String sql = "{CALL registrar_vacuna(?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, nombre);
+                cs.setString(2, descripcion);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_vacuna: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

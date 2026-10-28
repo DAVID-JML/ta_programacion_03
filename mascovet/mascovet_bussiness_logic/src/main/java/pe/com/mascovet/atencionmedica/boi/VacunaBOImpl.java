@@ -70,4 +70,18 @@ public class VacunaBOImpl implements IVacunaBO {
             throw new RuntimeException("El identificador de la vacuna no es válido");
         return daoVacuna.obtenerPorId(idVacuna);
     }
+
+    @Override
+    public void registrarVacunaSP(String nombre, String descripcion) {
+        try {
+            daoVacuna.registrarVacunaSP(nombre, descripcion);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarVacunaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
+
 }

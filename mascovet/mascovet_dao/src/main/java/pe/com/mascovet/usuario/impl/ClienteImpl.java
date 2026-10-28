@@ -132,4 +132,21 @@ public class ClienteImpl implements ClienteDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void asignarClienteSP(String dni, String correo, String telefono) {
+        String sql = "{CALL asignar_cliente(?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dni);
+                cs.setString(2, correo);
+                cs.setString(3, telefono);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR asignar_cliente: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

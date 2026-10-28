@@ -102,4 +102,17 @@ public class ClienteBOImpl implements IClienteBO {
             throw new RuntimeException("El identificador del cliente no es válido");
         return daoCliente.obtenerPorId(idCliente);
     }
+
+    @Override
+    public void asignarClienteSP(String dni, String correo, String telefono) {
+        try {
+            daoCliente.asignarClienteSP(dni, correo, telefono);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en asignarClienteSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

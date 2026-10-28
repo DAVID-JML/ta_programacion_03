@@ -1,6 +1,7 @@
 package pe.com.mascovet.mascota.impl;
 
 import pe.com.mascovet.config.DBManager;
+import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.enums.model.Especie;
 import pe.com.mascovet.enums.model.Sexo;
 import pe.com.mascovet.mascota.dao.MascotaDAO;
@@ -129,6 +130,43 @@ public class MascotaImpl implements MascotaDAO {
             return mascotas;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR MASCOTAS: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void vincularMascotaSP(String dni, String nombre, java.sql.Date fechaNacimiento, String especie, String raza, String sexo) {
+        String sql = "{CALL vincular_mascota(?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dni);
+                cs.setString(2, nombre);
+                cs.setDate(3, fechaNacimiento);
+                cs.setString(4, especie);
+                cs.setString(5, raza);
+                cs.setString(6, sexo);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR vincular_mascota: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public void cambiarEstadoMascotaSP(String dniCliente, String nombreMascota, boolean activo) {
+        String sql = "{CALL cambiar_estado_mascota(?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setBoolean(3, activo);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR cambiar_estado_mascota: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

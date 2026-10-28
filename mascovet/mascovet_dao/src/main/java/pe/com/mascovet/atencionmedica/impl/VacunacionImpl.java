@@ -231,4 +231,25 @@ public class VacunacionImpl implements VacunacionDAO {
             throw new RuntimeException("Error al asociar la vacuna a la vacunacion", ex);
         }
     }
+
+    @Override
+    public void registrarVacunacionSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaAplicacion, java.sql.Date fechaProximaDosis, String dosis) {
+        String sql = "{CALL registrar_vacunacion(?, ?, ?, ?, ?, ?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dniCliente);
+                cs.setString(2, nombreMascota);
+                cs.setDate(3, fechaCita);
+                cs.setTime(4, horaCita);
+                cs.setDate(5, fechaAplicacion);
+                cs.setDate(6, fechaProximaDosis);
+                cs.setString(7, dosis);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR registrar_vacunacion: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }

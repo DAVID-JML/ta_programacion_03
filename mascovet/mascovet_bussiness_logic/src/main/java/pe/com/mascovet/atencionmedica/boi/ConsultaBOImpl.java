@@ -128,4 +128,17 @@ public class ConsultaBOImpl implements IConsultaBO {
             throw new RuntimeException("El identificador de la consulta no es válido");
         return daoConsulta.obtenerPorId(idConsulta);
     }
+
+    @Override
+    public void registrarConsultaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String motivoConsulta, String diagnostico, String tratamiento) {
+        try {
+            daoConsulta.registrarConsultaSP(dniCliente, nombreMascota, fecha, hora, motivoConsulta, diagnostico, tratamiento);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarConsultaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

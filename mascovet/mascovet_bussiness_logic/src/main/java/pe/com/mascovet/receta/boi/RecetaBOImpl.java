@@ -125,4 +125,17 @@ public class RecetaBOImpl implements IRecetaBO {
             TransactionContext.close();
         }
     }
+
+    @Override
+    public void registrarRecetaSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaReceta, String indicaciones) {
+        try {
+            daoReceta.registrarRecetaSP(dniCliente, nombreMascota, fechaCita, horaCita, fechaReceta, indicaciones);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarRecetaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

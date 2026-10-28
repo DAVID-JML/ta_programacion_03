@@ -115,4 +115,17 @@ public class CirugiaBOImpl implements ICirugiaBO {
             throw new RuntimeException("El identificador de la cirugía no es válido");
         return daoCirugia.obtenerPorId(idCirugia);
     }
+
+    @Override
+    public void registrarCirugiaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String procedimiento, String indicacionesPostOperatorias) {
+        try {
+            daoCirugia.registrarCirugiaSP(dniCliente, nombreMascota, fecha, hora, procedimiento, indicacionesPostOperatorias);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en registrarCirugiaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

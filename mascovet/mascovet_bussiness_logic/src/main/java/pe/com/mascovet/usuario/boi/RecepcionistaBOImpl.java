@@ -100,4 +100,17 @@ public class RecepcionistaBOImpl implements IRecepcionistaBO {
             throw new RuntimeException("El identificador del recepcionista no es válido");
         return daoRecepcionista.obtenerPorId(idRecepcionista);
     }
+
+    @Override
+    public void asignarRecepcionistaSP(String dni, String turno) {
+        try {
+            daoRecepcionista.asignarRecepcionistaSP(dni, turno);
+            TransactionContext.commit();
+        } catch (Exception ex) {
+            TransactionContext.rollback();
+            throw new RuntimeException("Error en asignarRecepcionistaSP: " + ex.getMessage(), ex);
+        } finally {
+            TransactionContext.close();
+        }
+    }
 }

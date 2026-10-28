@@ -128,4 +128,20 @@ public class AdministradorImpl implements AdministradorDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public void asignarAdministradorSP(String dni, String cargo) {
+        String sql = "{CALL asignar_administrador(?, ?)}";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
+                cs.setString(1, dni);
+                cs.setString(2, cargo);
+                cs.execute();
+            }
+        } catch (Exception ex) {
+            System.out.println("ERROR AL EJECUTAR asignar_administrador: " + ex.getMessage());
+            throw new RuntimeException(ex);
+        }
+    }
 }
