@@ -1,4 +1,4 @@
-USE prog3;
+USE mascovet;
 
 INSERT INTO USUARIO (dni, nombre, apellido, nombre_usuario, contrasena, activo) 
 VALUES 
