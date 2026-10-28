@@ -21,8 +21,8 @@ public class VacunacionImpl implements VacunacionDAO {
 
     @Override
     public int insertar(Vacunacion vacunacion) {
-        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_mascota, id_cita, peso_actual, alergias) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_cita, peso_actual, alergias) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
         String sql = "INSERT INTO VACUNACION (id_atencion, fechaAplicacion, fechaProximaDosis, dosis) VALUES (?, ?, ?, ?)";
         try {
             Connection con = TransactionContext.getConnection();
@@ -39,10 +39,9 @@ public class VacunacionImpl implements VacunacionDAO {
                 } else {
                     psAtencion.setTime(3, Time.valueOf(vacunacion.getHoraFin()));
                 }
-                psAtencion.setInt(4, vacunacion.getMascota().getIdMascota());
-                psAtencion.setInt(5, vacunacion.getCita().getIdCita());
-                psAtencion.setDouble(6, vacunacion.getPesoActual());
-                psAtencion.setString(7, vacunacion.getAlergias());
+                psAtencion.setInt(4, vacunacion.getCita().getIdCita());
+                psAtencion.setDouble(5, vacunacion.getPesoActual());
+                psAtencion.setString(6, vacunacion.getAlergias());
                 psAtencion.executeUpdate();
 
                 int idAtencion = 0;
@@ -74,7 +73,7 @@ public class VacunacionImpl implements VacunacionDAO {
 
     @Override
     public int modificar(Vacunacion vacunacion) {
-        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_mascota=?, id_cita=?, peso_actual=?, alergias=? " +
+        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_cita=?, peso_actual=?, alergias=? " +
                 "WHERE id_atencion=?";
         String sql = "UPDATE VACUNACION SET fechaAplicacion=?, fechaProximaDosis=?, dosis=? WHERE id_atencion=?";
         try {
@@ -92,11 +91,10 @@ public class VacunacionImpl implements VacunacionDAO {
                 } else {
                     psAtencion.setTime(3, Time.valueOf(vacunacion.getHoraFin()));
                 }
-                psAtencion.setInt(4, vacunacion.getMascota().getIdMascota());
-                psAtencion.setInt(5, vacunacion.getCita().getIdCita());
-                psAtencion.setDouble(6, vacunacion.getPesoActual());
-                psAtencion.setString(7, vacunacion.getAlergias());
-                psAtencion.setInt(8, vacunacion.getIdAtencion());
+                psAtencion.setInt(4, vacunacion.getCita().getIdCita());
+                psAtencion.setDouble(5, vacunacion.getPesoActual());
+                psAtencion.setString(6, vacunacion.getAlergias());
+                psAtencion.setInt(7, vacunacion.getIdAtencion());
                 int filasBase = psAtencion.executeUpdate();
 
                 ps.setDate(1, new java.sql.Date(vacunacion.getFechaAplicacion().getTime()));
@@ -131,9 +129,10 @@ public class VacunacionImpl implements VacunacionDAO {
     @Override
     public Vacunacion obtenerPorId(int idVacunacion) {
         Vacunacion vacunacion = null;
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, a.id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
+        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
                 "v.fechaAplicacion, v.fechaProximaDosis, v.dosis, r.id_receta " +
                 "FROM ATENCION_MEDICA a INNER JOIN VACUNACION v ON a.id_atencion=v.id_atencion " +
+                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
                 "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion WHERE a.id_atencion=?";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -176,9 +175,10 @@ public class VacunacionImpl implements VacunacionDAO {
     @Override
     public List<Vacunacion> listarTodos() {
         List<Vacunacion> vacunaciones = new ArrayList<>();
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, a.id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
+        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
                 "v.fechaAplicacion, v.fechaProximaDosis, v.dosis, r.id_receta " +
                 "FROM ATENCION_MEDICA a INNER JOIN VACUNACION v ON a.id_atencion=v.id_atencion " +
+                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
                 "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -214,6 +214,21 @@ public class VacunacionImpl implements VacunacionDAO {
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR VACUNACIONES: " + ex.getMessage());
             throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public int asociarVacuna(int idAtencion, int idVacuna) {
+        String sql = "INSERT INTO VACUNACION_VACUNA (id_atencion, id_vacuna) VALUES (?, ?)";
+        try {
+            Connection con = TransactionContext.getConnection();
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                ps.setInt(1, idAtencion);
+                ps.setInt(2, idVacuna);
+                return ps.executeUpdate();
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error al asociar la vacuna a la vacunacion", ex);
         }
     }
 }

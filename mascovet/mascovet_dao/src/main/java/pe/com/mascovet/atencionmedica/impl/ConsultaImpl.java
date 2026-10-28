@@ -21,8 +21,8 @@ public class ConsultaImpl implements ConsultaDAO {
 
     @Override
     public int insertar(Consulta consulta) {
-        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_mascota, id_cita, peso_actual, alergias) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_cita, peso_actual, alergias) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
         String sql = "INSERT INTO CONSULTA (id_atencion, motivoConsulta, diagnostico, tratamiento) VALUES (?, ?, ?, ?)";
         try {
             Connection con = TransactionContext.getConnection();
@@ -39,10 +39,9 @@ public class ConsultaImpl implements ConsultaDAO {
                 } else {
                     psAtencion.setTime(3, Time.valueOf(consulta.getHoraFin()));
                 }
-                psAtencion.setInt(4, consulta.getMascota().getIdMascota());
-                psAtencion.setInt(5, consulta.getCita().getIdCita());
-                psAtencion.setDouble(6, consulta.getPesoActual());
-                psAtencion.setString(7, consulta.getAlergias());
+                psAtencion.setInt(4, consulta.getCita().getIdCita());
+                psAtencion.setDouble(5, consulta.getPesoActual());
+                psAtencion.setString(6, consulta.getAlergias());
                 psAtencion.executeUpdate();
 
                 int idAtencion = 0;
@@ -74,7 +73,7 @@ public class ConsultaImpl implements ConsultaDAO {
 
     @Override
     public int modificar(Consulta consulta) {
-        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_mascota=?, id_cita=?, peso_actual=?, alergias=? " +
+        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_cita=?, peso_actual=?, alergias=? " +
                 "WHERE id_atencion=?";
         String sql = "UPDATE CONSULTA SET motivoConsulta=?, diagnostico=?, tratamiento=? WHERE id_atencion=?";
         try {
@@ -92,11 +91,10 @@ public class ConsultaImpl implements ConsultaDAO {
                 } else {
                     psAtencion.setTime(3, Time.valueOf(consulta.getHoraFin()));
                 }
-                psAtencion.setInt(4, consulta.getMascota().getIdMascota());
-                psAtencion.setInt(5, consulta.getCita().getIdCita());
-                psAtencion.setDouble(6, consulta.getPesoActual());
-                psAtencion.setString(7, consulta.getAlergias());
-                psAtencion.setInt(8, consulta.getIdAtencion());
+                psAtencion.setInt(4, consulta.getCita().getIdCita());
+                psAtencion.setDouble(5, consulta.getPesoActual());
+                psAtencion.setString(6, consulta.getAlergias());
+                psAtencion.setInt(7, consulta.getIdAtencion());
                 int filasBase = psAtencion.executeUpdate();
 
                 ps.setString(1, consulta.getMotivoConsulta());
@@ -131,9 +129,10 @@ public class ConsultaImpl implements ConsultaDAO {
     @Override
     public Consulta obtenerPorId(int idConsulta) {
         Consulta consulta = null;
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, a.id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
+        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
                 "c.motivoConsulta, c.diagnostico, c.tratamiento, r.id_receta " +
                 "FROM ATENCION_MEDICA a INNER JOIN CONSULTA c ON a.id_atencion=c.id_atencion " +
+                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
                 "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion WHERE a.id_atencion=?";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -176,9 +175,10 @@ public class ConsultaImpl implements ConsultaDAO {
     @Override
     public List<Consulta> listarTodos() {
         List<Consulta> consultas = new ArrayList<>();
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, a.id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
+        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
                 "c.motivoConsulta, c.diagnostico, c.tratamiento, r.id_receta " +
                 "FROM ATENCION_MEDICA a INNER JOIN CONSULTA c ON a.id_atencion=c.id_atencion " +
+                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
                 "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);

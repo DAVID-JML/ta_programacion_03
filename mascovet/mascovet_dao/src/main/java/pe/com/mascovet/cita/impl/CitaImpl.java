@@ -20,40 +20,86 @@ import java.util.List;
 
 public class CitaImpl implements CitaDAO {
 
+    private Cita mapearCita(ResultSet rs) throws java.sql.SQLException {
+        Cita cita = new Cita();
+
+        cita.setIdCita(rs.getInt("id_cita"));
+        cita.setFecha(rs.getDate("fecha"));
+        cita.setHora(rs.getTime("hora").toLocalTime());
+        cita.setEstado(
+                EstadoCita.valueOf(rs.getString("estado"))
+        );
+
+        Cliente cliente = new Cliente();
+        cliente.setIdUsuario(rs.getInt("id_cliente"));
+        cita.setCliente(cliente);
+
+        Mascota mascota = new Mascota();
+        mascota.setIdMascota(rs.getInt("id_mascota"));
+        mascota.setCliente(cliente);
+        cita.setMascota(mascota);
+
+        int idRecepcionista = rs.getInt("id_recepcionista");
+
+        if (!rs.wasNull()) {
+            Recepcionista recepcionista = new Recepcionista();
+            recepcionista.setIdUsuario(idRecepcionista);
+            cita.setRecepcionista(recepcionista);
+        }
+
+        int idVeterinario = rs.getInt("id_veterinario");
+
+        if (!rs.wasNull()) {
+            Veterinario veterinario = new Veterinario();
+            veterinario.setIdUsuario(idVeterinario);
+            cita.setVeterinario(veterinario);
+        }
+
+        return cita;
+    }
+
     @Override
     public int insertar(Cita cita) {
-        String sql = "INSERT INTO CITA (id_mascota, fecha, hora, estado, id_usuario, id_recepcionista, id_veterinario) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql =
+                "INSERT INTO CITA "
+                        + "(id_mascota, fecha, hora, estado, "
+                        + "id_recepcionista, id_veterinario) "
+                        + "VALUES (?, ?, ?, ?, ?, ?)";
+
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = con.prepareStatement(
+                     sql, Statement.RETURN_GENERATED_KEYS)) {
+
             ps.setInt(1, cita.getMascota().getIdMascota());
             ps.setDate(2, new java.sql.Date(cita.getFecha().getTime()));
             ps.setTime(3, java.sql.Time.valueOf(cita.getHora()));
             ps.setString(4, cita.getEstado().name());
-            ps.setInt(5, cita.getCliente().getIdUsuario());
 
             if (cita.getRecepcionista() == null) {
-                ps.setNull(6, Types.INTEGER);
+                ps.setNull(5, Types.INTEGER);
             } else {
-                ps.setInt(6, cita.getRecepcionista().getIdUsuario());
+                ps.setInt(5, cita.getRecepcionista().getIdUsuario());
             }
 
-            if (cita.getVeterinario() == null) {
-                ps.setNull(7, Types.INTEGER);
-            } else {
-                ps.setInt(7, cita.getVeterinario().getIdUsuario());
-            }
+            ps.setInt(6, cita.getVeterinario().getIdUsuario());
 
             ps.executeUpdate();
+
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     cita.setIdCita(rs.getInt(1));
                     return cita.getIdCita();
                 }
             }
-            return 0;
+
+            throw new RuntimeException(
+                    "No se generó el identificador de la cita"
+            );
+
         } catch (Exception ex) {
-            System.out.println("ERROR AL INSERTAR CITA: " + ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new RuntimeException(
+                    "Error al insertar la cita", ex
+            );
         }
     }
 
@@ -62,33 +108,32 @@ public class CitaImpl implements CitaDAO {
         String sql =
                 "UPDATE CITA SET "
                         + "id_mascota=?, fecha=?, hora=?, estado=?, "
-                        + "id_usuario=?, id_recepcionista=?, id_veterinario=? "
-                        + "WHERE id_cita=? AND activo = TRUE";
+                        + "id_recepcionista=?, id_veterinario=? "
+                        + "WHERE id_cita=? AND activo=TRUE";
+
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, cita.getMascota().getIdMascota());
             ps.setDate(2, new java.sql.Date(cita.getFecha().getTime()));
             ps.setTime(3, java.sql.Time.valueOf(cita.getHora()));
             ps.setString(4, cita.getEstado().name());
-            ps.setInt(5, cita.getCliente().getIdUsuario());
 
             if (cita.getRecepcionista() == null) {
-                ps.setNull(6, Types.INTEGER);
+                ps.setNull(5, Types.INTEGER);
             } else {
-                ps.setInt(6, cita.getRecepcionista().getIdUsuario());
+                ps.setInt(5, cita.getRecepcionista().getIdUsuario());
             }
 
-            if (cita.getVeterinario() == null) {
-                ps.setNull(7, Types.INTEGER);
-            } else {
-                ps.setInt(7, cita.getVeterinario().getIdUsuario());
-            }
+            ps.setInt(6, cita.getVeterinario().getIdUsuario());
+            ps.setInt(7, cita.getIdCita());
 
-            ps.setInt(8, cita.getIdCita());
             return ps.executeUpdate();
+
         } catch (Exception ex) {
-            System.out.println("ERROR AL MODIFICAR CITA: " + ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new RuntimeException(
+                    "Error al modificar la cita", ex
+            );
         }
     }
 
@@ -114,101 +159,60 @@ public class CitaImpl implements CitaDAO {
 
     @Override
     public Cita obtenerPorId(int idCita) {
-        Cita cita = null;
         String sql =
-                "SELECT id_cita, id_mascota, fecha, hora, estado, "
-                        + "id_usuario, id_recepcionista, id_veterinario "
-                        + "FROM CITA "
-                        + "WHERE id_cita = ? AND activo = TRUE";
+                "SELECT c.id_cita, c.id_mascota, c.fecha, c.hora, "
+                        + "c.estado, c.id_recepcionista, c.id_veterinario, "
+                        + "m.id_usuario AS id_cliente "
+                        + "FROM CITA c "
+                        + "INNER JOIN MASCOTA m ON c.id_mascota = m.id_mascota "
+                        + "WHERE c.id_cita = ? AND c.activo = TRUE";
+
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
+
             ps.setInt(1, idCita);
+
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    cita = new Cita();
-                    cita.setIdCita(rs.getInt("id_cita"));
-
-                    Mascota mascota = new Mascota();
-                    mascota.setIdMascota(rs.getInt("id_mascota"));
-                    cita.setMascota(mascota);
-
-                    cita.setFecha(rs.getDate("fecha"));
-                    cita.setHora(rs.getTime("hora").toLocalTime());
-                    cita.setEstado(EstadoCita.valueOf(rs.getString("estado")));
-
-                    Cliente cliente = new Cliente();
-                    cliente.setIdUsuario(rs.getInt("id_usuario"));
-                    cita.setCliente(cliente);
-
-                    int idRecepcionista = rs.getInt("id_recepcionista");
-                    if (!rs.wasNull()) {
-                        Recepcionista recepcionista = new Recepcionista();
-                        recepcionista.setIdUsuario(idRecepcionista);
-                        cita.setRecepcionista(recepcionista);
-                    }
-
-                    int idVeterinario = rs.getInt("id_veterinario");
-                    if (!rs.wasNull()) {
-                        Veterinario veterinario = new Veterinario();
-                        veterinario.setIdUsuario(idVeterinario);
-                        cita.setVeterinario(veterinario);
-                    }
+                    return mapearCita(rs);
                 }
             }
-            return cita;
+
+            return null;
+
         } catch (Exception ex) {
-            System.out.println("ERROR AL OBTENER CITA POR ID: " + ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new RuntimeException(
+                    "Error al obtener la cita por ID", ex
+            );
         }
     }
 
     @Override
     public List<Cita> listarTodos() {
         List<Cita> citas = new ArrayList<>();
+
         String sql =
-                "SELECT id_cita, id_mascota, fecha, hora, estado, "
-                        + "id_usuario, id_recepcionista, id_veterinario "
-                        + "FROM CITA "
-                        + "WHERE activo = TRUE";
+                "SELECT c.id_cita, c.id_mascota, c.fecha, c.hora, "
+                        + "c.estado, c.id_recepcionista, c.id_veterinario, "
+                        + "m.id_usuario AS id_cliente "
+                        + "FROM CITA c "
+                        + "INNER JOIN MASCOTA m ON c.id_mascota = m.id_mascota "
+                        + "WHERE c.activo = TRUE";
+
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
-                Cita cita = new Cita();
-                cita.setIdCita(rs.getInt("id_cita"));
-
-                Mascota mascota = new Mascota();
-                mascota.setIdMascota(rs.getInt("id_mascota"));
-                cita.setMascota(mascota);
-
-                cita.setFecha(rs.getDate("fecha"));
-                cita.setHora(rs.getTime("hora").toLocalTime());
-                cita.setEstado(EstadoCita.valueOf(rs.getString("estado")));
-
-                Cliente cliente = new Cliente();
-                cliente.setIdUsuario(rs.getInt("id_usuario"));
-                cita.setCliente(cliente);
-
-                int idRecepcionista = rs.getInt("id_recepcionista");
-                if (!rs.wasNull()) {
-                    Recepcionista recepcionista = new Recepcionista();
-                    recepcionista.setIdUsuario(idRecepcionista);
-                    cita.setRecepcionista(recepcionista);
-                }
-
-                int idVeterinario = rs.getInt("id_veterinario");
-                if (!rs.wasNull()) {
-                    Veterinario veterinario = new Veterinario();
-                    veterinario.setIdUsuario(idVeterinario);
-                    cita.setVeterinario(veterinario);
-                }
-
-                citas.add(cita);
+                citas.add(mapearCita(rs));
             }
+
             return citas;
+
         } catch (Exception ex) {
-            System.out.println("ERROR AL LISTAR CITAS: " + ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new RuntimeException(
+                    "Error al listar las citas", ex
+            );
         }
     }
 

@@ -19,16 +19,14 @@ public class VacunaBOImpl implements IVacunaBO {
     private void validarVacuna(Vacuna vacuna) {
         if (vacuna == null)
             throw new RuntimeException("La vacuna que se quiere registrar es null");
-        if (vacuna.getVacunacion() == null || vacuna.getVacunacion().getIdAtencion() <= 0)
-            throw new RuntimeException("La vacunación asociada no es válida");
         if (vacuna.getNombre() == null || vacuna.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre de la vacuna es obligatorio");
-        if (vacuna.getNombre().length() > 200)
-            throw new RuntimeException("El nombre de la vacuna no debe exceder los 200 caracteres");
+        if (vacuna.getNombre().length() > 50)
+            throw new RuntimeException("El nombre de la vacuna no debe exceder los 50 caracteres");
         if (vacuna.getDescripcion() == null || vacuna.getDescripcion().trim().isEmpty())
             throw new RuntimeException("La descripción de la vacuna es obligatoria");
-        if (vacuna.getDescripcion().length() > 500)
-            throw new RuntimeException("La descripción no debe exceder los 500 caracteres");
+        if (vacuna.getDescripcion().length() > 255)
+            throw new RuntimeException("La descripción no debe exceder los 255 caracteres");
     }
 
     @Override

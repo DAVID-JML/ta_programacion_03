@@ -34,20 +34,30 @@ public class ConsultaBOImpl implements IConsultaBO {
             throw new RuntimeException("El peso actual no puede ser negativo");
         if (consulta.getObservaciones() != null && consulta.getObservaciones().length() > 255)
             throw new RuntimeException("Las observaciones no deben exceder los 255 caracteres");
-        if (consulta.getAlergias() != null && consulta.getAlergias().length() > 500)
+
+        if (consulta.getAlergias() != null && consulta.getAlergias().length() > 255)
             throw new RuntimeException("Las alergias no deben exceder los 500 caracteres");
+
         if (consulta.getMotivoConsulta() == null || consulta.getMotivoConsulta().trim().isEmpty())
             throw new RuntimeException("El motivo de consulta es obligatorio");
-        if (consulta.getMotivoConsulta().length() > 400)
+
+        if (consulta.getMotivoConsulta().length() > 150)
             throw new RuntimeException("El motivo de consulta no debe exceder los 400 caracteres");
+
         if (consulta.getDiagnostico() == null || consulta.getDiagnostico().trim().isEmpty())
             throw new RuntimeException("El diagnóstico es obligatorio");
-        if (consulta.getDiagnostico().length() > 400)
+
+        if (consulta.getDiagnostico().length() > 150)
             throw new RuntimeException("El diagnóstico no debe exceder los 400 caracteres");
+
         if (consulta.getTratamiento() == null || consulta.getTratamiento().trim().isEmpty())
             throw new RuntimeException("El tratamiento es obligatorio");
-        if (consulta.getTratamiento().length() > 400)
+
+        if (consulta.getTratamiento().length() > 255)
             throw new RuntimeException("El tratamiento no debe exceder los 400 caracteres");
+
+
+
     }
 
     @Override

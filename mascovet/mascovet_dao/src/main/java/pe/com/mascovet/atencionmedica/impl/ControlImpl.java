@@ -21,8 +21,8 @@ public class ControlImpl implements ControlDAO {
 
     @Override
     public int insertar(Control control) {
-        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_mascota, id_cita, peso_actual, alergias) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_cita, peso_actual, alergias) " +
+                "VALUES (?, ?, ?, ?, ?, ?)";
         String sql = "INSERT INTO CONTROL (id_atencion, evolucion, indicaciones) VALUES (?, ?, ?)";
         try {
             Connection con = TransactionContext.getConnection();
@@ -39,10 +39,9 @@ public class ControlImpl implements ControlDAO {
                 } else {
                     psAtencion.setTime(3, Time.valueOf(control.getHoraFin()));
                 }
-                psAtencion.setInt(4, control.getMascota().getIdMascota());
-                psAtencion.setInt(5, control.getCita().getIdCita());
-                psAtencion.setDouble(6, control.getPesoActual());
-                psAtencion.setString(7, control.getAlergias());
+                psAtencion.setInt(4, control.getCita().getIdCita());
+                psAtencion.setDouble(5, control.getPesoActual());
+                psAtencion.setString(6, control.getAlergias());
                 psAtencion.executeUpdate();
 
                 int idAtencion = 0;
@@ -73,7 +72,7 @@ public class ControlImpl implements ControlDAO {
 
     @Override
     public int modificar(Control control) {
-        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_mascota=?, id_cita=?, peso_actual=?, alergias=? " +
+        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_cita=?, peso_actual=?, alergias=? " +
                 "WHERE id_atencion=?";
         String sql = "UPDATE CONTROL SET evolucion=?, indicaciones=? WHERE id_atencion=?";
         try {
@@ -91,11 +90,10 @@ public class ControlImpl implements ControlDAO {
                 } else {
                     psAtencion.setTime(3, Time.valueOf(control.getHoraFin()));
                 }
-                psAtencion.setInt(4, control.getMascota().getIdMascota());
-                psAtencion.setInt(5, control.getCita().getIdCita());
-                psAtencion.setDouble(6, control.getPesoActual());
-                psAtencion.setString(7, control.getAlergias());
-                psAtencion.setInt(8, control.getIdAtencion());
+                psAtencion.setInt(4, control.getCita().getIdCita());
+                psAtencion.setDouble(5, control.getPesoActual());
+                psAtencion.setString(6, control.getAlergias());
+                psAtencion.setInt(7, control.getIdAtencion());
                 int filasBase = psAtencion.executeUpdate();
 
                 ps.setString(1, control.getEvolucion());
@@ -129,9 +127,10 @@ public class ControlImpl implements ControlDAO {
     @Override
     public Control obtenerPorId(int idControl) {
         Control control = null;
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, a.id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
+        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
                 "c.evolucion, c.indicaciones, r.id_receta " +
                 "FROM ATENCION_MEDICA a INNER JOIN CONTROL c ON a.id_atencion=c.id_atencion " +
+                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
                 "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion WHERE a.id_atencion=?";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -173,9 +172,10 @@ public class ControlImpl implements ControlDAO {
     @Override
     public List<Control> listarTodos() {
         List<Control> controles = new ArrayList<>();
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, a.id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
+        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
                 "c.evolucion, c.indicaciones, r.id_receta " +
                 "FROM ATENCION_MEDICA a INNER JOIN CONTROL c ON a.id_atencion=c.id_atencion " +
+                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
                 "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion";
         try (Connection con = DBManager.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql);

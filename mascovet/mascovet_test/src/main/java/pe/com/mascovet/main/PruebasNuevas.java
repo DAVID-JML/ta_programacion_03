@@ -17,6 +17,7 @@ import java.time.*;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+
 public class PruebasNuevas {
     private final CitaBOImpl citas = new CitaBOImpl();
     private final HorarioAtencionBOImpl horarios = new HorarioAtencionBOImpl();
@@ -88,9 +89,10 @@ public class PruebasNuevas {
     private void preparar() throws SQLException {
         // Falla antes de crear datos si no se aplicó el ALTER TABLE.
         numero("SELECT COUNT(*) FROM CITA WHERE activo = TRUE");
+        numero("SELECT COUNT(*) FROM VACUNACION_VACUNA");
         String marca = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         cliente = new Cliente(0, dni(), "Prueba", "Cliente", "pc_" + marca,
-                "clave123", true, marca + "@example.com", "999999999");
+                "clave123", true, marca + "@example.com", telefonoUnico());
         verificar(new ClienteBOImpl().insertar(cliente) > 0, "Crear cliente de pruebas");
         vet = veterinario("pv_" + marca);
         otroVet = veterinario("po_" + marca);
@@ -115,9 +117,17 @@ public class PruebasNuevas {
         return valor;
     }
 
+    private String telefonoUnico() throws SQLException {
+        String telefono;
+        do {
+            telefono = "9" + ThreadLocalRandom.current().nextInt(10000000, 100000000);
+        } while (numero("SELECT COUNT(*) FROM CLIENTE WHERE telefono=?", telefono) > 0);
+        return telefono;
+    }
+
     private Veterinario veterinario(String nombre) throws SQLException {
         Veterinario v = new Veterinario(0, dni(), "Prueba", "Veterinario", nombre,
-                "clave123", true, "T" + nombre.substring(3), Especialidad.MEDICINA_GENERAL);
+                "clave123", true, "T" + nombre, Especialidad.MEDICINA_GENERAL);
         verificar(new VeterinarioBOImpl().insertar(v) > 0, "Crear " + nombre);
         return v;
     }
@@ -394,9 +404,24 @@ public class PruebasNuevas {
                 "Se persistió la atención base");
         verificar(numero("SELECT COUNT(*) FROM VACUNACION WHERE id_atencion=?", v.getIdAtencion()) == 1,
                 "Se persistió la vacunación");
-        verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacunacion=?", v.getIdAtencion()) == 2,
-                "Se persistieron las dos vacunas");
+        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_atencion=?", v.getIdAtencion()) == 2,
+                "Se persistieron las dos asociaciones de vacunas");
+        verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacuna IN (?, ?)",
+                        v.getVacunas().get(0).getIdVacuna(), v.getVacunas().get(1).getIdVacuna()) == 2,
+                "Se persistieron las dos vacunas nuevas del catalogo");
         atendida(cv);
+
+        Cita reutilizada = confirmada("11:20");
+        Vacunacion reutilizar = vacunacion(reutilizada);
+        Vacuna delCatalogo = new Vacuna();
+        delCatalogo.setIdVacuna(v.getVacunas().get(0).getIdVacuna());
+        reutilizar.agregarVacuna(delCatalogo);
+        verificar(new VacunacionBOImpl().insertarConVacunas(reutilizar) > 0,
+                "Reutilizar vacuna existente del catalogo");
+        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_atencion=? AND id_vacuna=?",
+                        reutilizar.getIdAtencion(), delCatalogo.getIdVacuna()) == 1,
+                "La vacuna existente se asocio a otra vacunacion");
+        atendida(reutilizada);
 
         Cita cr = confirmada("11:15");
         Vacunacion vr = vacunacion(cr);
@@ -418,8 +443,14 @@ public class PruebasNuevas {
                 "Rollback revierte atención base");
         verificar(numero("SELECT COUNT(*) FROM VACUNACION WHERE id_atencion=?", vr.getIdAtencion()) == 0,
                 "Rollback revierte vacunación");
-        verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacunacion=?", vr.getIdAtencion()) == 0,
-                "Rollback revierte vacunas");
+        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_atencion=?", vr.getIdAtencion()) == 0,
+                "Rollback revierte las asociaciones de vacunas");
+        verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacuna=?",
+                        vr.getVacunas().get(0).getIdVacuna()) == 0,
+                "Rollback revierte la vacuna nueva del catalogo");
+        verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacuna=?",
+                        delCatalogo.getIdVacuna()) == 1,
+                "Rollback conserva vacunas confirmadas previamente");
         verificar(citas.obtenerPorId(cr.getIdCita()).getEstado() == EstadoCita.CONFIRMADA,
                 "Rollback restaura el estado CONFIRMADA de la cita");
         verificar(TransactionContext.getCurrentConnection() == null, "Se cerró el contexto transaccional");

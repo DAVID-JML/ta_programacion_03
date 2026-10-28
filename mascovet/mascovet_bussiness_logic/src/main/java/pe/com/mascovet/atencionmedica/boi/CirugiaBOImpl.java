@@ -35,15 +35,15 @@ public class CirugiaBOImpl implements ICirugiaBO {
             throw new RuntimeException("El peso actual no puede ser negativo");
         if (cirugia.getObservaciones() != null && cirugia.getObservaciones().length() > 255)
             throw new RuntimeException("Las observaciones no deben exceder los 255 caracteres");
-        if (cirugia.getAlergias() != null && cirugia.getAlergias().length() > 500)
+        if (cirugia.getAlergias() != null && cirugia.getAlergias().length() > 255)
             throw new RuntimeException("Las alergias no deben exceder los 500 caracteres");
         if (cirugia.getProcedimiento() == null || cirugia.getProcedimiento().trim().isEmpty())
             throw new RuntimeException("El procedimiento es obligatorio");
-        if (cirugia.getProcedimiento().length() > 500)
+        if (cirugia.getProcedimiento().length() > 150)
             throw new RuntimeException("El procedimiento no debe exceder los 500 caracteres");
         if (cirugia.getIndicacionesPostOperatorias() == null || cirugia.getIndicacionesPostOperatorias().trim().isEmpty())
             throw new RuntimeException("Las indicaciones postoperatorias son obligatorias");
-        if (cirugia.getIndicacionesPostOperatorias().length() > 500)
+        if (cirugia.getIndicacionesPostOperatorias().length() > 255)
             throw new RuntimeException("Las indicaciones postoperatorias no deben exceder los 500 caracteres");
     }
 

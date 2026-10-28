@@ -35,15 +35,15 @@ public class ControlBOImpl implements IControlBO {
             throw new RuntimeException("El peso actual no puede ser negativo");
         if (control.getObservaciones() != null && control.getObservaciones().length() > 255)
             throw new RuntimeException("Las observaciones no deben exceder los 255 caracteres");
-        if (control.getAlergias() != null && control.getAlergias().length() > 500)
+        if (control.getAlergias() != null && control.getAlergias().length() > 255)
             throw new RuntimeException("Las alergias no deben exceder los 500 caracteres");
         if (control.getEvolucion() == null || control.getEvolucion().trim().isEmpty())
             throw new RuntimeException("La evolución es obligatoria");
-        if (control.getEvolucion().length() > 500)
+        if (control.getEvolucion().length() > 150)
             throw new RuntimeException("La evolución no debe exceder los 500 caracteres");
         if (control.getIndicaciones() == null || control.getIndicaciones().trim().isEmpty())
             throw new RuntimeException("Las indicaciones son obligatorias");
-        if (control.getIndicaciones().length() > 500)
+        if (control.getIndicaciones().length() > 255)
             throw new RuntimeException("Las indicaciones no deben exceder los 500 caracteres");
     }
 
