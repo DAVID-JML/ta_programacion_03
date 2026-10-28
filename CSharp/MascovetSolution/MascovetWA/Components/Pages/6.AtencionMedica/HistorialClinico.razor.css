@@ -1,0 +1,371 @@
+
+.historias-clinicas {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.historias-clinicas__header h1 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.historias-clinicas__header p {
+    max-width: 720px;
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+}
+
+.historias-clinicas__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-4);
+    min-width: 0;
+}
+
+.historias-clinicas__section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--ms-space-4);
+}
+
+.historias-clinicas__step {
+    display: block;
+    margin-bottom: var(--ms-space-2);
+    color: var(--ms-color-primary);
+    font-size: var(--ms-font-size-meta);
+    font-weight: var(--ms-font-weight-bold);
+    letter-spacing: 0.06em;
+}
+
+.historias-clinicas__section-heading h2 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-section);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.historias-clinicas__section-heading p {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+.historias-clinicas__client-card ::deep .ms-card__body,
+.historias-clinicas__pets-filter-card ::deep .ms-card__body,
+.historias-clinicas__attentions-card ::deep .ms-card__body {
+    min-width: 0;
+}
+
+.historias-clinicas__client-card ::deep .ms-table-wrap,
+.historias-clinicas__attentions-card ::deep .ms-table-wrap {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.historias-clinicas__client-card ::deep .ms-table,
+.historias-clinicas__attentions-card ::deep .ms-table {
+    width: 100%;
+}
+
+    .historias-clinicas__client-card ::deep .ms-table th,
+    .historias-clinicas__client-card ::deep .ms-table td,
+    .historias-clinicas__attentions-card ::deep .ms-table th,
+    .historias-clinicas__attentions-card ::deep .ms-table td {
+        padding: var(--ms-space-3) var(--ms-space-4);
+        vertical-align: middle;
+    }
+
+.historias-clinicas__selected-client {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-3);
+    padding: var(--ms-space-4);
+    border: var(--ms-border-width) solid var(--ms-color-info-border);
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-info-bg);
+}
+
+.historias-clinicas__selection-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-surface);
+    color: var(--ms-color-primary);
+}
+
+.historias-clinicas__selected-client > div {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--ms-space-1);
+    min-width: 0;
+}
+
+    .historias-clinicas__selected-client > div span {
+        color: var(--ms-color-info-text);
+        font-size: var(--ms-font-size-small);
+    }
+
+    .historias-clinicas__selected-client > div strong {
+        color: var(--ms-color-info-text);
+        font-size: var(--ms-font-size-body);
+        overflow-wrap: anywhere;
+    }
+
+.historias-clinicas__pets-filter-card ::deep .ms-filterbar {
+    margin-bottom: 0;
+}
+
+.historias-clinicas__pets-filter-card ::deep .ms-filterbar__filters .ms-field {
+    min-width: 12rem;
+}
+
+.historias-clinicas__pets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    align-items: stretch;
+    gap: var(--ms-space-4);
+}
+
+.historias-clinicas__pet-card {
+    display: flex;
+    min-width: 0;
+}
+
+    .historias-clinicas__pet-card ::deep .ms-card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        border-color: var(--ms-color-border);
+        transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+.historias-clinicas__pet-card--selected ::deep .ms-card {
+    border-color: var(--ms-color-primary);
+    box-shadow: var(--ms-shadow-md);
+}
+
+.historias-clinicas__pet-card ::deep .ms-card__body {
+    flex: 1;
+}
+
+.historias-clinicas__pet-content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ms-space-4);
+}
+
+.historias-clinicas__pet-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border: var(--ms-border-width) solid var(--ms-color-border);
+    border-radius: var(--ms-radius-card);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary);
+}
+
+.historias-clinicas__pet-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-2);
+    min-width: 0;
+    margin: 0;
+}
+
+    .historias-clinicas__pet-details dt {
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-small);
+    }
+
+    .historias-clinicas__pet-details dd {
+        margin: var(--ms-space-1) 0 0;
+        color: var(--ms-color-text);
+        font-size: var(--ms-font-size-body);
+        font-weight: var(--ms-font-weight-medium);
+    }
+
+.historias-clinicas__pet-card ::deep .ms-card__footer {
+    margin-top: auto;
+}
+
+    .historias-clinicas__pet-card ::deep .ms-card__footer .ms-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+.historias-clinicas__pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--ms-space-4);
+}
+
+.historias-clinicas__date {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-1);
+    white-space: nowrap;
+}
+
+    .historias-clinicas__date strong {
+        color: var(--ms-color-text);
+        font-size: var(--ms-font-size-small);
+        font-weight: var(--ms-font-weight-semibold);
+    }
+
+    .historias-clinicas__date span {
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-meta);
+    }
+
+.historias-clinicas__id {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.historias-clinicas__diagnosis {
+    display: block;
+    min-width: 10rem;
+    max-width: 18rem;
+    overflow-wrap: anywhere;
+}
+
+.historias-clinicas__filter-error {
+    margin: 0 0 var(--ms-space-4);
+    color: var(--ms-color-error-text);
+    font-size: var(--ms-font-size-small);
+}
+
+.historias-clinicas__detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-5);
+}
+
+.historias-clinicas__detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-3);
+    padding-bottom: var(--ms-space-3);
+    border-bottom: var(--ms-border-width) solid var(--ms-color-border);
+}
+
+    .historias-clinicas__detail-heading span {
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-small);
+    }
+
+    .historias-clinicas__detail-heading strong {
+        color: var(--ms-color-primary-dark);
+        font-size: var(--ms-font-size-section);
+    }
+
+.historias-clinicas__detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-4) var(--ms-space-6);
+    margin: 0;
+}
+
+    .historias-clinicas__detail-grid > div {
+        min-width: 0;
+    }
+
+    .historias-clinicas__detail-grid dt {
+        margin-bottom: var(--ms-space-1);
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-small);
+    }
+
+    .historias-clinicas__detail-grid dd {
+        margin: 0;
+        color: var(--ms-color-text);
+        font-size: var(--ms-font-size-body);
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+    }
+
+.historias-clinicas__detail-full {
+    grid-column: 1 / -1;
+    padding-top: var(--ms-space-3);
+    border-top: var(--ms-border-width) solid var(--ms-color-border);
+}
+
+.historias-clinicas ::deep .ms-modal {
+    width: min(44rem, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+}
+
+@media (max-width: 800px) {
+    .historias-clinicas__section-heading {
+        align-items: flex-start;
+    }
+
+    .historias-clinicas__attentions-card ::deep .ms-table {
+        min-width: 900px;
+    }
+}
+
+@media (max-width: 600px) {
+    .historias-clinicas {
+        gap: var(--ms-space-4);
+    }
+
+    .historias-clinicas__section {
+        gap: var(--ms-space-3);
+    }
+
+    .historias-clinicas__section-heading {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .historias-clinicas__pets-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .historias-clinicas__pagination {
+        justify-content: flex-start;
+    }
+
+    .historias-clinicas__detail-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .historias-clinicas__detail-full {
+        grid-column: auto;
+    }
+
+    .historias-clinicas__selected-client {
+        flex-wrap: wrap;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .historias-clinicas__pet-card ::deep .ms-card {
+        transition: none;
+    }
+}

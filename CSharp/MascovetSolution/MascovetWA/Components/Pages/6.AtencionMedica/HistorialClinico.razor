@@ -1,0 +1,818 @@
+﻿@page "/veterinario/historias"
+@layout MainLayout
+
+<PageTitle>Historias clínicas | Mascovet</PageTitle>
+
+<div class="historias-clinicas">
+
+    <header class="historias-clinicas__header">
+        <h1>Historias clínicas</h1>
+        <p>
+            Busca un cliente, selecciona una de sus mascotas y consulta
+            sus atenciones médicas registradas en la clínica.
+        </p>
+    </header>
+
+    <section class="historias-clinicas__section"
+             aria-labelledby="historias-clientes-title">
+
+        <div class="historias-clinicas__section-heading">
+            <div>
+                <span class="historias-clinicas__step">PASO 1</span>
+                <h2 id="historias-clientes-title">Seleccionar cliente</h2>
+                <p>Busca por nombre, DNI o correo electrónico.</p>
+            </div>
+
+            @if (ClienteSeleccionado is not null)
+            {
+                <AppButton Variant="ButtonVariant.Tertiary"
+                           Size="ButtonSize.Small"
+                           OnClick="@CambiarCliente">
+                    Cambiar cliente
+                </AppButton>
+            }
+        </div>
+
+        <AppCard class="historias-clinicas__client-card">
+
+            <ChildContent>
+                <AppFilterBar SearchText="@busquedaCliente"
+                              SearchTextChanged="@CambiarBusquedaCliente"
+                              SearchLabel="Buscar cliente"
+                              SearchPlaceholder="Nombre, DNI o correo electrónico"
+                              OnClear="@LimpiarBusquedaCliente" />
+
+                @if (ClienteSeleccionado is { } clienteActual)
+                {
+                    <div class="historias-clinicas__selected-client">
+                        <span class="historias-clinicas__selection-icon">
+                            <AppIcon Name="user" Size="22" />
+                        </span>
+
+                        <div>
+                            <span>Cliente seleccionado</span>
+                            <strong>@clienteActual.NombreCompleto</strong>
+                        </div>
+
+                        <AppBadge Variant="SemanticVariant.Info"
+                                  ShowIcon="false">
+                            Seleccionado
+                        </AppBadge>
+                    </div>
+                }
+                else
+                {
+                    var clientesVisibles = ClientesFiltrados.ToList();
+
+                    <AppTable TItem="ClienteItem"
+                              Items="@Pagina(clientesVisibles, paginaClientes)"
+                              ColumnCount="4"
+                              Caption="Clientes disponibles para consultar historias clínicas">
+
+                        <HeaderContent>
+                            <th scope="col">Cliente</th>
+                            <th scope="col">DNI</th>
+                            <th scope="col">Correo electrónico</th>
+                            <th scope="col">Acción</th>
+                        </HeaderContent>
+
+                        <RowTemplate Context="cliente">
+                            <td>
+                                <strong>@cliente.NombreCompleto</strong>
+                            </td>
+
+                            <td>@ValorOGuion(cliente.Dni)</td>
+
+                            <td>@ValorOGuion(cliente.Correo)</td>
+
+                            <td>
+                                <AppButton Size="ButtonSize.Small"
+                                           Variant="ButtonVariant.Secondary"
+                                           OnClick="@(() => SeleccionarCliente(cliente))">
+                                    Seleccionar
+                                </AppButton>
+                            </td>
+                        </RowTemplate>
+
+                        <EmptyContent>
+                            <AppEmptyState Icon="users"
+                                           Title="No hay clientes para mostrar"
+                                           Description="Los clientes aparecerán aquí cuando se cargue la información de la clínica." />
+                        </EmptyContent>
+
+                    </AppTable>
+
+                    <div class="historias-clinicas__pagination">
+                        <AppPagination @bind-CurrentPage="paginaClientes"
+                                       TotalItems="@clientesVisibles.Count"
+                                       PageSize="@TamPagina"
+                                       AriaLabel="Paginación de clientes" />
+                    </div>
+                }
+            </ChildContent>
+
+        </AppCard>
+    </section>
+
+    @if (ClienteSeleccionado is { } cliente)
+    {
+        <section class="historias-clinicas__section"
+                 aria-labelledby="historias-mascotas-title">
+
+            <div class="historias-clinicas__section-heading">
+                <div>
+                    <span class="historias-clinicas__step">PASO 2</span>
+                    <h2 id="historias-mascotas-title">
+                        Mascotas de @cliente.NombreCompleto
+                    </h2>
+                    <p>
+                        Selecciona la mascota cuya historia clínica deseas consultar.
+                    </p>
+                </div>
+            </div>
+
+            <AppCard class="historias-clinicas__pets-filter-card">
+                <ChildContent>
+                    <AppFilterBar SearchText="@busquedaMascota"
+                                  SearchTextChanged="@CambiarBusquedaMascota"
+                                  SearchLabel="Buscar mascota"
+                                  SearchPlaceholder="Nombre o raza"
+                                  OnClear="@LimpiarFiltrosMascotas">
+
+                        <ChildContent>
+                            <AppSelect TValue="string"
+                                       Id="historias-filtro-especie"
+                                       Label="Especie"
+                                       Placeholder="Todas las especies"
+                                       Options="@OpcionesEspecie"
+                                       @bind-Value="especieSeleccionada"
+                                       @bind-Value:after="ReiniciarPaginaMascotas" />
+                        </ChildContent>
+
+                    </AppFilterBar>
+                </ChildContent>
+            </AppCard>
+
+            @{
+                var mascotasDelCliente = MascotasFiltradas.ToList();
+            }
+
+            @if (!MascotasDelCliente.Any())
+            {
+                <AppEmptyState Icon="heart"
+                               Title="No hay mascotas para mostrar"
+                               Description="Las mascotas asociadas al cliente aparecerán aquí cuando esté disponible la información de la clínica." />
+            }
+            else
+            {
+                <div class="historias-clinicas__pets-grid">
+
+                    @foreach (var mascota in Pagina(mascotasDelCliente, paginaMascotas))
+                    {
+                        var seleccionada = mascota.Id == mascotaSeleccionadaId;
+
+                        <article @key="mascota.Id"
+                                 class="historias-clinicas__pet-card @(seleccionada ? "historias-clinicas__pet-card--selected" : string.Empty)">
+
+                            <AppCard Title="@mascota.Nombre"
+                                     Subtitle="@SubtituloMascota(mascota)">
+
+                                <ChildContent>
+                                    <div class="historias-clinicas__pet-content">
+
+                                        <span class="historias-clinicas__pet-icon"
+                                              aria-hidden="true">
+                                            <AppIcon Name="@ObtenerIconoEspecie(mascota.Especie)"
+                                                     Size="30" />
+                                        </span>
+
+                                        <dl class="historias-clinicas__pet-details">
+                                            <div>
+                                                <dt>Sexo</dt>
+                                                <dd>@ValorOGuion(mascota.Sexo)</dd>
+                                            </div>
+                                        </dl>
+
+                                    </div>
+                                </ChildContent>
+
+                                <Footer>
+                                    <AppButton Type="button"
+                                               Variant="@(seleccionada ? ButtonVariant.Primary : ButtonVariant.Secondary)"
+                                               Size="ButtonSize.Small"
+                                               Icon="file-text"
+                                               OnClick="@(() => SeleccionarMascota(mascota))">
+                                        @(seleccionada ? "Mascota seleccionada" : "Ver atenciones")
+                                    </AppButton>
+                                </Footer>
+
+                            </AppCard>
+                        </article>
+                    }
+
+                </div>
+
+                <div class="historias-clinicas__pagination">
+                    <AppPagination @bind-CurrentPage="paginaMascotas"
+                                   TotalItems="@mascotasDelCliente.Count"
+                                   PageSize="@TamPagina"
+                                   AriaLabel="Paginación de mascotas" />
+                </div>
+            }
+
+        </section>
+    }
+
+    @if (MascotaSeleccionada is { } mascotaActiva)
+    {
+        <section class="historias-clinicas__section"
+                 aria-labelledby="historias-atenciones-title">
+
+            <div class="historias-clinicas__section-heading">
+                <div>
+                    <span class="historias-clinicas__step">PASO 3</span>
+                    <h2 id="historias-atenciones-title">
+                        Atenciones médicas de @mascotaActiva.Nombre
+                    </h2>
+                    <p>
+                        Consulta las atenciones realizadas por los distintos
+                        veterinarios de la clínica.
+                    </p>
+                </div>
+
+                <AppButton Type="button"
+                           Variant="ButtonVariant.Tertiary"
+                           Size="ButtonSize.Small"
+                           Icon="chevron-left"
+                           OnClick="@CambiarMascota">
+                    Cambiar mascota
+                </AppButton>
+            </div>
+
+            <AppCard class="historias-clinicas__attentions-card"
+                     Title="Historial de atenciones"
+                     Subtitle="Cada fila representa una atención médica individual, aunque varias pertenezcan a la misma cita.">
+
+                <ChildContent>
+                    <AppFilterBar SearchText="@busquedaAtencion"
+                                  SearchTextChanged="@CambiarBusquedaAtencion"
+                                  SearchLabel="Buscar atención"
+                                  SearchPlaceholder="Diagnóstico, veterinario o ID de cita"
+                                  OnClear="@LimpiarFiltrosAtenciones">
+
+                        <ChildContent>
+                            <AppSelect TValue="string"
+                                       Id="historias-filtro-tipo"
+                                       Label="Tipo de atención"
+                                       Placeholder="Todos los tipos"
+                                       Options="@OpcionesTipoAtencion"
+                                       @bind-Value="tipoAtencionSeleccionado"
+                                       @bind-Value:after="ReiniciarPaginaAtenciones" />
+
+                            <AppDatePicker Id="historias-fecha-desde"
+                                           Label="Fecha desde"
+                                           Max="@fechaHasta"
+                                           @bind-Value="fechaDesde"
+                                           @bind-Value:after="ReiniciarPaginaAtenciones" />
+
+                            <AppDatePicker Id="historias-fecha-hasta"
+                                           Label="Fecha hasta"
+                                           Min="@fechaDesde"
+                                           @bind-Value="fechaHasta"
+                                           @bind-Value:after="ReiniciarPaginaAtenciones" />
+                        </ChildContent>
+
+                    </AppFilterBar>
+
+                    @if (RangoFechasInvalido)
+                    {
+                        <p class="historias-clinicas__filter-error" role="alert">
+                            La fecha inicial no puede ser posterior a la fecha final.
+                        </p>
+                    }
+
+                    @{
+                        var atencionesVisibles = AtencionesFiltradas.ToList();
+                    }
+
+                    <AppTable TItem="AtencionItem"
+                              Items="@Pagina(atencionesVisibles, paginaAtenciones)"
+                              ColumnCount="7"
+                              Caption="Atenciones médicas de la mascota seleccionada">
+
+                        <HeaderContent>
+                            <th scope="col">Atención</th>
+                            <th scope="col">Cita</th>
+                            <th scope="col">Fecha y hora</th>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Veterinario</th>
+                            <th scope="col">Diagnóstico</th>
+                            <th scope="col">Detalle</th>
+                        </HeaderContent>
+
+                        <RowTemplate Context="atencion">
+                            <td class="historias-clinicas__id">
+                                @atencion.Id
+                            </td>
+
+                            <td class="historias-clinicas__id">
+                                @ValorOGuion(atencion.IdCita?.ToString())
+                            </td>
+
+                            <td>
+                                <div class="historias-clinicas__date">
+                                    <strong>@atencion.Fecha.ToString("dd/MM/yyyy")</strong>
+                                    <span>@(atencion.Hora?.ToString("HH:mm") ?? "—")</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <AppBadge Variant="SemanticVariant.Neutral"
+                                          ShowIcon="false">
+                                    @atencion.Tipo
+                                </AppBadge>
+                            </td>
+
+                            <td>@ValorOGuion(atencion.Veterinario)</td>
+
+                            <td>
+                                <span class="historias-clinicas__diagnosis">
+                                    @ValorOGuion(atencion.Diagnostico)
+                                </span>
+                            </td>
+
+                            <td>
+                                <AppButton Size="ButtonSize.Small"
+                                           Variant="ButtonVariant.Tertiary"
+                                           Icon="file-text"
+                                           OnClick="@(() => AbrirDetalle(atencion))">
+                                    Ver detalle
+                                </AppButton>
+                            </td>
+                        </RowTemplate>
+
+                        <EmptyContent>
+                            <AppEmptyState Icon="file-text"
+                                           Title="No hay atenciones para mostrar"
+                                           Description="Las atenciones médicas registradas para esta mascota aparecerán aquí cuando se cargue la información clínica." />
+                        </EmptyContent>
+
+                    </AppTable>
+
+                    <div class="historias-clinicas__pagination">
+                        <AppPagination @bind-CurrentPage="paginaAtenciones"
+                                       TotalItems="@atencionesVisibles.Count"
+                                       PageSize="@TamPagina"
+                                       AriaLabel="Paginación de atenciones médicas" />
+                    </div>
+
+                </ChildContent>
+
+            </AppCard>
+
+        </section>
+    }
+
+    <AppModal @bind-Visible="mostrarDetalle"
+              Title="Detalle de atención"
+              CancelText="Cerrar"
+              OnCancel="@CerrarDetalle">
+
+        <ChildContent>
+            @if (atencionSeleccionada is { } detalle)
+            {
+                <div class="historias-clinicas__detail">
+
+                    <div class="historias-clinicas__detail-heading">
+                        <span>Atención médica</span>
+                        <strong>#@detalle.Id</strong>
+                    </div>
+
+                    <dl class="historias-clinicas__detail-grid">
+
+                        <div>
+                            <dt>ID de cita</dt>
+                            <dd>@ValorOGuion(detalle.IdCita?.ToString())</dd>
+                        </div>
+
+                        <div>
+                            <dt>Fecha</dt>
+                            <dd>@detalle.Fecha.ToString("dd/MM/yyyy")</dd>
+                        </div>
+
+                        <div>
+                            <dt>Hora</dt>
+                            <dd>@(detalle.Hora?.ToString("HH:mm") ?? "—")</dd>
+                        </div>
+
+                        <div>
+                            <dt>Tipo de atención</dt>
+                            <dd>@detalle.Tipo</dd>
+                        </div>
+
+                        <div>
+                            <dt>Veterinario</dt>
+                            <dd>@ValorOGuion(detalle.Veterinario)</dd>
+                        </div>
+
+                        <div>
+                            <dt>Peso actual</dt>
+                            <dd>
+                                @(detalle.PesoActual.HasValue
+                                    ? $"{detalle.PesoActual.Value:0.##} kg"
+                                    : "No registrado")
+                            </dd>
+                        </div>
+
+                        <div class="historias-clinicas__detail-full">
+                            <dt>Diagnóstico</dt>
+                            <dd>@ValorOGuion(detalle.Diagnostico)</dd>
+                        </div>
+
+                        <div class="historias-clinicas__detail-full">
+                            <dt>Tratamiento</dt>
+                            <dd>@ValorOGuion(detalle.Tratamiento)</dd>
+                        </div>
+
+                        <div class="historias-clinicas__detail-full">
+                            <dt>Observaciones</dt>
+                            <dd>@ValorOGuion(detalle.Observaciones)</dd>
+                        </div>
+
+                    </dl>
+
+                </div>
+            }
+        </ChildContent>
+
+        <Actions>
+            <AppButton Variant="ButtonVariant.Secondary"
+                       OnClick="@CerrarDetalle">
+                Cerrar
+            </AppButton>
+        </Actions>
+
+    </AppModal>
+
+</div>
+
+@code {
+    private const int TamPagina = 8;
+
+    private string? busquedaCliente;
+    private string? busquedaMascota;
+    private string? busquedaAtencion;
+
+    private string especieSeleccionada = string.Empty;
+    private string tipoAtencionSeleccionado = string.Empty;
+
+    private DateOnly? fechaDesde;
+    private DateOnly? fechaHasta;
+
+    private int paginaClientes = 1;
+    private int paginaMascotas = 1;
+    private int paginaAtenciones = 1;
+
+    private int? clienteSeleccionadoId;
+    private int? mascotaSeleccionadaId;
+
+    private bool mostrarDetalle;
+    private AtencionItem? atencionSeleccionada;
+
+    private ClienteItem? ClienteSeleccionado =>
+        clienteSeleccionadoId is int id
+            ? clientes.FirstOrDefault(c => c.Id == id)
+            : null;
+
+    private MascotaItem? MascotaSeleccionada =>
+        mascotaSeleccionadaId is int id
+            ? mascotas.FirstOrDefault(m => m.Id == id)
+            : null;
+
+    private bool RangoFechasInvalido =>
+        fechaDesde.HasValue &&
+        fechaHasta.HasValue &&
+        fechaDesde.Value > fechaHasta.Value;
+
+    private readonly List<SelectOption<string>> OpcionesEspecie =
+    [
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Otro", "Otro"),
+        new("No especificado", "No especificado")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesTipoAtencion =
+    [
+        new("Consulta general", "Consulta general"),
+        new("Control", "Control"),
+        new("Vacunación", "Vacunación"),
+        new("Cirugías", "Cirugías")
+    ];
+
+    // Colecciones vacías: no se utilizan registros ficticios.
+
+    private readonly List<ClienteItem> clientes =
+    [
+        new(
+        1,
+        "Ana Torres",
+        "71234567",
+        "ana.torres@example.com"),
+
+    new(
+        2,
+        "Marco Díaz",
+        "72345678",
+        "marco.diaz@example.com")
+    ];
+
+    private readonly List<MascotaItem> mascotas =
+    [
+        new(
+        101,
+        1,
+        "Luna",
+        "Perro",
+        "Mestiza",
+        "Hembra"),
+
+    new(
+        102,
+        1,
+        "Michi",
+        "Gato",
+        "Doméstico de pelo corto",
+        "Macho"),
+
+    new(
+        201,
+        2,
+        "Rocky",
+        "Perro",
+        "Labrador",
+        "Macho")
+    ];
+
+    private readonly List<AtencionItem> atenciones =
+    [
+        // Dos atenciones pertenecientes a la misma cita.
+        new(
+        9001,
+        101,
+        5001,
+        new DateOnly(2026, 10, 14),
+        new TimeOnly(10, 30),
+        "Consulta general",
+        "Dra. Valeria Rojas",
+        "Otitis leve",
+        "Limpieza y tratamiento indicado",
+        "Paciente estable",
+        8.4m),
+
+    new(
+        9002,
+        101,
+        5001,
+        new DateOnly(2026, 10, 14),
+        new TimeOnly(10, 50),
+        "Control",
+        "Dr. Carlos Ramírez",
+        "Evolución favorable",
+        "Continuar con las indicaciones",
+        "Sin complicaciones",
+        8.4m),
+
+    new(
+        9003,
+        102,
+        5002,
+        new DateOnly(2026, 10, 19),
+        new TimeOnly(15, 0),
+        "Vacunación",
+        "Dra. Valeria Rojas",
+        "Vacunación registrada",
+        "Seguimiento de próxima dosis",
+        "Buena tolerancia",
+        4.2m),
+
+    new(
+        9004,
+        201,
+        5003,
+        new DateOnly(2026, 10, 21),
+        new TimeOnly(9, 30),
+        "Cirugías",
+        "Dr. Carlos Ramírez",
+        "Procedimiento quirúrgico registrado",
+        "Seguimiento postoperatorio",
+        "Control según indicaciones",
+        18.5m)
+    ];
+
+
+    private IEnumerable<ClienteItem> ClientesFiltrados =>
+        clientes.Where(c =>
+            string.IsNullOrWhiteSpace(busquedaCliente) ||
+            Coincide(c.NombreCompleto, busquedaCliente) ||
+            Coincide(c.Dni, busquedaCliente) ||
+            Coincide(c.Correo, busquedaCliente));
+
+    private IEnumerable<MascotaItem> MascotasDelCliente =>
+        clienteSeleccionadoId is int id
+            ? mascotas.Where(m => m.IdCliente == id)
+            : Enumerable.Empty<MascotaItem>();
+
+    private IEnumerable<MascotaItem> MascotasFiltradas =>
+        MascotasDelCliente.Where(m =>
+            (string.IsNullOrWhiteSpace(busquedaMascota) ||
+             Coincide(m.Nombre, busquedaMascota) ||
+             Coincide(m.Raza, busquedaMascota)) &&
+            (string.IsNullOrWhiteSpace(especieSeleccionada) ||
+             string.Equals(
+                 m.Especie,
+                 especieSeleccionada,
+                 StringComparison.OrdinalIgnoreCase)));
+
+    private IEnumerable<AtencionItem> AtencionesFiltradas
+    {
+        get
+        {
+            if (mascotaSeleccionadaId is not int id ||
+                RangoFechasInvalido)
+            {
+                return Enumerable.Empty<AtencionItem>();
+            }
+
+            return atenciones.Where(a =>
+                a.IdMascota == id &&
+
+                (string.IsNullOrWhiteSpace(busquedaAtencion) ||
+                 Coincide(a.Diagnostico, busquedaAtencion) ||
+                 Coincide(a.Tratamiento, busquedaAtencion) ||
+                 Coincide(a.Veterinario, busquedaAtencion) ||
+                 Coincide(a.Id.ToString(), busquedaAtencion) ||
+                 Coincide(a.IdCita?.ToString(), busquedaAtencion)) &&
+
+                (string.IsNullOrWhiteSpace(tipoAtencionSeleccionado) ||
+                 string.Equals(
+                     a.Tipo,
+                     tipoAtencionSeleccionado,
+                     StringComparison.OrdinalIgnoreCase)) &&
+
+                (!fechaDesde.HasValue || a.Fecha >= fechaDesde.Value) &&
+                (!fechaHasta.HasValue || a.Fecha <= fechaHasta.Value));
+        }
+    }
+
+    private static bool Coincide(string? valor, string? criterio) =>
+        !string.IsNullOrWhiteSpace(valor) &&
+        !string.IsNullOrWhiteSpace(criterio) &&
+        valor.Contains(
+            criterio.Trim(),
+            StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<T> Pagina<T>(
+        IEnumerable<T> fuente,
+        int pagina) =>
+        fuente
+            .Skip((Math.Max(1, pagina) - 1) * TamPagina)
+            .Take(TamPagina);
+
+    private static string ValorOGuion(string? valor) =>
+        string.IsNullOrWhiteSpace(valor) ? "—" : valor;
+
+    private static string SubtituloMascota(MascotaItem mascota) =>
+        string.IsNullOrWhiteSpace(mascota.Raza)
+            ? mascota.Especie
+            : $"{mascota.Especie} · {mascota.Raza}";
+
+    private static string ObtenerIconoEspecie(string especie) =>
+        especie.Trim().ToLowerInvariant() switch
+        {
+            "perro" => "dog",
+            "gato" => "cat",
+            _ => "paw-print"
+        };
+
+    private void CambiarBusquedaCliente(string? texto)
+    {
+        busquedaCliente = texto;
+        paginaClientes = 1;
+    }
+
+    private void LimpiarBusquedaCliente()
+    {
+        busquedaCliente = string.Empty;
+        paginaClientes = 1;
+    }
+
+    private void SeleccionarCliente(ClienteItem cliente)
+    {
+        clienteSeleccionadoId = cliente.Id;
+        mascotaSeleccionadaId = null;
+
+        busquedaMascota = string.Empty;
+        especieSeleccionada = string.Empty;
+
+        LimpiarFiltrosAtenciones();
+        ReiniciarPaginaMascotas();
+    }
+
+    private void CambiarCliente()
+    {
+        clienteSeleccionadoId = null;
+        mascotaSeleccionadaId = null;
+
+        busquedaMascota = string.Empty;
+        especieSeleccionada = string.Empty;
+
+        LimpiarFiltrosAtenciones();
+        ReiniciarPaginaClientes();
+        ReiniciarPaginaMascotas();
+    }
+
+    private void CambiarBusquedaMascota(string? texto)
+    {
+        busquedaMascota = texto;
+        ReiniciarPaginaMascotas();
+    }
+
+    private void LimpiarFiltrosMascotas()
+    {
+        busquedaMascota = string.Empty;
+        especieSeleccionada = string.Empty;
+        ReiniciarPaginaMascotas();
+    }
+
+    private void SeleccionarMascota(MascotaItem mascota)
+    {
+        mascotaSeleccionadaId = mascota.Id;
+        LimpiarFiltrosAtenciones();
+    }
+
+    private void CambiarMascota()
+    {
+        mascotaSeleccionadaId = null;
+        LimpiarFiltrosAtenciones();
+    }
+
+    private void CambiarBusquedaAtencion(string? texto)
+    {
+        busquedaAtencion = texto;
+        ReiniciarPaginaAtenciones();
+    }
+
+    private void LimpiarFiltrosAtenciones()
+    {
+        busquedaAtencion = string.Empty;
+        tipoAtencionSeleccionado = string.Empty;
+        fechaDesde = null;
+        fechaHasta = null;
+        paginaAtenciones = 1;
+        CerrarDetalle();
+    }
+
+    private void ReiniciarPaginaClientes() => paginaClientes = 1;
+    private void ReiniciarPaginaMascotas() => paginaMascotas = 1;
+    private void ReiniciarPaginaAtenciones() => paginaAtenciones = 1;
+
+    private void AbrirDetalle(AtencionItem atencion)
+    {
+        atencionSeleccionada = atencion;
+        mostrarDetalle = true;
+    }
+
+    private void CerrarDetalle()
+    {
+        mostrarDetalle = false;
+        atencionSeleccionada = null;
+    }
+
+    private sealed record ClienteItem(
+        int Id,
+        string NombreCompleto,
+        string? Dni,
+        string? Correo);
+
+    private sealed record MascotaItem(
+        int Id,
+        int IdCliente,
+        string Nombre,
+        string Especie,
+        string? Raza,
+        string? Sexo);
+
+    private sealed record AtencionItem(
+        int Id,
+        int IdMascota,
+        int? IdCita,
+        DateOnly Fecha,
+        TimeOnly? Hora,
+        string Tipo,
+        string? Veterinario,
+        string? Diagnostico,
+        string? Tratamiento,
+        string? Observaciones,
+        decimal? PesoActual);
+}

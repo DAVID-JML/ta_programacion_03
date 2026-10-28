@@ -1,0 +1,210 @@
+
+.agenda-veterinario {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.agenda-veterinario__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--ms-space-6);
+}
+
+    .agenda-veterinario__header h1 {
+        margin: 0;
+        color: var(--ms-color-primary-dark);
+        font-size: var(--ms-font-size-title);
+        font-weight: var(--ms-font-weight-bold);
+        line-height: var(--ms-line-height-tight);
+    }
+
+    .agenda-veterinario__header p {
+        max-width: 720px;
+        margin: var(--ms-space-3) 0 0;
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-body);
+        line-height: var(--ms-line-height-normal);
+    }
+
+    .agenda-veterinario__header > ::deep .ms-btn {
+        flex-shrink: 0;
+    }
+
+.agenda-veterinario__filters {
+    min-width: 0;
+}
+
+    .agenda-veterinario__filters ::deep .ms-card__body {
+        min-width: 0;
+    }
+
+    .agenda-veterinario__filters ::deep .ms-filterbar {
+        align-items: flex-end;
+        gap: var(--ms-space-4);
+        margin-bottom: 0;
+    }
+
+    .agenda-veterinario__filters ::deep .ms-filterbar__search {
+        flex: 1 1 18rem;
+        min-width: 0;
+    }
+
+    .agenda-veterinario__filters ::deep .ms-filterbar__filters {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        flex: 2 1 34rem;
+        gap: var(--ms-space-4);
+        min-width: 0;
+    }
+
+        .agenda-veterinario__filters ::deep .ms-filterbar__filters .ms-field {
+            min-width: 0;
+            width: 100%;
+        }
+
+.agenda-veterinario__filter-error {
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-error-text);
+    font-size: var(--ms-font-size-small);
+}
+
+.agenda-veterinario__results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-4);
+    min-width: 0;
+}
+
+.agenda-veterinario__section-heading h2 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-section);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.agenda-veterinario__section-heading p {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+.agenda-veterinario__table-card {
+    min-width: 0;
+}
+
+    .agenda-veterinario__table-card ::deep .ms-card__body {
+        min-width: 0;
+    }
+
+    .agenda-veterinario__table-card ::deep .ms-table-wrap {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .agenda-veterinario__table-card ::deep .ms-table {
+        width: 100%;
+    }
+
+        .agenda-veterinario__table-card ::deep .ms-table th,
+        .agenda-veterinario__table-card ::deep .ms-table td {
+            padding: var(--ms-space-3) var(--ms-space-4);
+            vertical-align: middle;
+        }
+
+.agenda-veterinario__date,
+.agenda-veterinario__time {
+    color: var(--ms-color-text);
+    font-size: var(--ms-font-size-small);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.agenda-veterinario__pet {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ms-space-3);
+    min-width: 0;
+}
+
+.agenda-veterinario__pet-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border: var(--ms-border-width) solid var(--ms-color-border);
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary);
+}
+
+.agenda-veterinario__pet > span:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-1);
+    min-width: 0;
+}
+
+.agenda-veterinario__pet strong {
+    color: var(--ms-color-text);
+    font-size: var(--ms-font-size-small);
+    font-weight: var(--ms-font-weight-semibold);
+    overflow-wrap: anywhere;
+}
+
+.agenda-veterinario__pet small {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
+}
+
+.agenda-veterinario__table-info {
+    margin-bottom: var(--ms-space-4);
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+}
+
+.agenda-veterinario__pagination {
+    width: 100%;
+}
+
+@media (max-width: 950px) {
+    .agenda-veterinario__filters ::deep .ms-filterbar__filters {
+        flex-basis: 100%;
+    }
+}
+
+@media (max-width: 700px) {
+    .agenda-veterinario {
+        gap: var(--ms-space-4);
+    }
+
+    .agenda-veterinario__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--ms-space-4);
+    }
+
+        .agenda-veterinario__header > ::deep .ms-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+    .agenda-veterinario__filters ::deep .ms-filterbar__filters {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--ms-space-4);
+    }
+
+    .agenda-veterinario__table-card ::deep .ms-table {
+        min-width: 760px;
+    }
+}

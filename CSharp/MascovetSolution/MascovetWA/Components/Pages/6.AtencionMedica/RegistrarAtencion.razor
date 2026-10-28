@@ -165,12 +165,11 @@
 
 <AppModal @bind-Visible="mostrarModalCita" Title="Búsqueda de cita">
     <ChildContent>
-        <AppFilterBar SearchText="textoBusquedaCita"
-                      SearchTextChanged="BuscarCita"
+        <AppFilterBar SearchTextChanged="BuscarCita"
                       SearchLabel="ID de cita o nombre de mascota"
                       SearchPlaceholder="Buscar cita…"
                       OnClear="LimpiarBusquedaCita" />
-
+ 
         <AppTable Items="Pagina(CitasFiltradas, paginaCitas)"
                   ColumnCount="6"
                   Caption="Citas disponibles para registrar la atención">
