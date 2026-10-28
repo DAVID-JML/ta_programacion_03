@@ -275,3 +275,16 @@ CREATE TABLE DETALLE_RECETA (
         ON DELETE RESTRICT
 );
 
+CREATE TABLE VACUNACION_VACUNA (
+    id_atencion INT NOT NULL,
+    id_vacuna INT NOT NULL,
+    PRIMARY KEY (id_atencion, id_vacuna),
+    CONSTRAINT fk_vv_vacunacion FOREIGN KEY (id_atencion)
+        REFERENCES VACUNACION (id_atencion)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_vv_vacuna FOREIGN KEY (id_vacuna)
+        REFERENCES VACUNA (id_vacuna)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
