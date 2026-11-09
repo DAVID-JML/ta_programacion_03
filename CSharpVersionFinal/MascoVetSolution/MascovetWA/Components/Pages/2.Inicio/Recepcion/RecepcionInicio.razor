@@ -1,0 +1,452 @@
+
+@page "/recepcion"
+@layout MainLayout
+@using System.Globalization
+
+<PageTitle>Inicio de recepción | Mascovet</PageTitle>
+
+<div class="reception-dashboard">
+
+    <header class="reception-header">
+        <div class="reception-header__heading">
+            <span class="reception-eyebrow">OPERACIÓN DIARIA</span>
+
+            <h1>Inicio de recepción</h1>
+
+            <p>
+                Consulta la agenda, atiende a los clientes y gestiona
+                las citas de la clínica desde un solo lugar.
+            </p>
+
+            <div class="reception-header__date">
+                <AppIcon Name="calendar" Size="17" />
+                <span>@FechaActual</span>
+            </div>
+        </div>
+
+        <AppButton Href="/recepcion/citas"
+                   Icon="plus">
+            Registrar cita
+        </AppButton>
+    </header>
+
+    <section class="reception-metrics"
+             aria-label="Resumen de citas del día">
+
+        <AppCard class="reception-metric reception-metric--today"
+                 Title="Citas de hoy"
+                 Subtitle="Total en la agenda">
+
+            <ChildContent>
+                <div class="reception-metric__content">
+                    <strong class="reception-metric__number">
+                        @TotalCitasHoy
+                    </strong>
+
+                    <span class="reception-metric__icon">
+                        <AppIcon Name="calendar" Size="23" />
+                    </span>
+                </div>
+
+                <p class="reception-metric__description">
+                    Atenciones programadas para hoy.
+                </p>
+            </ChildContent>
+        </AppCard>
+
+        <AppCard class="reception-metric reception-metric--pending"
+                 Title="Por confirmar"
+                 Subtitle="Estado reservado">
+
+            <ChildContent>
+                <div class="reception-metric__content">
+                    <strong class="reception-metric__number">
+                        @PendientesConfirmacion
+                    </strong>
+
+                    <span class="reception-metric__icon">
+                        <AppIcon Name="clock" Size="23" />
+                    </span>
+                </div>
+
+                <p class="reception-metric__description">
+                    Citas pendientes de confirmación.
+                </p>
+            </ChildContent>
+        </AppCard>
+
+        <AppCard class="reception-metric reception-metric--confirmed"
+                 Title="Confirmadas"
+                 Subtitle="Estado confirmado">
+
+            <ChildContent>
+                <div class="reception-metric__content">
+                    <strong class="reception-metric__number">
+                        @CitasConfirmadas
+                    </strong>
+
+                    <span class="reception-metric__icon">
+                        <AppIcon Name="check-circle" Size="23" />
+                    </span>
+                </div>
+
+                <p class="reception-metric__description">
+                    Citas confirmadas para la jornada.
+                </p>
+            </ChildContent>
+        </AppCard>
+
+    </section>
+
+    <div class="reception-main-grid">
+
+        <section class="reception-agenda"
+                 aria-labelledby="agenda-heading">
+
+            <div class="reception-section-heading">
+                <div>
+                    <h2 id="agenda-heading">Agenda de hoy</h2>
+                    <p>
+                        Revisa las próximas atenciones y el estado
+                        de cada cita.
+                    </p>
+                </div>
+
+                <AppButton Href="/recepcion/citas"
+                           Variant="ButtonVariant.Tertiary"
+                           Size="ButtonSize.Small">
+                    Ver todas
+                </AppButton>
+            </div>
+
+            <AppCard class="reception-agenda-card"
+                     Title="Citas programadas"
+                     Subtitle="Busca por cliente, mascota, servicio o veterinario">
+
+                <ChildContent>
+                    <div class="reception-agenda__toolbar">
+
+                        <span class="reception-agenda__count">
+                            @CitasFiltradas.Count() de @TotalCitasHoy citas
+                        </span>
+
+                        <div class="reception-agenda__search">
+                            <AppSearchInput Id="buscar-citas-recepcion"
+                                            Label="Buscar cita"
+                                            Placeholder="Nombre, mascota o servicio"
+                                            @bind-Value="Busqueda" />
+                        </div>
+
+                    </div>
+
+                    <AppTable TItem="CitaDemo"
+                              Items="@CitasFiltradas"
+                              ColumnCount="5"
+                              Caption="Agenda de citas de recepción">
+
+                        <HeaderContent>
+                            <th scope="col">Hora</th>
+                            <th scope="col">Cliente y mascota</th>
+                            <th scope="col">Atención</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acción</th>
+                        </HeaderContent>
+
+                        <RowTemplate Context="cita">
+                            <td>
+                                <span class="reception-agenda__time">
+                                    <AppIcon Name="clock" Size="15" />
+                                    @cita.Hora
+                                </span>
+                            </td>
+
+                            <td>
+                                <div class="reception-agenda__person">
+                                    <strong>@cita.Cliente</strong>
+
+                                    <span>
+                                        <AppIcon Name="heart" Size="14" />
+                                        @cita.Mascota
+                                    </span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <div class="reception-agenda__service">
+                                    <strong>@cita.Servicio</strong>
+                                    <span>@cita.Veterinario</span>
+                                </div>
+                            </td>
+
+                            <td>
+                                <AppBadge Variant="@VarianteEstado(cita.Estado)"
+                                          ShowIcon="false">
+                                    @cita.Estado
+                                </AppBadge>
+                            </td>
+
+                            <td>
+                                <AppButton Href="@RutaCita(cita.Id)"
+                                           Variant="ButtonVariant.Tertiary"
+                                           Size="ButtonSize.Small">
+                                    Gestionar
+                                </AppButton>
+                            </td>
+                        </RowTemplate>
+
+                        <EmptyContent>
+                            <AppEmptyState Icon="calendar"
+                                           Title="No hay citas para mostrar"
+                                           Description="Prueba con otro término de búsqueda o revisa la agenda completa." />
+                        </EmptyContent>
+
+                    </AppTable>
+                </ChildContent>
+
+                <Footer>
+                    <div class="reception-agenda__footer">
+                        <span>
+                            Los cambios de estado se gestionan
+                            desde la sección de citas.
+                        </span>
+
+                        <AppButton Href="/recepcion/citas"
+                                   Variant="ButtonVariant.Secondary"
+                                   Size="ButtonSize.Small">
+                            Ir a citas
+                        </AppButton>
+                    </div>
+                </Footer>
+
+            </AppCard>
+
+        </section>
+
+        <aside class="reception-sidebar">
+
+            <AppCard class="reception-shortcuts-card"
+                     Title="Accesos rápidos"
+                     Subtitle="Operaciones frecuentes">
+
+                <ChildContent>
+                    <nav class="reception-shortcuts"
+                         aria-label="Accesos rápidos de recepción">
+
+                        <a class="reception-shortcut"
+                           href="/recepcion/clientes">
+
+                            <span class="reception-shortcut__icon">
+                                <AppIcon Name="users" Size="21" />
+                            </span>
+
+                            <span class="reception-shortcut__text">
+                                <strong>Clientes</strong>
+                                <small>
+                                    Registrar y consultar datos personales.
+                                </small>
+                            </span>
+
+                            <AppIcon Name="chevron-right" Size="18" />
+                        </a>
+
+                        <a class="reception-shortcut"
+                           href="/recepcion/mascotas">
+
+                            <span class="reception-shortcut__icon">
+                                <AppIcon Name="heart" Size="21" />
+                            </span>
+
+                            <span class="reception-shortcut__text">
+                                <strong>Mascotas</strong>
+                                <small>
+                                    Consultar fichas y datos de sus dueños.
+                                </small>
+                            </span>
+
+                            <AppIcon Name="chevron-right" Size="18" />
+                        </a>
+
+                        <a class="reception-shortcut"
+                           href="/recepcion/citas">
+
+                            <span class="reception-shortcut__icon">
+                                <AppIcon Name="calendar" Size="21" />
+                            </span>
+
+                            <span class="reception-shortcut__text">
+                                <strong>Gestión de citas</strong>
+                                <small>
+                                    Consultar disponibilidad, reservar y reprogramar.
+                                </small>
+                            </span>
+
+                            <AppIcon Name="chevron-right" Size="18" />
+                        </a>
+
+                    </nav>
+                </ChildContent>
+
+            </AppCard>
+
+            <AppCard class="reception-flow-card"
+                     Title="Flujo de una reserva"
+                     Subtitle="Pasos principales">
+
+                <ChildContent>
+                    <ol class="reception-flow">
+
+                        <li>
+                            <span class="reception-flow__number">1</span>
+
+                            <div>
+                                <strong>Seleccionar cliente y mascota</strong>
+                                <p>
+                                    Identifica al dueño y la mascota
+                                    que recibirá la atención.
+                                </p>
+                            </div>
+                        </li>
+
+                        <li>
+                            <span class="reception-flow__number">2</span>
+
+                            <div>
+                                <strong>Consultar disponibilidad</strong>
+                                <p>
+                                    Selecciona especialidad, veterinario,
+                                    fecha y horario disponible.
+                                </p>
+                            </div>
+                        </li>
+
+                        <li>
+                            <span class="reception-flow__number">3</span>
+
+                            <div>
+                                <strong>Registrar la cita</strong>
+                                <p>
+                                    Verifica el horario antes de reservar
+                                    y evita duplicar una cita activa.
+                                </p>
+                            </div>
+                        </li>
+
+                    </ol>
+                </ChildContent>
+
+            </AppCard>
+
+        </aside>
+
+    </div>
+
+    <p class="reception-demo-note">
+        <AppIcon Name="info" Size="15" />
+        Vista de demostración: la agenda y los conteos utilizan
+        datos de ejemplo, no información de la base de datos.
+    </p>
+
+</div>
+
+@code {
+    private string? Busqueda { get; set; } = string.Empty;
+
+    private string FechaActual =>
+        DateTime.Today.ToString(
+            "dddd, d 'de' MMMM 'de' yyyy",
+            CultureInfo.GetCultureInfo("es-PE"));
+
+    // Datos ficticios para maquetar la pantalla.
+    // Se sustituirán por consultas al servicio de citas.
+    private List<CitaDemo> CitasDeEjemplo { get; } =
+    [
+        new(
+            1001,
+            "09:00",
+            "Ana Torres",
+            "Luna",
+            "Consulta general",
+            "Dr. Carlos Ramírez",
+            "Reservada"),
+
+        new(
+            1002,
+            "09:30",
+            "Diego Mendoza",
+            "Rocky",
+            "Vacunación",
+            "Dra. Valeria Rojas",
+            "Confirmada"),
+
+        new(
+            1003,
+            "10:30",
+            "Lucía Paredes",
+            "Michi",
+            "Consulta general",
+            "Dr. Carlos Ramírez",
+            "Reservada"),
+
+        new(
+            1004,
+            "11:00",
+            "María Fernanda Soto",
+            "Nina",
+            "Desparasitación",
+            "Dra. Valeria Rojas",
+            "Confirmada"),
+
+        new(
+            1005,
+            "12:00",
+            "Pedro López",
+            "Max",
+            "Control veterinario",
+            "Dr. Carlos Ramírez",
+            "Reservada")
+    ];
+
+    private int TotalCitasHoy => CitasDeEjemplo.Count;
+
+    private int PendientesConfirmacion =>
+        CitasDeEjemplo.Count(c => c.Estado == "Reservada");
+
+    private int CitasConfirmadas =>
+        CitasDeEjemplo.Count(c => c.Estado == "Confirmada");
+
+    private IEnumerable<CitaDemo> CitasFiltradas =>
+        CitasDeEjemplo.Where(c =>
+            string.IsNullOrWhiteSpace(Busqueda) ||
+            Coincide(c.Cliente) ||
+            Coincide(c.Mascota) ||
+            Coincide(c.Servicio) ||
+            Coincide(c.Veterinario) ||
+            Coincide(c.Estado));
+
+    private bool Coincide(string texto) =>
+        texto.Contains(
+            Busqueda?.Trim() ?? string.Empty,
+            StringComparison.OrdinalIgnoreCase);
+
+    private static SemanticVariant VarianteEstado(string estado) =>
+        estado switch
+        {
+            "Reservada" => SemanticVariant.Warning,
+            "Confirmada" => SemanticVariant.Success,
+            "Atendida" => SemanticVariant.Info,
+            "Cancelada" => SemanticVariant.Error,
+            _ => SemanticVariant.Neutral
+        };
+
+    private static string RutaCita(int id) =>
+        $"/recepcion/citas?citaId={id}";
+
+    private sealed record CitaDemo(
+        int Id,
+        string Hora,
+        string Cliente,
+        string Mascota,
+        string Servicio,
+        string Veterinario,
+        string Estado);
+}

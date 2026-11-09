@@ -1,0 +1,177 @@
+﻿@page "/veterinario"
+@layout MainLayout
+
+@using MascovetWA.Components.Layout
+@using MascovetWA.Components.DesignSystem
+@using MascovetWA.Components.DesignSystem.Buttons
+@using MascovetWA.Components.DesignSystem.DataDisplay
+@using MascovetWA.Components.DesignSystem.Icons
+
+<PageTitle>Inicio del veterinario | Mascovet</PageTitle>
+
+<div class="vet-dashboard">
+
+    <header class="vet-header">
+        <div class="vet-header__heading">
+            <span class="vet-eyebrow">ATENCIÓN VETERINARIA</span>
+
+            <h1>Panel del veterinario</h1>
+
+            <p>
+                Consulta tu agenda, registra las atenciones clínicas
+                y mantén actualizada la información de tus pacientes.
+            </p>
+        </div>
+
+        <AppButton Href="/veterinario/agenda"
+                   Icon="calendar">
+            Consultar mi agenda
+        </AppButton>
+    </header>
+
+    <section class="vet-agenda-section"
+             aria-labelledby="vet-agenda-heading">
+
+        <div class="vet-section-heading">
+            <div>
+                <h2 id="vet-agenda-heading">Mi agenda</h2>
+
+                <p>
+                    Consulta tus citas programadas, los horarios,
+                    las mascotas y el estado de cada atención.
+                </p>
+            </div>
+
+            <AppButton Href="/veterinario/agenda"
+                       Variant="ButtonVariant.Tertiary"
+                       Size="ButtonSize.Small">
+                Ver agenda completa
+            </AppButton>
+        </div>
+
+        <AppCard class="vet-agenda-card"
+                 Title="Citas programadas"
+                 Subtitle="Agenda de atención veterinaria">
+
+            <ChildContent>
+                <AppEmptyState Icon="calendar"
+                               Title="Agenda vacia"
+                               Description="No cuentas con citas por hoy." />
+            </ChildContent>
+
+            <Footer>
+                <div class="vet-agenda-card__footer">
+                    <span>
+                        La gestión de las citas disponible
+                        desde el módulo de agenda.
+                    </span>
+
+                    <AppButton Href="/veterinario/agenda"
+                               Variant="ButtonVariant.Secondary"
+                               Size="ButtonSize.Small">
+                        Ir a mi agenda
+                    </AppButton>
+                </div>
+            </Footer>
+
+        </AppCard>
+    </section>
+
+    <section class="vet-modules-section"
+             aria-labelledby="vet-modules-heading">
+
+        <div class="vet-section-heading">
+            <div>
+                <h2 id="vet-modules-heading">Gestión clínica</h2>
+
+                <p>
+                    Accede a las herramientas necesarias para
+                    documentar y dar seguimiento a cada paciente.
+                </p>
+            </div>
+        </div>
+
+        <div class="vet-modules-grid">
+
+            <article class="vet-module">
+                <AppCard Title="Historias clínicas"
+                         Subtitle="Registro de atenciones">
+
+                    <ChildContent>
+                        <span class="vet-module__icon">
+                            <AppIcon Name="file-text" Size="25" />
+                        </span>
+
+                        <p>
+                            Consulta cronológicamente las atenciones
+                            anteriores y registra diagnósticos,
+                            observaciones, tratamientos, peso y alergias.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/veterinario/historias"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="file-text">
+                            Consultar historias
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="vet-module">
+                <AppCard Title="Vacunación"
+                         Subtitle="Seguimiento de vacunas">
+
+                    <ChildContent>
+                        <span class="vet-module__icon">
+                            <AppIcon Name="check-circle" Size="25" />
+                        </span>
+
+                        <p>
+                            Registra y consulta las vacunas aplicadas,
+                            las próximas dosis y las observaciones
+                            correspondientes.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/veterinario/vacunas"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="check-circle">
+                            Gestionar vacunación
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="vet-module">
+                <AppCard Title="Recetas"
+                         Subtitle="Prescripciones veterinarias">
+
+                    <ChildContent>
+                        <span class="vet-module__icon">
+                            <AppIcon Name="file-text" Size="25" />
+                        </span>
+
+                        <p>
+                            Elabora recetas asociadas a una atención
+                            médica, especificando medicamentos,
+                            dosis, frecuencia, duración e indicaciones.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/veterinario/recetas"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="file-text">
+                            Gestionar recetas
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+        </div>
+    </section>
+
+</div>

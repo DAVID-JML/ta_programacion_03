@@ -1,0 +1,61 @@
+.ms-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-1);
+    min-width: 0;
+}
+
+.ms-field__label {
+    font-size: var(--ms-font-size-label);
+    font-weight: var(--ms-font-weight-medium);
+    color: var(--ms-color-text);
+}
+
+.ms-field__required { color: var(--ms-color-error); margin-left: 2px; }
+
+.ms-field__help {
+    font-size: var(--ms-font-size-small);
+    color: var(--ms-color-text-muted);
+}
+
+.ms-field__errors { display: flex; flex-direction: column; gap: 2px; }
+
+.ms-field__error {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ms-space-1);
+    font-size: var(--ms-font-size-small);
+    font-weight: var(--ms-font-weight-medium);
+    color: var(--ms-color-error-text);
+}
+
+/* Estilos compartidos de los controles (input, select, textarea, date) */
+.ms-field ::deep .ms-control {
+    width: 100%;
+    min-height: var(--ms-control-height);
+    padding: 0 var(--ms-control-padding-x, var(--ms-space-3));
+    font: inherit;
+    font-size: var(--ms-font-size-body);
+    color: var(--ms-color-text);
+    background: var(--ms-color-surface);
+    border: var(--ms-border-width) solid var(--ms-color-border-strong);
+    border-radius: var(--ms-radius-control);
+}
+
+.ms-field ::deep .ms-control::placeholder { color: var(--ms-color-text-muted); opacity: 1; }
+.ms-field ::deep .ms-control:hover:not(:disabled) { border-color: var(--ms-color-primary); }
+.ms-field ::deep .ms-control--invalid { border-color: var(--ms-color-error); background: #FFFBFA; }
+
+.ms-field ::deep .ms-control:disabled {
+    background: var(--ms-color-disabled-bg);
+    color: var(--ms-color-disabled-text);
+    border-color: var(--ms-color-disabled-border);
+    cursor: not-allowed;
+}
+
+.ms-field ::deep textarea.ms-control {
+    padding-top: var(--ms-space-2);
+    padding-bottom: var(--ms-space-2);
+    min-height: 5rem;
+    resize: vertical;
+}

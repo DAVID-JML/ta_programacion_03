@@ -1,0 +1,186 @@
+.dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-8);
+}
+
+.dashboard-welcome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-6);
+    padding: var(--ms-space-8);
+    border-radius: var(--ms-radius-card);
+    background: var(--ms-color-background-soft);
+}
+
+    .dashboard-welcome h1 {
+        margin: var(--ms-space-2) 0;
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        color: var(--ms-color-primary-dark);
+    }
+
+.dashboard-eyebrow {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-meta);
+    font-weight: var(--ms-font-weight-semibold);
+    letter-spacing: 0.06em;
+}
+
+.dashboard-welcome p,
+.dashboard-section-heading p {
+    color: var(--ms-color-text-muted);
+}
+
+/* Resumen */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+}
+
+.stat {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-4);
+    margin-bottom: var(--ms-space-3);
+}
+
+.stat__icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary-dark);
+}
+
+.stat__label {
+    color: var(--ms-color-text-muted);
+}
+
+.stat__value {
+    font-size: 1.8rem;
+    color: var(--ms-color-primary-dark);
+}
+
+/* Secciones */
+.dashboard-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-4);
+}
+
+.dashboard-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+}
+
+    .dashboard-section-heading h2 {
+        margin-bottom: var(--ms-space-1);
+    }
+
+/* Próxima cita */
+.dashboard-appointment {
+    display: flex;
+    align-items: center;
+    gap: var(--ms-space-4);
+}
+
+.appointment-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 66px;
+    min-height: 72px;
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary-dark);
+}
+
+    .appointment-date span {
+        font-size: var(--ms-font-size-meta);
+        font-weight: var(--ms-font-weight-semibold);
+    }
+
+    .appointment-date strong {
+        font-size: 1.7rem;
+    }
+
+.appointment-details {
+    flex: 1;
+}
+
+    .appointment-details h3 {
+        margin-bottom: var(--ms-space-2);
+    }
+
+    .appointment-details p {
+        margin: 4px 0;
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-small);
+    }
+
+/* Mascotas */
+.dashboard-pets {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+}
+
+.pet {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: var(--ms-space-3) var(--ms-space-4);
+}
+
+.pet__avatar {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-background-soft);
+    font-size: 1.7rem;
+}
+
+.pet h3 {
+    margin-bottom: var(--ms-space-1);
+}
+
+.pet p {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+}
+
+.pet__action {
+    grid-column: 2;
+}
+
+@media (max-width: 1000px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .dashboard-welcome {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: var(--ms-space-6);
+    }
+
+    .dashboard-appointment {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-pets {
+        grid-template-columns: 1fr;
+    }
+}

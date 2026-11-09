@@ -1,0 +1,21 @@
+@typeparam TValue
+@inherits AppFieldBase<TValue>
+
+<AppFieldWrapper FieldId="@FieldId" Label="@Label" HelpText="@HelpText" Required="@Required" Errors="@Errors">
+    <input @attributes="AdditionalAttributes"
+           id="@FieldId"
+           type="@Type"
+           class="@ControlClass"
+           placeholder="@Placeholder"
+           disabled="@Disabled"
+           aria-required="@(Required ? "true" : null)"
+           aria-invalid="@(HasError ? "true" : null)"
+           aria-describedby="@DescribedBy"
+           @bind="CurrentValueAsString" />
+</AppFieldWrapper>
+
+@code {
+    /// <summary>Tipo HTML del input: "text" (por defecto), "number", "email", "tel", etc.
+    /// Atributos como min, max o step pasan directamente al input.</summary>
+    [Parameter] public string Type { get; set; } = "text";
+}

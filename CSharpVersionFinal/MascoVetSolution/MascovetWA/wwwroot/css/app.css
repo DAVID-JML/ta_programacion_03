@@ -1,0 +1,60 @@
+/* Reglas generales de Mascovet. Los valores salen de design-tokens.css.
+   Los estilos específicos de cada componente viven en su archivo .razor.css */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: var(--ms-font-family);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+    color: var(--ms-color-text);
+    background: var(--ms-color-background-page);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, p, ul, ol { margin: 0; }
+h1, h2, h3, h4 { color: var(--ms-color-text); line-height: var(--ms-line-height-tight); }
+h1 { font-size: var(--ms-font-size-title); font-weight: var(--ms-font-weight-bold); }
+h2 { font-size: var(--ms-font-size-section); font-weight: var(--ms-font-weight-semibold); }
+h3 { font-size: var(--ms-font-size-subtitle); font-weight: var(--ms-font-weight-semibold); }
+
+a { color: var(--ms-color-primary); text-underline-offset: 2px; }
+a:hover { color: var(--ms-color-primary-dark); }
+
+code {
+    font-family: var(--ms-font-family-mono);
+    font-size: 0.875em;
+    background: var(--ms-color-neutral-bg);
+    padding: 1px var(--ms-space-1);
+    border-radius: 4px;
+}
+
+/* Foco visible para teclado en toda la aplicación */
+:focus-visible {
+    outline: 3px solid var(--ms-color-focus);
+    outline-offset: 2px;
+}
+h1:focus { outline: none; } /* FocusOnNavigate enfoca el h1 programáticamente */
+
+/* Utilidades de accesibilidad */
+.ms-visually-hidden {
+    position: absolute !important;
+    width: 1px; height: 1px;
+    margin: -1px; padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Escala tipográfica como clases reutilizables */
+.ms-type-title    { font-size: var(--ms-font-size-title);    font-weight: var(--ms-font-weight-bold);     line-height: var(--ms-line-height-tight); }
+.ms-type-section  { font-size: var(--ms-font-size-section);  font-weight: var(--ms-font-weight-semibold); line-height: var(--ms-line-height-tight); }
+.ms-type-subtitle { font-size: var(--ms-font-size-subtitle); font-weight: var(--ms-font-weight-semibold); line-height: var(--ms-line-height-tight); }
+.ms-type-body     { font-size: var(--ms-font-size-body);     font-weight: var(--ms-font-weight-regular); }
+.ms-type-secondary{ font-size: var(--ms-font-size-body);     color: var(--ms-color-text-muted); }
+.ms-type-label    { font-size: var(--ms-font-size-label);    font-weight: var(--ms-font-weight-medium); }
+.ms-type-small    { font-size: var(--ms-font-size-meta);     color: var(--ms-color-text-muted); }
+
+.ms-icon { flex-shrink: 0; }

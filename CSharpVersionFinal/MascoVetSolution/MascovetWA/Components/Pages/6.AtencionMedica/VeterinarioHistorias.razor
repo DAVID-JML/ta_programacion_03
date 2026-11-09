@@ -1,0 +1,11 @@
+@page "/veterinario/historias"
+@layout MainLayout
+
+<PageTitle>Historias clínicas | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Historias clínicas</h1><p>Consulta las atenciones médicas anteriores de cada mascota.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Buscar historia clínica" Subtitle="RF023 · Consulta cronológicamente las atenciones de una mascota."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Mascota</span><select class="ms-demo-input" ><option value="Luna — Ana Martínez">Luna — Ana Martínez</option><option value="Max — Carlos Vega">Max — Carlos Vega</option></select></label><label class="ms-demo-field"><span>Fecha de inicio</span><input class="ms-demo-input" type="date" placeholder="" value="" /></label><label class="ms-demo-field"><span>Fecha de fin</span><input class="ms-demo-input" type="date" placeholder="" value="" /></label></div></ChildContent></AppCard></div><div class="seccion"><AppCard Title="Atenciones anteriores" Subtitle="Orden cronológico ilustrativo."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Fecha</th><th scope="col">Tipo de atención</th><th scope="col">Diagnóstico / observación</th><th scope="col">Tratamiento</th></tr></thead><tbody><tr><td>23/10/2026</td><td>Consulta</td><td>Revisión general</td><td>Control de seguimiento</td></tr><tr><td>14/09/2026</td><td>Vacunación</td><td>Aplicación de vacuna</td><td>Próxima dosis programada</td></tr></tbody></table></div></ChildContent></AppCard></div><div class="ms-demo-actions"><AppButton Href="/veterinario/reportes/historial" Variant="ButtonVariant.Secondary">Generar reporte clínico</AppButton><AppButton Href="/veterinario/atencion" Variant="ButtonVariant.Primary">Registrar atención</AppButton></div>
+</div>

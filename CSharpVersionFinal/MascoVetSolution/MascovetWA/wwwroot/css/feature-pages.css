@@ -1,0 +1,20 @@
+/* Pantallas completadas: reutilizan exclusivamente los colores y espaciados del Design System del equipo. */
+.ms-feature-page{display:flex;flex-direction:column;gap:var(--ms-space-6);max-width:var(--ms-content-max-width)}
+.ms-feature-header{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--ms-space-4);flex-wrap:wrap}
+.ms-feature-header p{color:var(--ms-color-text-muted);margin-top:var(--ms-space-2)}
+.ms-demo-pill{border-radius:var(--ms-radius-sm);padding:var(--ms-space-1) var(--ms-space-3);background:var(--ms-color-background-soft);color:var(--ms-color-primary-dark);font-size:var(--ms-font-size-meta);font-weight:600}
+.ms-feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ms-space-4);margin:var(--ms-space-3) 0}
+.ms-demo-field{display:flex;flex-direction:column;gap:var(--ms-space-2);min-width:0;font-size:var(--ms-font-size-label);font-weight:500}
+.ms-demo-field>span{color:var(--ms-color-text)}
+.ms-demo-wide{grid-column:1/-1}
+.ms-demo-input{width:100%;min-height:var(--ms-control-height);border:1px solid var(--ms-color-border-strong);border-radius:var(--ms-radius-control);padding:var(--ms-space-2) var(--ms-space-3);background:var(--ms-color-surface);color:var(--ms-color-text);font:inherit}
+.ms-demo-input:focus-visible{outline:3px solid var(--ms-color-focus);outline-offset:1px}
+.ms-demo-input[readonly]{background:var(--ms-color-neutral-bg)}
+.ms-demo-note{display:flex;gap:var(--ms-space-2);align-items:center;background:var(--ms-color-background-soft);border:1px solid var(--ms-color-border);border-radius:var(--ms-radius-control);padding:var(--ms-space-3);color:var(--ms-color-primary-dark);font-size:var(--ms-font-size-label);margin:var(--ms-space-4) 0}
+.ms-demo-actions{display:flex;flex-wrap:wrap;gap:var(--ms-space-2);margin-top:var(--ms-space-4)}
+.ms-demo-inline-actions{display:flex;gap:var(--ms-space-2);flex-wrap:wrap}
+.ms-demo-muted{color:var(--ms-color-text-muted);font-size:var(--ms-font-size-small)}
+.ms-feature-page .ms-table-wrap{max-width:100%;overflow-x:auto}
+.ms-feature-page .ms-card{margin-bottom:var(--ms-space-2)}
+@media(max-width:900px){.ms-feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.ms-feature-grid{grid-template-columns:1fr}.ms-feature-header{display:block}.ms-demo-pill{display:inline-block;margin-top:var(--ms-space-2)}}

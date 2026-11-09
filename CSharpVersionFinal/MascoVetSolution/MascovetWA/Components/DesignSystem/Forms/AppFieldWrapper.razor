@@ -1,0 +1,42 @@
+<div class="ms-field">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <label class="ms-field__label" for="@FieldId">
+            @Label
+            @if (Required)
+            {
+                <span class="ms-field__required" aria-hidden="true">*</span>
+            }
+        </label>
+    }
+
+    @ChildContent
+
+    @if (!string.IsNullOrEmpty(HelpText))
+    {
+        <p id="@($"{FieldId}-help")" class="ms-field__help">@HelpText</p>
+    }
+
+    @if (Errors.Count > 0)
+    {
+        <div id="@($"{FieldId}-error")" class="ms-field__errors">
+            @foreach (var error in Errors)
+            {
+                <p class="ms-field__error">
+                    <AppIcon Name="alert-circle" Size="16" />
+                    <span>@error</span>
+                </p>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Id del control, usado para asociar label, ayuda y errores (for / aria-describedby).</summary>
+    [Parameter, EditorRequired] public string FieldId { get; set; } = string.Empty;
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? HelpText { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public IReadOnlyList<string> Errors { get; set; } = Array.Empty<string>();
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
