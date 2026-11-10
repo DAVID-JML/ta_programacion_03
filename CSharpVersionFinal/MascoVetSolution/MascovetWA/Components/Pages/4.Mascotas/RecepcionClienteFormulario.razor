@@ -2,23 +2,72 @@
 @page "/recepcion/clientes/editar/{Id:int}"
 @layout MainLayout
 @inject ToastService Toast
+
 <PageTitle>Registrar / Editar cliente | Mascovet</PageTitle>
+
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-       <div><h1>Registrar / Editar cliente</h1><p>Formulario de datos personales y contacto para recepción.</p></div>
-       <span class="ms-demo-pill">Vista de demostración</span>
+        <div>
+            <h1>Registrar / Editar cliente</h1>
+            <p>Formulario de datos personales y contacto para recepción.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
     </header>
-    <div class="seccion"><AppCard Title="Datos del cliente" Subtitle="RF002 y RF013 · La recepcionista no puede consultar ni modificar la contraseña del cliente."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Nombres</span><input class="ms-demo-input" type="text" maxlength="50" /></label><label class="ms-demo-field"><span>Apellido paterno</span><input class="ms-demo-input" type="text" placeholder="" value="" maxlength="50" /></label><label class="ms-demo-field"><span>Apellido materno</span><input class="ms-demo-input" type="text" placeholder="" value="" maxlength="50" /></label><label class="ms-demo-field"><span>DNI</span><input class="ms-demo-input" type="text" placeholder="" value="" maxlength="8"/></label><label class="ms-demo-field"><span>Teléfono</span><input class="ms-demo-input" type="tel" placeholder="" value="" maxlength="20" /></label><label class="ms-demo-field"><span>Correo electrónico</span><input class="ms-demo-input" type="email" placeholder="" value="" maxlength="200" /></label></div>
-@if (!Id.HasValue)
-{
-    <div class="ms-feature-grid">
-        <label class="ms-demo-field"><span>Nombre de usuario</span><input class="ms-demo-input" type="text" maxlength="100" autocomplete="username" /></label>
-        <label class="ms-demo-field"><span>Contraseña inicial</span><input class="ms-demo-input" type="password" maxlength="255" autocomplete="new-password" /></label>
+
+    <div class="seccion">
+        <AppCard Title="Datos del cliente" Subtitle="La recepcionista gestiona datos de contacto y personales.">
+            <ChildContent>
+                <div class="ms-feature-grid">
+                    <label class="ms-demo-field">
+                        <span>Nombres</span>
+                        <input class="ms-demo-input" type="text" maxlength="50" />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Apellido paterno</span>
+                        <input class="ms-demo-input" type="text" maxlength="50" />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Apellido materno</span>
+                        <input class="ms-demo-input" type="text" maxlength="50" />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>DNI</span>
+                        <input class="ms-demo-input" type="text" maxlength="8" />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Teléfono</span>
+                        <input class="ms-demo-input" type="tel" maxlength="20" />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Correo electrónico</span>
+                        <input class="ms-demo-input" type="email" maxlength="200" />
+                    </label>
+                </div>
+
+                @if (!Id.HasValue)
+                {
+                    <div class="ms-feature-grid">
+                        <label class="ms-demo-field">
+                            <span>Nombre de usuario</span>
+                            <input class="ms-demo-input" type="text" maxlength="100" autocomplete="username" />
+                        </label>
+                        <label class="ms-demo-field">
+                            <span>Contraseña inicial</span>
+                            <input class="ms-demo-input" type="password" maxlength="255" autocomplete="new-password" />
+                        </label>
+                    </div>
+                    <p class="ms-demo-note">Los datos de acceso se muestran solo al registrar una cuenta.</p>
+                }
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cliente</AppButton>
+                    <AppButton Href="/recepcion/clientes" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
     </div>
-    <p class="ms-demo-note">Los datos de acceso se muestran solo al registrar una cuenta. Recepción no consulta contraseñas existentes.</p>
-}
-<div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cliente</AppButton><AppButton Href="/recepcion/clientes" Variant="ButtonVariant.Secondary">Volver</AppButton></div></ChildContent></AppCard></div>
 </div>
-@code { [Parameter] public int? Id {get;set;}
-// Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
- private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java."); }
+
+@code {
+    [Parameter] public int? Id { get; set; }
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+}

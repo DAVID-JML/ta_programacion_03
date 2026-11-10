@@ -4,11 +4,16 @@
 @inject NavigationManager Navigation
 
 <PageTitle>Ficha de mascota | Mascovet</PageTitle>
+
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Ficha de mascota</h1><p>Consulta los datos, citas, vacunas y recetas de la mascota seleccionada.</p></div>
+        <div>
+            <h1>Ficha de mascota</h1>
+            <p>Consulta los datos, citas, vacunas y recetas de la mascota seleccionada.</p>
+        </div>
         <span class="ms-demo-pill">Vista de demostración</span>
     </header>
+
     @if (Mascota is null)
     {
         <AppCard Title="Mascota no encontrada">
@@ -19,41 +24,83 @@
     else
     {
         <div class="seccion">
-            <AppCard Title="Datos de la mascota" Subtitle="RF014 · Información general y del propietario.">
+            <AppCard Title="Datos de la mascota" Subtitle="Información general y del propietario.">
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field"><span>Nombre</span><input class="ms-demo-input" value="@Mascota.Nombre" readonly /></label>
-                    <label class="ms-demo-field"><span>Especie</span><input class="ms-demo-input" value="@Mascota.Especie" readonly /></label>
-                    <label class="ms-demo-field"><span>Raza</span><input class="ms-demo-input" value="@Mascota.Raza" readonly /></label>
-                    <label class="ms-demo-field"><span>Sexo</span><input class="ms-demo-input" value="@Mascota.Sexo" readonly /></label>
-                    <label class="ms-demo-field"><span>Fecha de nacimiento</span><input class="ms-demo-input" value="@Mascota.FechaNacimiento" readonly /></label>
-                    <label class="ms-demo-field"><span>Propietario</span><input class="ms-demo-input" value="@Mascota.Propietario" readonly /></label>
+                    <label class="ms-demo-field">
+                        <span>Nombre</span>
+                        <input class="ms-demo-input" value="@Mascota.Nombre" readonly />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Especie</span>
+                        <input class="ms-demo-input" value="@Mascota.Especie" readonly />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Raza</span>
+                        <input class="ms-demo-input" value="@Mascota.Raza" readonly />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Sexo</span>
+                        <input class="ms-demo-input" value="@Mascota.Sexo" readonly />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Fecha de nacimiento</span>
+                        <input class="ms-demo-input" value="@Mascota.FechaNacimiento" readonly />
+                    </label>
+                    <label class="ms-demo-field">
+                        <span>Propietario</span>
+                        <input class="ms-demo-input" value="@Mascota.Propietario" readonly />
+                    </label>
                 </div>
             </AppCard>
         </div>
+
         <div class="seccion">
             <AppCard Title="Historial de atenciones" Subtitle="Registros de ejemplo para la demostración">
                 <div class="ms-table-wrap">
                     <table class="ms-table">
-                        <thead><tr><th scope="col">Fecha</th><th scope="col">Tipo de atención</th><th scope="col">Veterinario</th><th scope="col">Resultado</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th scope="col">Fecha</th>
+                                <th scope="col">Tipo de atención</th>
+                                <th scope="col">Veterinario</th>
+                                <th scope="col">Resultado</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @foreach (var atencion in Mascota.Atenciones)
                             {
-                                <tr><td>@atencion.Fecha</td><td>@atencion.Tipo</td><td>@atencion.Veterinario</td><td>@atencion.Resultado</td></tr>
+                                <tr>
+                                    <td>@atencion.Fecha</td>
+                                    <td>@atencion.Tipo</td>
+                                    <td>@atencion.Veterinario</td>
+                                    <td>@atencion.Resultado</td>
+                                </tr>
                             }
                         </tbody>
                     </table>
                 </div>
             </AppCard>
         </div>
+
         <div class="seccion">
             <AppCard Title="Vacunaciones y recetas" Subtitle="Consulta la información asociada a la mascota.">
                 <div class="ms-table-wrap">
                     <table class="ms-table">
-                        <thead><tr><th>Registro</th><th>Detalle</th><th>Fecha</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Registro</th>
+                                <th>Detalle</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             @foreach (var fila in RegistrosComplementarios)
                             {
-                                <tr><td>@fila.Tipo</td><td>@fila.Detalle</td><td>@fila.Fecha</td></tr>
+                                <tr>
+                                    <td>@fila.Tipo</td>
+                                    <td>@fila.Detalle</td>
+                                    <td>@fila.Fecha</td>
+                                </tr>
                             }
                         </tbody>
                     </table>
@@ -66,15 +113,16 @@
         </div>
     }
 </div>
+
 @code {
     [Parameter] public int IdMascota { get; set; }
 
     private bool EsRecepcion => Navigation.ToBaseRelativePath(Navigation.Uri)
         .StartsWith("recepcion/", StringComparison.OrdinalIgnoreCase);
+
     private string VolverHref => EsRecepcion ? "/recepcion/mascotas" : "/cliente/mascotas";
     private string HistorialHref => $"/{(EsRecepcion ? "recepcion" : "cliente")}/mascotas/{IdMascota}/historial";
 
-    // Se mantienen los datos de demostración de cada listado y sus identificadores.
     private MascotaDemo? Mascota => (EsRecepcion, IdMascota) switch
     {
         (_, 1) => new("Luna", "Perro", "Mestiza", "Hembra", "14/03/2022", "Ana Martínez López",
@@ -94,6 +142,7 @@
         2 => [new("Vacunación", "Triple felina — una dosis", "25/10/2026")],
         _ => []
     };
+
     private sealed record ComplementoDemo(string Tipo, string Detalle, string Fecha);
     private sealed record AtencionDemo(string Fecha, string Tipo, string Veterinario, string Resultado);
     private sealed record MascotaDemo(string Nombre, string Especie, string Raza, string Sexo,
