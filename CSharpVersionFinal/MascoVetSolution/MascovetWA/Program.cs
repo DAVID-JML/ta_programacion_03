@@ -1,24 +1,40 @@
 using MascovetWA.Components;
+using MascovetWA.Components.Layout;
+using MascovetWA.Components.DesignSystem.Feedback; // Namespace necesario para ToastService
+using MascovetWA.Services.REST;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// 1. Configuración de componentes Razor e Invocación Server
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddScoped<MascovetWA.Components.Layout.UserContext>();
-builder.Services.AddScoped<MascovetWA.Components.DesignSystem.Feedback.ToastService>();
-builder.Services.AddSingleton<MascovetWA.Components.Layout.AuthService>();
+
+// 2. Servicios de interfaz, sesión y notificaciones UI (Inyección de Dependencias)
+builder.Services.AddScoped<UserContext>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<ToastService>();
+
+// 3. Configuración de HttpClient base hacia el backend Java JAX-RS
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("http://localhost:8080/mascovet_services/webresources/")
+});
+
+// 4. Registrar infraestructura base para servicios REST
+builder.Services.AddScoped<RestBaseService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
