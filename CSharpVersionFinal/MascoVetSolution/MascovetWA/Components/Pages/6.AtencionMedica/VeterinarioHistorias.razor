@@ -17,13 +17,7 @@
         <AppCard Title="Buscar historia clínica" Subtitle="Consulta cronológicamente las atenciones de una mascota.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Paciente / Mascota</span>
-                        <select class="ms-demo-input">
-                            <option>Luna (Propietario: Ana Martínez)</option>
-                            <option>Max (Propietario: Carlos Vega)</option>
-                        </select>
-                    </label>
+                    <AppSelect TValue="string" Label="Paciente / Mascota" @bind-Value="pacienteSeleccionado" Options="@opcionesPacientes" />
                 </div>
                 <div class="ms-demo-actions">
                     <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Buscar historial</AppButton>
@@ -34,5 +28,13 @@
 </div>
 
 @code {
+    private string pacienteSeleccionado = "Luna (Propietario: Ana Martínez)";
+
+    private List<SelectOption<string>> opcionesPacientes = new()
+    {
+        new("Luna (Propietario: Ana Martínez)", "Luna (Propietario: Ana Martínez)"),
+        new("Max (Propietario: Carlos Vega)", "Max (Propietario: Carlos Vega)")
+    };
+
     private void MostrarAviso() => Toast.Info("La búsqueda completa se habilitará al integrar el backend.");
 }

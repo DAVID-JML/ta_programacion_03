@@ -17,38 +17,24 @@
     <div class="seccion">
         <AppCard Title="Cuentas del sistema" Subtitle="Habilitar, deshabilitar o actualizar el rol del personal.">
             <ChildContent>
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Usuario</th>
-                                <th scope="col">Rol actual</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>admin</td>
-                                <td>Administrador</td>
-                                <td>Habilitado</td>
-                                <td><AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton></td>
-                            </tr>
-                            <tr>
-                                <td>vet.paredes</td>
-                                <td>Veterinario</td>
-                                <td>Habilitado</td>
-                                <td><AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton></td>
-                            </tr>
-                            <tr>
-                                <td>recepcion</td>
-                                <td>Recepcionista</td>
-                                <td>Habilitado</td>
-                                <td><AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="UsuarioDemo" Items="@cuentas" ColumnCount="4" Caption="Cuentas de usuario">
+                    <HeaderContent>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Rol actual</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="u">
+                        <td>@u.Usuario</td>
+                        <td>@u.Rol</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@u.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="/administrador/cuentas/gestionar" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Gestionar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
             </ChildContent>
         </AppCard>
     </div>
@@ -57,25 +43,9 @@
         <AppCard Title="Administrar acceso" Subtitle="Los cambios se muestran solo como demostración visual.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Nombre de usuario</span>
-                        <input class="ms-demo-input" type="text" value="vet.paredes" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Rol</span>
-                        <select class="ms-demo-input">
-                            <option value="Administrador">Administrador</option>
-                            <option value="Veterinario">Veterinario</option>
-                            <option value="Recepcionista">Recepcionista</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Acceso</span>
-                        <select class="ms-demo-input">
-                            <option value="Habilitado">Habilitado</option>
-                            <option value="Deshabilitado">Deshabilitado</option>
-                        </select>
-                    </label>
+                    <AppInput TValue="string" Label="Nombre de usuario" @bind-Value="usuarioNombre" />
+                    <AppSelect TValue="string" Label="Rol" @bind-Value="rolSeleccionado" Options="@opcionesRoles" />
+                    <AppSelect TValue="string" Label="Acceso" @bind-Value="accesoSeleccionado" Options="@opcionesAcceso" />
                 </div>
                 <div class="ms-demo-actions">
                     <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
@@ -86,5 +56,32 @@
 </div>
 
 @code {
+    private string usuarioNombre = "vet.paredes";
+    private string rolSeleccionado = "Veterinario";
+    private string accesoSeleccionado = "Habilitado";
+
+    private List<SelectOption<string>> opcionesRoles = new()
+    {
+        new("Administrador", "Administrador"),
+        new("Veterinario", "Veterinario"),
+        new("Recepcionista", "Recepcionista")
+    };
+
+    private List<SelectOption<string>> opcionesAcceso = new()
+    {
+        new("Habilitado", "Habilitado"),
+        new("Deshabilitado", "Deshabilitado")
+    };
+
+    private sealed record UsuarioDemo(string Usuario, string Rol, string Estado);
+
+    private readonly List<UsuarioDemo> cuentas = new()
+    {
+        new("admin", "Administrador", "Habilitado"),
+        new("vet.paredes", "Veterinario", "Habilitado"),
+        new("recepcion", "Recepcionista", "Habilitado")
+    };
+
     private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+}
 }

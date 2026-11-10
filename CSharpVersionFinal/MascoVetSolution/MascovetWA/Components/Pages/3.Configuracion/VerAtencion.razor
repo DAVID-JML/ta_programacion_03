@@ -18,7 +18,7 @@
     @if (Atencion is null)
     {
         <AppCard Title="Atención no encontrada">
-            <p>El registro solicitado no está disponible en los datos de ejemplo.</p>
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
             <AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton>
         </AppCard>
     }
@@ -27,65 +27,37 @@
         <div class="seccion">
             <AppCard Title="Detalle de atención" Subtitle="@(EsEdicion ? "Campos de edición ilustrativos; no se registran cambios." : "Los datos no pueden modificarse desde esta vista.")">
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>ID de atención</span>
-                        <input class="ms-demo-input" value="@($"AT-{Id}")" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Mascota</span>
-                        <input class="ms-demo-input" value="@Atencion.Mascota" readonly />
-                    </label>
+                    <AppInput TValue="string" Label="ID de atención" Value="@($"AT-{Id}")" Disabled="true" />
+                    <AppInput TValue="string" Label="Mascota" Value="@Atencion.Mascota" Disabled="true" />
+
                     @if (EsEdicion)
                     {
-                        <label class="ms-demo-field">
-                            <span>Tipo de atención</span>
-                            <select class="ms-demo-input">
-                                <option selected="@(Atencion.Tipo == "Consulta")">Consulta</option>
-                                <option selected="@(Atencion.Tipo == "Control")">Control</option>
-                                <option selected="@(Atencion.Tipo == "Cirugía")">Cirugía</option>
-                                <option selected="@(Atencion.Tipo == "Vacunación")">Vacunación</option>
-                            </select>
-                        </label>
+                        <AppSelect TValue="string" Label="Tipo de atención" Value="@tipoEdicion" Options="@opcionesTipo" />
                     }
                     else
                     {
-                        <label class="ms-demo-field">
-                            <span>Tipo de atención</span>
-                            <input class="ms-demo-input" value="@Atencion.Tipo" readonly />
-                        </label>
+                        <AppInput TValue="string" Label="Tipo de atención" Value="@Atencion.Tipo" Disabled="true" />
                     }
-                    <label class="ms-demo-field">
-                        <span>Veterinario</span>
-                        <input class="ms-demo-input" value="@Atencion.Veterinario" readonly />
-                    </label>
+
+                    <AppInput TValue="string" Label="Veterinario" Value="@Atencion.Veterinario" Disabled="true" />
+
                     @if (EsEdicion)
                     {
-                        <label class="ms-demo-field">
-                            <span>Fecha de atención</span>
-                            <input class="ms-demo-input" type="date" value="@Atencion.FechaISO" />
-                        </label>
+                        <AppInput TValue="string" Label="Fecha de atención" Type="date" Value="@Atencion.FechaISO" />
                     }
                     else
                     {
-                        <label class="ms-demo-field">
-                            <span>Fecha de atención</span>
-                            <input class="ms-demo-input" value="@Atencion.Fecha" readonly />
-                        </label>
+                        <AppInput TValue="string" Label="Fecha de atención" Value="@Atencion.Fecha" Disabled="true" />
                     }
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Observaciones</span>
-                        <textarea class="ms-demo-input" rows="3" readonly="@(!EsEdicion)">@Atencion.Observaciones</textarea>
-                    </label>
+
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Observaciones" Rows="3" Value="@Atencion.Observaciones" ReadOnly="@(!EsEdicion)" />
+                    </div>
                 </div>
                 <div class="ms-demo-actions">
                     @if (EsEdicion)
                     {
                         <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
-                        <AppButton Href="@($"/administrador/atenciones/ver/{Id}")" Variant="ButtonVariant.Tertiary">Ver detalle</AppButton>
-                    }
-                    else
-                    {
-                        <AppButton Href="@($"/administrador/atenciones/editar/{Id}")" Variant="ButtonVariant.Secondary">Editar</AppButton>
                     }
                     <AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton>
                 </div>
@@ -97,13 +69,23 @@
 @code {
     [Parameter] public int Id { get; set; }
 
+    private string tipoEdicion = "Consulta";
+
+    private List<SelectOption<string>> opcionesTipo = new()
+    {
+        new("Consulta", "Consulta"),
+        new("Control", "Control"),
+        new("Cirugía", "Cirugía"),
+        new("Vacunación", "Vacunación")
+    };
+
     private bool EsEdicion => Navigation.ToBaseRelativePath(Navigation.Uri)
         .StartsWith("administrador/atenciones/editar/", StringComparison.OrdinalIgnoreCase);
 
     private AtencionDemo? Atencion => Id switch
     {
         101 => new("Luna", "Consulta", "Dra. Lucía Paredes", "23/10/2026", "2026-10-23", "Revisión general y control de evolución."),
-        102 => new("Max", "Vacunación", "Dr. Mateo Silva", "25/10/2026", "2026-10-25", "Aplicación de vacuna y control de próximas dosis."),
+        102 => new("Max", "Vacunación", "Dr. Mateo Silva", "25/10/2026", "2026-10-25", "Vacuna séxtuple aplicada correctamente."),
         _ => null
     };
 

@@ -15,35 +15,26 @@
     <div class="seccion">
         <AppCard Title="Mascotas de clientes" Subtitle="Registro, edición, consulta e inactivación de mascotas.">
             <ChildContent>
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Mascota</th>
-                                <th scope="col">Especie</th>
-                                <th scope="col">Propietario</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Luna</td>
-                                <td>Perro</td>
-                                <td>Ana Martínez López</td>
-                                <td>Activa</td>
-                                <td><AppButton Href="/recepcion/mascotas/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver ficha</AppButton></td>
-                            </tr>
-                            <tr>
-                                <td>Max</td>
-                                <td>Gato</td>
-                                <td>Carlos Vega Ruiz</td>
-                                <td>Activa</td>
-                                <td><AppButton Href="/recepcion/mascotas/2" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver ficha</AppButton></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="MascotaDemo" Items="@mascotas" ColumnCount="5" Caption="Mascotas registradas">
+                    <HeaderContent>
+                        <th scope="col">Mascota</th>
+                        <th scope="col">Especie</th>
+                        <th scope="col">Propietario</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="m">
+                        <td>@m.Nombre</td>
+                        <td>@m.Especie</td>
+                        <td>@m.Propietario</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@m.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="@($"/recepcion/mascotas/{m.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver ficha</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
             </ChildContent>
         </AppCard>
     </div>
@@ -52,3 +43,13 @@
         <AppButton Href="/recepcion/mascotas/nueva" Variant="ButtonVariant.Primary">Registrar mascota</AppButton>
     </div>
 </div>
+
+@code {
+    private sealed record MascotaDemo(int Id, string Nombre, string Especie, string Propietario, string Estado);
+
+    private readonly List<MascotaDemo> mascotas = new()
+    {
+        new(1, "Luna", "Perro", "Ana Martínez López", "Activa"),
+        new(2, "Max", "Gato", "Carlos Vega Ruiz", "Activa")
+    };
+}

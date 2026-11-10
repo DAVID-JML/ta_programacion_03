@@ -25,66 +25,27 @@
         <div class="seccion">
             <AppCard Title="Datos del personal" Subtitle="Los cambios no se guardarán hasta integrar el backend.">
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Tipo de personal</span>
-                        <input class="ms-demo-input" value="@Persona.Rol" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Nombres</span>
-                        <input class="ms-demo-input" value="@Persona.Nombre" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Apellido paterno</span>
-                        <input class="ms-demo-input" value="@Persona.Paterno" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Apellido materno</span>
-                        <input class="ms-demo-input" value="@Persona.Materno" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>DNI</span>
-                        <input class="ms-demo-input" value="@Persona.Dni" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Teléfono</span>
-                        <input type="tel" class="ms-demo-input" value="@Persona.Telefono" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Correo</span>
-                        <input type="email" class="ms-demo-input" value="@Persona.Correo" />
-                    </label>
+                    <AppInput TValue="string" Label="Tipo de personal" Value="@Persona.Rol" Disabled="true" />
+                    <AppInput TValue="string" Label="Nombres" Value="@Persona.Nombre" />
+                    <AppInput TValue="string" Label="Apellido paterno" Value="@Persona.Paterno" />
+                    <AppInput TValue="string" Label="Apellido materno" Value="@Persona.Materno" />
+                    <AppInput TValue="string" Label="DNI" Value="@Persona.Dni" />
+                    <AppInput TValue="string" Label="Teléfono" Value="@Persona.Telefono" Type="tel" />
+                    <AppInput TValue="string" Label="Correo" Value="@Persona.Correo" Type="email" />
 
                     @if (Persona.Rol == "Recepcionista")
                     {
-                        <label class="ms-demo-field">
-                            <span>Turno</span>
-                            <select class="ms-demo-input">
-                                <option>Mañana</option>
-                                <option>Tarde</option>
-                                <option>Noche</option>
-                            </select>
-                        </label>
+                        <AppSelect TValue="string" Label="Turno" Value="@turnoSeleccionado" Options="@opcionesTurno" />
                     }
                     @if (Persona.Rol == "Veterinario")
                     {
-                        <label class="ms-demo-field">
-                            <span>Especialidad</span>
-                            <select class="ms-demo-input">
-                                <option selected="@(Persona.Especialidad == "Cirugía")">Cirugía</option>
-                                <option selected="@(Persona.Especialidad == "Medicina general")">Medicina general</option>
-                                <option>Dermatología</option>
-                            </select>
-                        </label>
-                        <label class="ms-demo-field">
-                            <span>Número de colegiatura</span>
-                            <input class="ms-demo-input" maxlength="10" value="@Persona.Colegiatura" />
-                        </label>
+                        <AppSelect TValue="string" Label="Especialidad" Value="@Persona.Especialidad" Options="@opcionesEspecialidad" />
+                        <AppInput TValue="string" Label="Número de colegiatura" Value="@Persona.Colegiatura" MaxLength="10" />
                     }
                 </div>
                 <div class="ms-demo-actions">
                     <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
-                    <AppButton Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar personal</AppButton>
-                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Cancelar</AppButton>
                 </div>
             </AppCard>
         </div>
@@ -94,10 +55,26 @@
 @code {
     [Parameter] public int Id { get; set; }
 
+    private string turnoSeleccionado = "Mañana";
+
+    private List<SelectOption<string>> opcionesTurno = new()
+    {
+        new("Mañana", "Mañana"),
+        new("Tarde", "Tarde"),
+        new("Noche", "Noche")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Cirugía", "Cirugía"),
+        new("Medicina general", "Medicina general"),
+        new("Dermatología", "Dermatología")
+    };
+
     private PersonaDemo? Persona => Id switch
     {
         1 => new("Veterinario", "Lucía", "Paredes", "Ríos", "72845631", "987654321", "lucia@mascovet.pe", "Cirugía", "CMPV-125"),
-        2 => new("Recepcionista", "Diego", "Ruiz", "Soto", "71563248", "955321456", "diego@mascovet.pe", "", ""),
+        2 => new("Recepcionista", "Diego", "Ruiz", "Soto", "71654321", "955321456", "diego@mascovet.pe", "", ""),
         _ => null
     };
 

@@ -17,56 +17,13 @@
         <AppCard Title="Datos de la reserva" Subtitle="La recepcionista registra una cita en representación del cliente.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Cliente</span>
-                        <select class="ms-demo-input">
-                            <option value="Ana Martínez López">Ana Martínez López</option>
-                            <option value="Carlos Vega Ruiz">Carlos Vega Ruiz</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Mascota</span>
-                        <select class="ms-demo-input">
-                            <option value="Luna">Luna</option>
-                            <option value="Max">Max</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Especialidad</span>
-                        <select class="ms-demo-input">
-                            <option value="Medicina general">Medicina general</option>
-                            <option value="Cirugía">Cirugía</option>
-                            <option value="Dermatología">Dermatología</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Veterinario</span>
-                        <select class="ms-demo-input">
-                            <option value="Dra. Lucía Paredes">Dra. Lucía Paredes</option>
-                            <option value="Dr. Mateo Silva">Dr. Mateo Silva</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Tipo de atención</span>
-                        <select class="ms-demo-input">
-                            <option value="Consulta">Consulta</option>
-                            <option value="Control">Control</option>
-                            <option value="Cirugía">Cirugía</option>
-                            <option value="Vacunación">Vacunación</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha</span>
-                        <input class="ms-demo-input" type="date" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Hora disponible</span>
-                        <select class="ms-demo-input">
-                            <option value="09:00">09:00</option>
-                            <option value="10:30">10:30</option>
-                            <option value="11:30">11:30</option>
-                        </select>
-                    </label>
+                    <AppSelect TValue="string" Label="Cliente" @bind-Value="cliente" Options="@opcionesClientes" />
+                    <AppSelect TValue="string" Label="Mascota" @bind-Value="mascota" Options="@opcionesMascotas" />
+                    <AppSelect TValue="string" Label="Especialidad" @bind-Value="especialidad" Options="@opcionesEspecialidad" />
+                    <AppSelect TValue="string" Label="Veterinario" @bind-Value="veterinario" Options="@opcionesVeterinarios" />
+                    <AppSelect TValue="string" Label="Tipo de atención" @bind-Value="tipoAtencion" Options="@opcionesTipo" />
+                    <AppDatePicker Label="Fecha" @bind-Value="fecha" />
+                    <AppSelect TValue="string" Label="Hora disponible" @bind-Value="hora" Options="@opcionesHoras" />
                 </div>
             </ChildContent>
         </AppCard>
@@ -84,5 +41,53 @@
 </div>
 
 @code {
+    private string cliente = "Ana Martínez López";
+    private string mascota = "Luna";
+    private string especialidad = "Medicina general";
+    private string veterinario = "Dra. Lucía Paredes";
+    private string tipoAtencion = "Consulta";
+    private DateOnly? fecha;
+    private string hora = "09:00";
+
+    private List<SelectOption<string>> opcionesClientes = new()
+    {
+        new("Ana Martínez López", "Ana Martínez López"),
+        new("Carlos Vega Ruiz", "Carlos Vega Ruiz")
+    };
+
+    private List<SelectOption<string>> opcionesMascotas = new()
+    {
+        new("Luna", "Luna"),
+        new("Max", "Max")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Medicina general", "Medicina general"),
+        new("Cirugía", "Cirugía"),
+        new("Dermatología", "Dermatología")
+    };
+
+    private List<SelectOption<string>> opcionesVeterinarios = new()
+    {
+        new("Dra. Lucía Paredes", "Dra. Lucía Paredes"),
+        new("Dr. Mateo Silva", "Dr. Mateo Silva")
+    };
+
+    private List<SelectOption<string>> opcionesTipo = new()
+    {
+        new("Consulta", "Consulta"),
+        new("Control", "Control"),
+        new("Cirugía", "Cirugía"),
+        new("Vacunación", "Vacunación")
+    };
+
+    private List<SelectOption<string>> opcionesHoras = new()
+    {
+        new("09:00", "09:00"),
+        new("10:30", "10:30"),
+        new("11:30", "11:30")
+    };
+
     private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
 }

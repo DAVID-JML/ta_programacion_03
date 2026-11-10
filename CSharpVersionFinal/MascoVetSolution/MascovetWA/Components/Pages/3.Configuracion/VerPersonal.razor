@@ -24,51 +24,24 @@
         <div class="seccion">
             <AppCard Title="Datos del personal" Subtitle="Vista de solo lectura del registro seleccionado.">
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Tipo de personal</span>
-                        <input class="ms-demo-input" value="@Persona.Rol" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Nombres</span>
-                        <input class="ms-demo-input" value="@Persona.Nombre" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Apellido paterno</span>
-                        <input class="ms-demo-input" value="@Persona.Paterno" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Apellido materno</span>
-                        <input class="ms-demo-input" value="@Persona.Materno" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Teléfono</span>
-                        <input class="ms-demo-input" value="@Persona.Telefono" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Correo</span>
-                        <input class="ms-demo-input" value="@Persona.Correo" readonly />
-                    </label>
+                    <AppInput TValue="string" Label="Tipo de personal" Value="@Persona.Rol" Disabled="true" />
+                    <AppInput TValue="string" Label="Nombres" Value="@Persona.Nombre" Disabled="true" />
+                    <AppInput TValue="string" Label="Apellido paterno" Value="@Persona.Paterno" Disabled="true" />
+                    <AppInput TValue="string" Label="Apellido materno" Value="@Persona.Materno" Disabled="true" />
+                    <AppInput TValue="string" Label="Teléfono" Value="@Persona.Telefono" Disabled="true" />
+                    <AppInput TValue="string" Label="Correo" Value="@Persona.Correo" Disabled="true" />
+
                     @if (Persona.Rol == "Recepcionista")
                     {
-                        <label class="ms-demo-field">
-                            <span>Turno</span>
-                            <input class="ms-demo-input" value="Mañana" readonly />
-                        </label>
+                        <AppInput TValue="string" Label="Turno" Value="@("Mañana")" Disabled="true" />
                     }
                     @if (Persona.Rol == "Veterinario")
                     {
-                        <label class="ms-demo-field">
-                            <span>Especialidad</span>
-                            <input class="ms-demo-input" value="@Persona.Especialidad" readonly />
-                        </label>
-                        <label class="ms-demo-field">
-                            <span>Número de colegiatura</span>
-                            <input class="ms-demo-input" value="@Persona.Colegiatura" readonly />
-                        </label>
+                        <AppInput TValue="string" Label="Especialidad" Value="@Persona.Especialidad" Disabled="true" />
+                        <AppInput TValue="string" Label="Número de colegiatura" Value="@Persona.Colegiatura" Disabled="true" />
                     }
                 </div>
                 <div class="ms-demo-actions">
-                    <AppButton Href="@($"/administrador/personal/editar/{Id}")">Editar</AppButton>
                     <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
                 </div>
             </AppCard>

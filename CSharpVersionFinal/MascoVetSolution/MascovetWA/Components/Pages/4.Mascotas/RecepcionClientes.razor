@@ -15,38 +15,28 @@
     <div class="seccion">
         <AppCard Title="Clientes registrados" Subtitle="La recepcionista gestiona datos personales y de contacto.">
             <ChildContent>
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Cliente</th>
-                                <th scope="col">DNI</th>
-                                <th scope="col">Teléfono</th>
-                                <th scope="col">Correo</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Ana Martínez López</td>
-                                <td>74859612</td>
-                                <td>987 765 432</td>
-                                <td>ana@correo.com</td>
-                                <td>Activo</td>
-                                <td><AppButton Href="/recepcion/clientes/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton></td>
-                            </tr>
-                            <tr>
-                                <td>Carlos Vega Ruiz</td>
-                                <td>72654321</td>
-                                <td>987 456 321</td>
-                                <td>carlos@correo.com</td>
-                                <td>Activo</td>
-                                <td><AppButton Href="/recepcion/clientes/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="ClienteDemo" Items="@clientes" ColumnCount="6" Caption="Clientes registrados">
+                    <HeaderContent>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">DNI</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="c">
+                        <td>@c.NombreCompleto</td>
+                        <td>@c.Dni</td>
+                        <td>@c.Telefono</td>
+                        <td>@c.Correo</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@c.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="@($"/recepcion/clientes/editar/{c.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
             </ChildContent>
         </AppCard>
     </div>
@@ -55,3 +45,13 @@
         <AppButton Href="/recepcion/clientes/nuevo" Variant="ButtonVariant.Primary">Registrar cliente</AppButton>
     </div>
 </div>
+
+@code {
+    private sealed record ClienteDemo(int Id, string NombreCompleto, string Dni, string Telefono, string Correo, string Estado);
+
+    private readonly List<ClienteDemo> clientes = new()
+    {
+        new(1, "Ana Martínez López", "74859612", "987 765 432", "ana@correo.com", "Activo"),
+        new(2, "Carlos Vega Ruiz", "72654321", "987 456 321", "carlos@correo.com", "Activo")
+    };
+}

@@ -17,77 +17,28 @@
         <AppCard Title="Registrar personal" Subtitle="Define el rol antes de completar el formulario.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Tipo de personal</span>
-                        <select class="ms-demo-input" @bind="tipoPersonal">
-                            <option value="Veterinario">Veterinario</option>
-                            <option value="Recepcionista">Recepcionista</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Nombres</span>
-                        <input class="ms-demo-input" type="text" maxlength="50" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Apellido paterno</span>
-                        <input class="ms-demo-input" type="text" maxlength="50" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Apellido materno</span>
-                        <input class="ms-demo-input" type="text" maxlength="50" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>DNI</span>
-                        <input class="ms-demo-input" type="text" maxlength="9" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Teléfono</span>
-                        <input class="ms-demo-input" type="tel" maxlength="20" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Correo electrónico</span>
-                        <input class="ms-demo-input" type="email" maxlength="200" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Nombre de usuario</span>
-                        <input class="ms-demo-input" type="text" maxlength="100" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Contraseña</span>
-                        <input class="ms-demo-input" type="password" maxlength="255" />
-                    </label>
+                    <AppSelect TValue="string" Label="Tipo de personal" @bind-Value="tipoPersonal" Options="@opcionesTipoPersonal" />
+                    <AppInput TValue="string" Label="Nombres" MaxLength="50" @bind-Value="nombres" />
+                    <AppInput TValue="string" Label="Apellido paterno" MaxLength="50" @bind-Value="paterno" />
+                    <AppInput TValue="string" Label="Apellido materno" MaxLength="50" @bind-Value="materno" />
+                    <AppInput TValue="string" Label="DNI" MaxLength="9" @bind-Value="dni" />
+                    <AppInput TValue="string" Label="Teléfono" Type="tel" MaxLength="20" @bind-Value="telefono" />
+                    <AppInput TValue="string" Label="Correo electrónico" Type="email" MaxLength="200" @bind-Value="correo" />
+                    <AppInput TValue="string" Label="Nombre de usuario" MaxLength="100" @bind-Value="usuario" />
+                    <AppInput TValue="string" Label="Contraseña" Type="password" MaxLength="255" @bind-Value="password" />
                 </div>
 
                 @if (tipoPersonal == "Veterinario")
                 {
                     <div class="ms-feature-grid">
-                        <label class="ms-demo-field">
-                            <span>Especialidad</span>
-                            <select class="ms-demo-input">
-                                <option value="MEDICINA_GENERAL">Medicina general</option>
-                                <option value="CIRUGIA">Cirugía</option>
-                                <option value="DERMATOLOGIA">Dermatología</option>
-                                <option value="ODONTOLOGIA">Odontología</option>
-                                <option value="CARDIOLOGIA">Cardiología</option>
-                            </select>
-                        </label>
-                        <label class="ms-demo-field">
-                            <span>Número de colegiatura</span>
-                            <input class="ms-demo-input" type="text" maxlength="10" />
-                        </label>
+                        <AppSelect TValue="string" Label="Especialidad" @bind-Value="especialidad" Options="@opcionesEspecialidad" />
+                        <AppInput TValue="string" Label="Número de colegiatura" MaxLength="10" @bind-Value="colegiatura" />
                     </div>
                 }
                 @if (tipoPersonal == "Recepcionista")
                 {
                     <div class="ms-feature-grid">
-                        <label class="ms-demo-field">
-                            <span>Turno</span>
-                            <select class="ms-demo-input">
-                                <option value="MANANA">Mañana</option>
-                                <option value="TARDE">Tarde</option>
-                                <option value="NOCHE">Noche</option>
-                            </select>
-                        </label>
+                        <AppSelect TValue="string" Label="Turno" @bind-Value="turno" Options="@opcionesTurno" />
                     </div>
                 }
                 <div class="ms-demo-actions">
@@ -101,56 +52,81 @@
     <div class="seccion">
         <AppCard Title="Personal registrado" Subtitle="Consulta, modifica o inactiva cuentas del personal.">
             <ChildContent>
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Nombre completo</th>
-                                <th scope="col">Rol</th>
-                                <th scope="col">Teléfono</th>
-                                <th scope="col">Correo</th>
-                                <th scope="col">Especialidad</th>
-                                <th scope="col">Colegiatura</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Lucía Paredes Ríos</td>
-                                <td>Veterinario</td>
-                                <td>987 654 321</td>
-                                <td>lucia@mascovet.pe</td>
-                                <td>Cirugía</td>
-                                <td>CMPV-125</td>
-                                <td>Activo</td>
-                                <td>
-                                    <AppButton Href="/administrador/personal/ver/1" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton>
-                                    <AppButton Href="/administrador/personal/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Diego Ruiz Soto</td>
-                                <td>Recepcionista</td>
-                                <td>955 321 456</td>
-                                <td>diego@mascovet.pe</td>
-                                <td>—</td>
-                                <td>—</td>
-                                <td>Activo</td>
-                                <td>
-                                    <AppButton Href="/administrador/personal/ver/2" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton>
-                                    <AppButton Href="/administrador/personal/editar/2" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="PersonalDemo" Items="@listaPersonal" ColumnCount="8" Caption="Lista de personal">
+                    <HeaderContent>
+                        <th scope="col">Nombre completo</th>
+                        <th scope="col">Rol</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Especialidad</th>
+                        <th scope="col">Colegiatura</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="p">
+                        <td>@p.NombreCompleto</td>
+                        <td>@p.Rol</td>
+                        <td>@p.Telefono</td>
+                        <td>@p.Correo</td>
+                        <td>@p.Especialidad</td>
+                        <td>@p.Colegiatura</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@p.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="@($"/administrador/personal/ver/{p.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton>
+                            <AppButton Href="@($"/administrador/personal/editar/{p.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
             </ChildContent>
         </AppCard>
     </div>
 </div>
 
 @code {
-    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
     private string tipoPersonal = "Veterinario";
+    private string nombres = "";
+    private string paterno = "";
+    private string materno = "";
+    private string dni = "";
+    private string telefono = "";
+    private string correo = "";
+    private string usuario = "";
+    private string password = "";
+    private string especialidad = "MEDICINA_GENERAL";
+    private string colegiatura = "";
+    private string turno = "MANANA";
+
+    private List<SelectOption<string>> opcionesTipoPersonal = new()
+    {
+        new("Veterinario", "Veterinario"),
+        new("Recepcionista", "Recepcionista")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Medicina general", "MEDICINA_GENERAL"),
+        new("Cirugía", "CIRUGIA"),
+        new("Dermatología", "DERMATOLOGIA"),
+        new("Odontología", "ODONTOLOGIA"),
+        new("Cardiología", "CARDIOLOGIA")
+    };
+
+    private List<SelectOption<string>> opcionesTurno = new()
+    {
+        new("Mañana", "MANANA"),
+        new("Tarde", "TARDE"),
+        new("Noche", "NOCHE")
+    };
+
+    private sealed record PersonalDemo(int Id, string NombreCompleto, string Rol, string Telefono, string Correo, string Especialidad, string Colegiatura, string Estado);
+
+    private readonly List<PersonalDemo> listaPersonal = new()
+    {
+        new(1, "Lucía Paredes Ríos", "Veterinario", "987 654 321", "lucia@mascovet.pe", "Cirugía", "CMPV-125", "Activo"),
+        new(2, "Diego Ruiz Soto", "Recepcionista", "955 321 456", "diego@mascovet.pe", "—", "—", "Activo")
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
 }

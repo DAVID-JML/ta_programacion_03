@@ -17,22 +17,12 @@
         <AppCard Title="Registrar o editar medicamento" Subtitle="Catálogo utilizado en las recetas médicas.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Nombre</span>
-                        <input class="ms-demo-input" type="text" maxlength="100" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha de vencimiento</span>
-                        <input class="ms-demo-input" type="date" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Monto (S/)</span>
-                        <input class="ms-demo-input" type="number" step="0.01" min="0" placeholder="0.00" />
-                    </label>
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Descripción</span>
-                        <textarea class="ms-demo-input" rows="3" maxlength="200" placeholder="Escribe aquí..."></textarea>
-                    </label>
+                    <AppInput TValue="string" Label="Nombre" MaxLength="100" @bind-Value="nombre" />
+                    <AppDatePicker Label="Fecha de vencimiento" @bind-Value="fechaVencimiento" />
+                    <AppInput TValue="decimal?" Label="Monto (S/)" Type="number" Placeholder="0.00" @bind-Value="monto" />
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Descripción" Rows="3" MaxLength="200" Placeholder="Escribe aquí..." @bind-Value="descripcion" />
+                    </div>
                 </div>
                 <div class="ms-demo-actions">
                     <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar medicamento</AppButton>
@@ -44,49 +34,47 @@
     <div class="seccion">
         <AppCard Title="Medicamentos registrados" Subtitle="Registros de ejemplo para la demostración">
             <ChildContent>
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Medicamento</th>
-                                <th scope="col">Descripción</th>
-                                <th scope="col">Vencimiento</th>
-                                <th scope="col">Monto (S/)</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Amoxicilina</td>
-                                <td>Antibiótico veterinario</td>
-                                <td>15/12/2027</td>
-                                <td>35.50</td>
-                                <td>Activo</td>
-                                <td>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar</AppButton>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar</AppButton>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Meloxicam</td>
-                                <td>Antiinflamatorio</td>
-                                <td>30/06/2027</td>
-                                <td>28.00</td>
-                                <td>Activo</td>
-                                <td>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar</AppButton>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar</AppButton>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="MedicamentoDemo" Items="@medicamentos" ColumnCount="6" Caption="Medicamentos registrados">
+                    <HeaderContent>
+                        <th scope="col">Medicamento</th>
+                        <th scope="col">Descripción</th>
+                        <th scope="col">Vencimiento</th>
+                        <th scope="col">Monto (S/)</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="m">
+                        <td>@m.Nombre</td>
+                        <td>@m.Descripcion</td>
+                        <td>@m.Vencimiento</td>
+                        <td>@m.Monto.ToString("F2")</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@m.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar</AppButton>
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
             </ChildContent>
         </AppCard>
     </div>
 </div>
 
 @code {
+    private string nombre = "";
+    private DateOnly? fechaVencimiento;
+    private decimal? monto;
+    private string descripcion = "";
+
+    private sealed record MedicamentoDemo(string Nombre, string Descripcion, string Vencimiento, decimal Monto, string Estado);
+
+    private readonly List<MedicamentoDemo> medicamentos = new()
+    {
+        new("Amoxicilina", "Antibiótico veterinario", "15/12/2027", 35.50m, "Activo"),
+        new("Meloxicam", "Antiinflamatorio", "30/06/2027", 28.00m, "Activo")
+    };
+
     private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
 }

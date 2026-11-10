@@ -17,33 +17,10 @@
         <AppCard Title="Gestionar horario" Subtitle="Selecciona el veterinario, día y rango horario.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Veterinario</span>
-                        <select class="ms-demo-input">
-                            <option value="Dra. Lucía Paredes">Dra. Lucía Paredes</option>
-                            <option value="Dr. Mateo Silva">Dr. Mateo Silva</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Día de la semana</span>
-                        <select class="ms-demo-input">
-                            <option value="LUNES">Lunes</option>
-                            <option value="MARTES">Martes</option>
-                            <option value="MIERCOLES">Miércoles</option>
-                            <option value="JUEVES">Jueves</option>
-                            <option value="VIERNES">Viernes</option>
-                            <option value="SABADO">Sábado</option>
-                            <option value="DOMINGO">Domingo</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Hora de inicio</span>
-                        <input class="ms-demo-input" type="time" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Hora de fin</span>
-                        <input class="ms-demo-input" type="time" />
-                    </label>
+                    <AppSelect TValue="string" Label="Veterinario" @bind-Value="vetSeleccionado" Options="@opcionesVets" />
+                    <AppSelect TValue="string" Label="Día de la semana" @bind-Value="diaSeleccionado" Options="@opcionesDias" />
+                    <AppInput TValue="string" Label="Hora de inicio" Type="time" @bind-Value="horaInicio" />
+                    <AppInput TValue="string" Label="Hora de fin" Type="time" @bind-Value="horaFin" />
                 </div>
                 <div class="ms-demo-note">
                     <AppIcon Name="check-circle" Size="16" />
@@ -59,49 +36,64 @@
     <div class="seccion">
         <AppCard Title="Horarios registrados" Subtitle="Registros de ejemplo para la demostración">
             <ChildContent>
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Veterinario</th>
-                                <th scope="col">Día</th>
-                                <th scope="col">Inicio</th>
-                                <th scope="col">Fin</th>
-                                <th scope="col">Estado</th>
-                                <th scope="col">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Dra. Lucía Paredes</td>
-                                <td>Lunes</td>
-                                <td>08:00</td>
-                                <td>12:00</td>
-                                <td>Activo</td>
-                                <td>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar</AppButton>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar</AppButton>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Dr. Mateo Silva</td>
-                                <td>Martes</td>
-                                <td>09:00</td>
-                                <td>13:00</td>
-                                <td>Activo</td>
-                                <td>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar</AppButton>
-                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar</AppButton>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="HorarioDemo" Items="@horarios" ColumnCount="6" Caption="Horarios de atención">
+                    <HeaderContent>
+                        <th scope="col">Veterinario</th>
+                        <th scope="col">Día</th>
+                        <th scope="col">Inicio</th>
+                        <th scope="col">Fin</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="h">
+                        <td>@h.Veterinario</td>
+                        <td>@h.Dia</td>
+                        <td>@h.Inicio</td>
+                        <td>@h.Fin</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@h.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar</AppButton>
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
             </ChildContent>
         </AppCard>
     </div>
 </div>
 
 @code {
+    private string vetSeleccionado = "Dra. Lucía Paredes";
+    private string diaSeleccionado = "LUNES";
+    private string horaInicio = "";
+    private string horaFin = "";
+
+    private List<SelectOption<string>> opcionesVets = new()
+    {
+        new("Dra. Lucía Paredes", "Dra. Lucía Paredes"),
+        new("Dr. Mateo Silva", "Dr. Mateo Silva")
+    };
+
+    private List<SelectOption<string>> opcionesDias = new()
+    {
+        new("Lunes", "LUNES"),
+        new("Martes", "MARTES"),
+        new("Miércoles", "MIERCOLES"),
+        new("Jueves", "JUEVES"),
+        new("Viernes", "VIERNES"),
+        new("Sábado", "SABADO"),
+        new("Domingo", "DOMINGO")
+    };
+
+    private sealed record HorarioDemo(string Veterinario, string Dia, string Inicio, string Fin, string Estado);
+
+    private readonly List<HorarioDemo> horarios = new()
+    {
+        new("Dra. Lucía Paredes", "Lunes", "08:00", "12:00", "Activo"),
+        new("Dr. Mateo Silva", "Martes", "09:00", "13:00", "Activo")
+    };
+
     private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
 }

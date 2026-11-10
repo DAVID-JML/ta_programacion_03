@@ -17,42 +17,17 @@
     <div class="seccion">
         <AppCard Title="Datos generales de la atención" Subtitle="Campos compartidos de las clases de atención médica.">
             <div class="ms-feature-grid">
-                <label class="ms-demo-field">
-                    <span>Tipo de atención</span>
-                    <select class="ms-demo-input" @bind="tipo">
-                        <option>Consulta</option>
-                        <option>Control</option>
-                        <option>Cirugía</option>
-                        <option>Vacunación</option>
-                    </select>
-                </label>
-                <label class="ms-demo-field">
-                    <span>Cita asociada</span>
-                    <select class="ms-demo-input">
-                        <option>101 — Luna</option>
-                        <option>102 — Max</option>
-                    </select>
-                </label>
-                <label class="ms-demo-field">
-                    <span>Peso actual (kg)</span>
-                    <input type="number" step="0.01" min="0" class="ms-demo-input" />
-                </label>
-                <label class="ms-demo-field">
-                    <span>Hora de inicio</span>
-                    <input type="time" class="ms-demo-input" />
-                </label>
-                <label class="ms-demo-field">
-                    <span>Hora de fin</span>
-                    <input type="time" class="ms-demo-input" />
-                </label>
-                <label class="ms-demo-field ms-demo-wide">
-                    <span>Alergias</span>
-                    <textarea rows="2" class="ms-demo-input"></textarea>
-                </label>
-                <label class="ms-demo-field ms-demo-wide">
-                    <span>Observaciones</span>
-                    <textarea rows="2" class="ms-demo-input"></textarea>
-                </label>
+                <AppSelect TValue="string" Label="Tipo de atención" @bind-Value="tipo" Options="@opcionesTipo" />
+                <AppSelect TValue="string" Label="Cita asociada" @bind-Value="citaAsociada" Options="@opcionesCitas" />
+                <AppInput TValue="decimal?" Label="Peso actual (kg)" Type="number" Placeholder="0.00" @bind-Value="peso" />
+                <AppInput TValue="string" Label="Hora de inicio" Type="time" @bind-Value="horaInicio" />
+                <AppInput TValue="string" Label="Hora de fin" Type="time" @bind-Value="horaFin" />
+                <div class="ms-demo-wide">
+                    <AppTextArea Label="Alergias" Rows="2" @bind-Value="alergias" />
+                </div>
+                <div class="ms-demo-wide">
+                    <AppTextArea Label="Observaciones" Rows="2" @bind-Value="observaciones" />
+                </div>
             </div>
         </AppCard>
     </div>
@@ -62,63 +37,40 @@
             <div class="ms-feature-grid">
                 @if (tipo == "Consulta")
                 {
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Motivo de consulta</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Diagnóstico</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Tratamiento</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Motivo de consulta" Rows="2" @bind-Value="motivoConsulta" />
+                    </div>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Diagnóstico" Rows="2" @bind-Value="diagnostico" />
+                    </div>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Tratamiento" Rows="2" @bind-Value="tratamiento" />
+                    </div>
                 }
                 else if (tipo == "Control")
                 {
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Evolución</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Indicaciones</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Evolución" Rows="2" @bind-Value="evolucion" />
+                    </div>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Indicaciones" Rows="2" @bind-Value="indicaciones" />
+                    </div>
                 }
                 else if (tipo == "Cirugía")
                 {
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Procedimiento</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
-                    <label class="ms-demo-field ms-demo-wide">
-                        <span>Indicaciones postoperatorias</span>
-                        <textarea class="ms-demo-input"></textarea>
-                    </label>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Procedimiento" Rows="2" @bind-Value="procedimiento" />
+                    </div>
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Indicaciones postoperatorias" Rows="2" @bind-Value="indicacionesPost" />
+                    </div>
                 }
                 else
                 {
-                    <label class="ms-demo-field">
-                        <span>Vacuna aplicada</span>
-                        <select class="ms-demo-input">
-                            <option>Antirrábica</option>
-                            <option>Séxtuple</option>
-                            <option>Triple felina</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha de aplicación</span>
-                        <input type="date" class="ms-demo-input" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Próxima dosis</span>
-                        <input type="date" class="ms-demo-input" required />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Dosis</span>
-                        <input class="ms-demo-input" maxlength="200" placeholder="Ej. 1 dosis" required />
-                    </label>
+                    <AppSelect TValue="string" Label="Vacuna aplicada" @bind-Value="vacuna" Options="@opcionesVacunas" />
+                    <AppDatePicker Label="Fecha de aplicación" @bind-Value="fechaAplicacion" />
+                    <AppDatePicker Label="Próxima dosis" @bind-Value="proximaDosis" Required="true" />
+                    <AppInput TValue="string" Label="Dosis" MaxLength="200" Placeholder="Ej. 1 dosis" Required="true" @bind-Value="dosis" />
                 }
             </div>
             <div class="ms-demo-actions">
@@ -134,6 +86,45 @@
     public string? TipoSeleccionado { get; set; }
 
     private string tipo = "Consulta";
+    private string citaAsociada = "101 — Luna";
+    private decimal? peso;
+    private string horaInicio = "";
+    private string horaFin = "";
+    private string alergias = "";
+    private string observaciones = "";
+
+    private string motivoConsulta = "";
+    private string diagnostico = "";
+    private string tratamiento = "";
+    private string evolucion = "";
+    private string indicaciones = "";
+    private string procedimiento = "";
+    private string indicacionesPost = "";
+    private string vacuna = "Antirrábica";
+    private DateOnly? fechaAplicacion;
+    private DateOnly? proximaDosis;
+    private string dosis = "";
+
+    private List<SelectOption<string>> opcionesTipo = new()
+    {
+        new("Consulta", "Consulta"),
+        new("Control", "Control"),
+        new("Cirugía", "Cirugía"),
+        new("Vacunación", "Vacunación")
+    };
+
+    private List<SelectOption<string>> opcionesCitas = new()
+    {
+        new("101 — Luna", "101 — Luna"),
+        new("102 — Max", "102 — Max")
+    };
+
+    private List<SelectOption<string>> opcionesVacunas = new()
+    {
+        new("Antirrábica", "Antirrábica"),
+        new("Séxtuple", "Séxtuple"),
+        new("Triple felina", "Triple felina")
+    };
 
     protected override void OnParametersSet()
     {

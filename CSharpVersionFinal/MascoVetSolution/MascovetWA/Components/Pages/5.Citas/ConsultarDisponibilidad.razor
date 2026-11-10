@@ -18,43 +18,23 @@
         <AppCard Title="Criterio de búsqueda" Subtitle="Elige uno de los tres criterios de búsqueda. Los demás se ocultan.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Buscar por</span>
-                        <select class="ms-demo-input" @bind="criterio" @bind:after="LimpiarCriterios">
-                            <option value="especialidad">Especialidad</option>
-                            <option value="veterinario">Veterinario</option>
-                            <option value="fecha">Fecha</option>
-                        </select>
-                    </label>
+                    <AppSelect TValue="string"
+                               Label="Buscar por"
+                               @bind-Value="criterio"
+                               @bind-Value:after="LimpiarCriterios"
+                               Options="@opcionesCriterio" />
 
                     @if (criterio == "especialidad")
                     {
-                        <label class="ms-demo-field">
-                            <span>Especialidad</span>
-                            <select class="ms-demo-input" @bind="especialidad">
-                                <option>Medicina general</option>
-                                <option>Cirugía</option>
-                                <option>Dermatología</option>
-                            </select>
-                        </label>
+                        <AppSelect TValue="string" Label="Especialidad" @bind-Value="especialidad" Options="@opcionesEspecialidad" />
                     }
                     else if (criterio == "veterinario")
                     {
-                        <label class="ms-demo-field">
-                            <span>Veterinario</span>
-                            <select class="ms-demo-input" @bind="veterinario">
-                                <option>Dra. Lucía Paredes</option>
-                                <option>Dr. Mateo Silva</option>
-                                <option>Dra. Valeria Luna</option>
-                            </select>
-                        </label>
+                        <AppSelect TValue="string" Label="Veterinario" @bind-Value="veterinario" Options="@opcionesVeterinario" />
                     }
                     else
                     {
-                        <label class="ms-demo-field">
-                            <span>Fecha</span>
-                            <input type="date" class="ms-demo-input" @bind="fecha" />
-                        </label>
+                        <AppDatePicker Label="Fecha" @bind-Value="fecha" />
                     }
                 </div>
                 <div class="ms-demo-note">
@@ -67,7 +47,7 @@
 
     <div class="seccion">
         <AppCard Title="Veterinarios y horarios" Subtitle="La lista responde al criterio seleccionado en esta demostración.">
-            <AppTable Items="Resultados" ColumnCount="4" Caption="Disponibilidad de atención">
+            <AppTable TItem="VetDisponible" Items="Resultados.ToList()" ColumnCount="4" Caption="Disponibilidad de atención">
                 <HeaderContent>
                     <th scope="col">Veterinario</th>
                     <th scope="col">Especialidad</th>
@@ -93,7 +73,28 @@
     private string criterio = "especialidad";
     private string especialidad = "Medicina general";
     private string veterinario = "Dra. Lucía Paredes";
-    private DateOnly fecha = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+    private DateOnly? fecha = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+
+    private List<SelectOption<string>> opcionesCriterio = new()
+    {
+        new("Especialidad", "especialidad"),
+        new("Veterinario", "veterinario"),
+        new("Fecha", "fecha")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Medicina general", "Medicina general"),
+        new("Cirugía", "Cirugía"),
+        new("Dermatología", "Dermatología")
+    };
+
+    private List<SelectOption<string>> opcionesVeterinario = new()
+    {
+        new("Dra. Lucía Paredes", "Dra. Lucía Paredes"),
+        new("Dr. Mateo Silva", "Dr. Mateo Silva"),
+        new("Dra. Valeria Luna", "Dra. Valeria Luna")
+    };
 
     private sealed record VetDisponible(string Nombre, string Especialidad, string Horario, DayOfWeek Dia);
 
@@ -108,7 +109,7 @@
     {
         "especialidad" => veterinarios.Where(v => v.Especialidad == especialidad),
         "veterinario" => veterinarios.Where(v => v.Nombre == veterinario),
-        "fecha" => veterinarios.Where(v => v.Dia == fecha.DayOfWeek),
+        "fecha" => fecha.HasValue ? veterinarios.Where(v => v.Dia == fecha.Value.DayOfWeek) : veterinarios,
         _ => veterinarios
     };
 

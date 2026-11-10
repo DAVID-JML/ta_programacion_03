@@ -17,41 +17,12 @@
         <AppCard Title="Registrar mascota" Subtitle="Selecciona primero el cliente propietario de la mascota.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Cliente</span>
-                        <select class="ms-demo-input">
-                            <option value="Ana Martínez López">Ana Martínez López</option>
-                            <option value="Carlos Vega Ruiz">Carlos Vega Ruiz</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Nombre de mascota</span>
-                        <input class="ms-demo-input" type="text" maxlength="150" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Especie</span>
-                        <select class="ms-demo-input">
-                            <option value="PERRO">Perro</option>
-                            <option value="GATO">Gato</option>
-                            <option value="AVE">Ave</option>
-                            <option value="CONEJO">Conejo</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Raza</span>
-                        <input class="ms-demo-input" type="text" maxlength="150" required />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Sexo</span>
-                        <select class="ms-demo-input">
-                            <option value="MACHO">Macho</option>
-                            <option value="HEMBRA">Hembra</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha de nacimiento</span>
-                        <input class="ms-demo-input" type="date" required />
-                    </label>
+                    <AppSelect TValue="string" Label="Cliente" @bind-Value="clienteSeleccionado" Options="@opcionesClientes" />
+                    <AppInput TValue="string" Label="Nombre de mascota" MaxLength="150" @bind-Value="nombreMascota" />
+                    <AppSelect TValue="string" Label="Especie" @bind-Value="especie" Options="@opcionesEspecie" />
+                    <AppInput TValue="string" Label="Raza" MaxLength="150" Required="true" @bind-Value="raza" />
+                    <AppSelect TValue="string" Label="Sexo" @bind-Value="sexo" Options="@opcionesSexo" />
+                    <AppDatePicker Label="Fecha de nacimiento" @bind-Value="fechaNacimiento" Required="true" />
                 </div>
                 <div class="ms-demo-actions">
                     <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar mascota</AppButton>
@@ -63,5 +34,32 @@
 </div>
 
 @code {
+    private string clienteSeleccionado = "Ana Martínez López";
+    private string nombreMascota = "";
+    private string especie = "PERRO";
+    private string raza = "";
+    private string sexo = "MACHO";
+    private DateOnly? fechaNacimiento;
+
+    private List<SelectOption<string>> opcionesClientes = new()
+    {
+        new("Ana Martínez López", "Ana Martínez López"),
+        new("Carlos Vega Ruiz", "Carlos Vega Ruiz")
+    };
+
+    private List<SelectOption<string>> opcionesEspecie = new()
+    {
+        new("Perro", "PERRO"),
+        new("Gato", "GATO"),
+        new("Ave", "AVE"),
+        new("Conejo", "CONEJO")
+    };
+
+    private List<SelectOption<string>> opcionesSexo = new()
+    {
+        new("Macho", "MACHO"),
+        new("Hembra", "HEMBRA")
+    };
+
     private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
 }

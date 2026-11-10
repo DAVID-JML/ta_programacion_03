@@ -17,21 +17,9 @@
         <AppCard Title="Seleccionar mascota y periodo" Subtitle="Reporte del historial con fecha, veterinario, diagnóstico y tratamiento.">
             <ChildContent>
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Mascota</span>
-                        <select class="ms-demo-input">
-                            <option>Luna — Perro</option>
-                            <option>Max — Gato</option>
-                        </select>
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha inicio</span>
-                        <input type="date" class="ms-demo-input" />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha fin</span>
-                        <input type="date" class="ms-demo-input" />
-                    </label>
+                    <AppSelect TValue="string" Label="Mascota" @bind-Value="mascotaSeleccionada" Options="@opcionesMascotas" />
+                    <AppDatePicker Label="Fecha inicio" @bind-Value="fechaInicio" />
+                    <AppDatePicker Label="Fecha fin" @bind-Value="fechaFin" />
                 </div>
                 <div class="ms-demo-actions">
                     <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Generar reporte</AppButton>
@@ -43,5 +31,15 @@
 </div>
 
 @code {
+    private string mascotaSeleccionada = "Luna — Perro";
+    private DateOnly? fechaInicio;
+    private DateOnly? fechaFin;
+
+    private List<SelectOption<string>> opcionesMascotas = new()
+    {
+        new("Luna — Perro", "Luna — Perro"),
+        new("Max — Gato", "Max — Gato")
+    };
+
     private void MostrarAviso() => Toast.Info("Esta función se conectará con el servicio de reportes.");
 }

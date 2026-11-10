@@ -16,34 +16,11 @@
     <div class="seccion">
         <AppCard Title="Datos de la mascota" Subtitle="Especie y sexo coinciden con los datos registrados.">
             <div class="ms-feature-grid">
-                <label class="ms-demo-field">
-                    <span>Nombre</span>
-                    <input class="ms-demo-input" value="Luna" />
-                </label>
-                <label class="ms-demo-field">
-                    <span>Especie</span>
-                    <select class="ms-demo-input">
-                        <option>Perro</option>
-                        <option>Gato</option>
-                        <option>Ave</option>
-                        <option>Conejo</option>
-                    </select>
-                </label>
-                <label class="ms-demo-field">
-                    <span>Raza</span>
-                    <input class="ms-demo-input" value="Mestiza" />
-                </label>
-                <label class="ms-demo-field">
-                    <span>Sexo</span>
-                    <select class="ms-demo-input">
-                        <option>Hembra</option>
-                        <option>Macho</option>
-                    </select>
-                </label>
-                <label class="ms-demo-field">
-                    <span>Fecha de nacimiento</span>
-                    <input type="date" class="ms-demo-input" required />
-                </label>
+                <AppInput TValue="string" Label="Nombre" @bind-Value="nombre" />
+                <AppSelect TValue="string" Label="Especie" @bind-Value="especie" Options="@opcionesEspecie" />
+                <AppInput TValue="string" Label="Raza" @bind-Value="raza" />
+                <AppSelect TValue="string" Label="Sexo" @bind-Value="sexo" Options="@opcionesSexo" />
+                <AppDatePicker Label="Fecha de nacimiento" @bind-Value="fechaNacimiento" Required="true" />
             </div>
             <div class="ms-demo-actions">
                 <AppButton OnClick="Guardar">Guardar cambios</AppButton>
@@ -55,5 +32,26 @@
 
 @code {
     [Parameter] public int IdMascota { get; set; }
+
+    private string nombre = "Luna";
+    private string especie = "Perro";
+    private string raza = "Mestiza";
+    private string sexo = "Hembra";
+    private DateOnly? fechaNacimiento = new DateOnly(2022, 3, 14);
+
+    private List<SelectOption<string>> opcionesEspecie = new()
+    {
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Ave", "Ave"),
+        new("Conejo", "Conejo")
+    };
+
+    private List<SelectOption<string>> opcionesSexo = new()
+    {
+        new("Hembra", "Hembra"),
+        new("Macho", "Macho")
+    };
+
     private void Guardar() => Toast.Info("Cambio de demostración. Se conectará con el backend.");
 }

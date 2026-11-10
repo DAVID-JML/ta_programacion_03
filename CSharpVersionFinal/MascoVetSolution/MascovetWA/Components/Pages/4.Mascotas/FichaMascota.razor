@@ -17,8 +17,8 @@
     @if (Mascota is null)
     {
         <AppCard Title="Mascota no encontrada">
-            <p>No hay información de ejemplo para la mascota seleccionada.</p>
-            <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver a mascotas</AppButton>
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver</AppButton>
         </AppCard>
     }
     else
@@ -26,88 +26,52 @@
         <div class="seccion">
             <AppCard Title="Datos de la mascota" Subtitle="Información general y del propietario.">
                 <div class="ms-feature-grid">
-                    <label class="ms-demo-field">
-                        <span>Nombre</span>
-                        <input class="ms-demo-input" value="@Mascota.Nombre" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Especie</span>
-                        <input class="ms-demo-input" value="@Mascota.Especie" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Raza</span>
-                        <input class="ms-demo-input" value="@Mascota.Raza" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Sexo</span>
-                        <input class="ms-demo-input" value="@Mascota.Sexo" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Fecha de nacimiento</span>
-                        <input class="ms-demo-input" value="@Mascota.FechaNacimiento" readonly />
-                    </label>
-                    <label class="ms-demo-field">
-                        <span>Propietario</span>
-                        <input class="ms-demo-input" value="@Mascota.Propietario" readonly />
-                    </label>
+                    <AppInput TValue="string" Label="Nombre" Value="@Mascota.Nombre" Disabled="true" />
+                    <AppInput TValue="string" Label="Especie" Value="@Mascota.Especie" Disabled="true" />
+                    <AppInput TValue="string" Label="Raza" Value="@Mascota.Raza" Disabled="true" />
+                    <AppInput TValue="string" Label="Sexo" Value="@Mascota.Sexo" Disabled="true" />
+                    <AppInput TValue="string" Label="Fecha de nacimiento" Value="@Mascota.FechaNacimiento" Disabled="true" />
+                    <AppInput TValue="string" Label="Propietario" Value="@Mascota.Propietario" Disabled="true" />
                 </div>
             </AppCard>
         </div>
 
         <div class="seccion">
             <AppCard Title="Historial de atenciones" Subtitle="Registros de ejemplo para la demostración">
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th scope="col">Fecha</th>
-                                <th scope="col">Tipo de atención</th>
-                                <th scope="col">Veterinario</th>
-                                <th scope="col">Resultado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var atencion in Mascota.Atenciones)
-                            {
-                                <tr>
-                                    <td>@atencion.Fecha</td>
-                                    <td>@atencion.Tipo</td>
-                                    <td>@atencion.Veterinario</td>
-                                    <td>@atencion.Resultado</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="AtencionDemo" Items="@Mascota.Atenciones" ColumnCount="4" Caption="Historial de atenciones">
+                    <HeaderContent>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Tipo de atención</th>
+                        <th scope="col">Veterinario</th>
+                        <th scope="col">Resultado</th>
+                    </HeaderContent>
+                    <RowTemplate Context="atencion">
+                        <td>@atencion.Fecha</td>
+                        <td>@atencion.Tipo</td>
+                        <td>@atencion.Veterinario</td>
+                        <td>@atencion.Resultado</td>
+                    </RowTemplate>
+                </AppTable>
             </AppCard>
         </div>
 
         <div class="seccion">
             <AppCard Title="Vacunaciones y recetas" Subtitle="Consulta la información asociada a la mascota.">
-                <div class="ms-table-wrap">
-                    <table class="ms-table">
-                        <thead>
-                            <tr>
-                                <th>Registro</th>
-                                <th>Detalle</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var fila in RegistrosComplementarios)
-                            {
-                                <tr>
-                                    <td>@fila.Tipo</td>
-                                    <td>@fila.Detalle</td>
-                                    <td>@fila.Fecha</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <AppTable TItem="ComplementoDemo" Items="@RegistrosComplementarios" ColumnCount="3" Caption="Vacunas y recetas">
+                    <HeaderContent>
+                        <th scope="col">Registro</th>
+                        <th scope="col">Detalle</th>
+                        <th scope="col">Fecha</th>
+                    </HeaderContent>
+                    <RowTemplate Context="fila">
+                        <td>@fila.Tipo</td>
+                        <td>@fila.Detalle</td>
+                        <td>@fila.Fecha</td>
+                    </RowTemplate>
+                </AppTable>
                 <div class="ms-demo-actions">
-                    <AppButton Href="@HistorialHref" Variant="ButtonVariant.Secondary">Ver historial clínico</AppButton>
-                    <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver a mascotas</AppButton>
+                    <AppButton Href="@HistorialHref" Variant="ButtonVariant.Secondary">Ver historial completo</AppButton>
+                    <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver al listado</AppButton>
                 </div>
             </AppCard>
         </div>
@@ -126,19 +90,25 @@
     private MascotaDemo? Mascota => (EsRecepcion, IdMascota) switch
     {
         (_, 1) => new("Luna", "Perro", "Mestiza", "Hembra", "14/03/2022", "Ana Martínez López",
-            [new("23/10/2026", "Consulta", "Dra. Lucía Paredes", "Control registrado"),
-             new("14/09/2026", "Vacunación", "Dr. Mateo Silva", "Vacuna aplicada")]),
-        (true, 2) => new("Max", "Gato", "Doméstico", "Macho", "03/02/2024", "Carlos Vega Ruiz",
-            [new("25/10/2026", "Vacunación", "Dr. Mateo Silva", "Vacuna aplicada")]),
-        (false, 2) => new("Michi", "Gato", "Doméstico de pelo corto", "Macho", "03/02/2024", "Ana Martínez López",
-            [new("07/07/2026", "Vacunación", "Dr. Mateo Silva", "Triple felina aplicada")]),
+            new()
+            {
+                new("23/10/2026", "Consulta", "Dra. Lucía Paredes", "Otitis externa en tratamiento"),
+                new("14/09/2026", "Vacunación", "Dr. Mateo Silva", "Vacuna séxtuple aplicada")
+            }),
+        (_, 2) => new("Max", "Gato", "Siamés", "Macho", "10/08/2021", "Carlos Vega Ruiz",
+            new()
+            {
+                new("25/10/2026", "Vacunación", "Dr. Mateo Silva", "Triple felina aplicada")
+            }),
         _ => null
     };
 
-    private IEnumerable<ComplementoDemo> RegistrosComplementarios => IdMascota switch
+    private List<ComplementoDemo> RegistrosComplementarios => IdMascota switch
     {
-        1 => [new("Vacunación", "Antirrábica — una dosis", "14/09/2026"),
-              new("Receta", "Amoxicilina — indicaciones médicas", "23/10/2026")],
+        1 => [
+            new("Vacunación", "Séxtuple — anual", "14/09/2026"),
+            new("Receta", "Gotas óticas — 7 días", "23/10/2026")
+        ],
         2 => [new("Vacunación", "Triple felina — una dosis", "25/10/2026")],
         _ => []
     };
