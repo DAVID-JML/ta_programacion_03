@@ -1,0 +1,114 @@
+.cita-accion-page {
+    display: grid;
+    gap: var(--ms-space-6);
+    width: min(100%, 960px);
+    margin-inline: auto;
+}
+
+.cita-accion-page__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+}
+
+.cita-accion-page__eyebrow {
+    display: inline-block;
+    margin-bottom: var(--ms-space-2);
+    color: var(--ms-color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.cita-accion-page__header h1 {
+    margin: 0;
+    color: var(--ms-color-text);
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.cita-accion-page__header p {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-text-muted);
+}
+
+.cita-accion-page__details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+    margin: 0 0 var(--ms-space-6);
+}
+
+.cita-accion-page__details div {
+    display: grid;
+    gap: var(--ms-space-1);
+}
+
+.cita-accion-page__details dt,
+.cita-accion-page__field label {
+    color: var(--ms-color-text-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.cita-accion-page__details dd {
+    margin: 0;
+    color: var(--ms-color-text);
+    font-weight: 600;
+}
+
+.cita-accion-page__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+}
+
+.cita-accion-page__field {
+    display: grid;
+    gap: var(--ms-space-2);
+}
+
+.cita-accion-page__control {
+    width: 100%;
+    min-height: 42px;
+    padding: var(--ms-space-2) var(--ms-space-3);
+    border: 1px solid var(--ms-color-border);
+    border-radius: 8px;
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-text-muted);
+    font: inherit;
+}
+
+.cita-accion-page__control--textarea {
+    min-height: 112px;
+    resize: vertical;
+}
+
+.cita-accion-page__control:disabled {
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.cita-accion-page__card-actions,
+.cita-accion-page__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--ms-space-3);
+}
+
+@media (max-width: 640px) {
+    .cita-accion-page__header {
+        flex-direction: column;
+    }
+
+    .cita-accion-page__details,
+    .cita-accion-page__fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cita-accion-page__actions {
+        flex-direction: column-reverse;
+    }
+}

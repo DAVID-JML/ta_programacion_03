@@ -7,7 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Components\DesignSystem\DataDisplay\" />
-    <Folder Include="Components\Pages\2.Inicio\Recepcion\" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="Components\DesignSystem\Forms\AppDatePicker.razor" />
@@ -19,5 +18,50 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MascovetDomain\MascovetDomain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Components\Pages\1.Acceso\Login.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\1.Acceso\RegistroCliente.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\2.Inicio\Admin\AdminInicio.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\2.Inicio\Cliente\ClienteInicio.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\2.Inicio\Cliente\Perfil.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\2.Inicio\Recepcion\RecepcionInicio.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\2.Inicio\Veterinario\VeterinarioInicio.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\EditarHorario.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\EditarPersonal.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\GestionarAtenciones.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\GestionarHorarios.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\GestionarMedicamentos.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\GestionarUsuarios.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\GestionarVeterinarios.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\RegistrarAtencionAdmin.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\VerAtencion.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\3.Configuracion\VerPersonal.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\CartillaVacunacion.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\EditarMascota.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\FichaMascota.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\ListarMascotas.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\RecepcionClienteDetalle.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\RecepcionClienteFormulario.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\RecepcionClientes.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\RecepcionMascotaFormulario.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\RecepcionMascotas.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\4.Mascotas\RegistrarMascota.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\5.Citas\AccionCita.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\5.Citas\ConsultarDisponibilidad.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\5.Citas\GestionarCita.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\5.Citas\ListarCitas.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\5.Citas\RecepcionReservarCita.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\5.Citas\ReservarCita.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\AgendaVeterinario.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\DetalleAtencionVeterinario.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\GestionarReceta.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\GestionarVacunacion.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\HistoriaClinica.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\RegistrarAtencion.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\6.AtencionMedica\VeterinarioHistorias.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\7.Reportes\ReporteCitasEspecialidad.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\7.Reportes\ReporteCitasTipoAtencion.razor" />
+    <_ContentIncludedByDefault Remove="Components\Pages\7.Reportes\ReporteHistoriaClinica.razor" />
   </ItemGroup>
 </Project>

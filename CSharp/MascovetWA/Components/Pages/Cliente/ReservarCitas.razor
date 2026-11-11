@@ -1,0 +1,546 @@
+
+@page "/cliente/reservar"
+@layout MainLayout
+
+<PageTitle>Reservar cita | MascoVet</PageTitle>
+
+<main class="reservar-cita-page">
+
+    <header class="reservar-cita-page__header">
+        <div>
+            <span class="reservar-cita-page__eyebrow">ATENCIÓN VETERINARIA</span>
+            <h1>Reservar una cita</h1>
+            <p>Selecciona tu mascota, el tipo de atención y un horario disponible.</p>
+        </div>
+    </header>
+
+    @if (UltimaReserva is not null)
+    {
+        <AppCard Title="Reserva registrada"
+                 Subtitle="La reserva de prueba se ha registrado correctamente.">
+            <ChildContent>
+                <div class="reservar-cita-page__success">
+                    <AppIcon Name="check-circle" Size="28" />
+                    <div>
+                        <strong>@UltimaReserva.Mascota</strong>
+                        <p>
+                            @UltimaReserva.TipoAtencion ·
+                            @UltimaReserva.IdVeterinario
+                        </p>
+                        <p>
+                            @FormatoFecha(UltimaReserva.Fecha) a las
+                            @UltimaReserva.Hora
+                        </p>
+                        <AppBadge Variant="SemanticVariant.Info">
+                            Reservada
+                        </AppBadge>
+                    </div>
+                </div>
+            </ChildContent>
+            <Footer>
+                <AppButton Variant="ButtonVariant.Primary"
+                           Href="/cliente/citas"
+                           Icon="calendar">
+                    Ver mis citas
+                </AppButton>
+                <AppButton Variant="ButtonVariant.Secondary"
+                           OnClick="NuevaReserva">
+                    Reservar otra cita
+                </AppButton>
+            </Footer>
+        </AppCard>
+    }
+
+    <AppCard Title="Datos de la reserva"
+             Subtitle="Completa los siguientes pasos para solicitar tu cita.">
+        <ChildContent>
+            <div class="reservar-cita-page__form">
+
+                <section class="reservar-cita-page__step">
+                    <div class="reservar-cita-page__step-heading">
+                        <span class="reservar-cita-page__step-number">1</span>
+                        <div>
+                            <h2>Selecciona tu mascota</h2>
+                            <p>Elige la mascota que recibirá la atención.</p>
+                        </div>
+                    </div>
+
+                    @if (Mascotas.Count == 0)
+                    {
+                        <AppEmptyState Icon="paw-print"
+                                       Title="No tienes mascotas registradas"
+                                       Description="Registra una mascota antes de reservar una cita." />
+
+                        <AppButton Href="/cliente/mascotas/nueva"
+                                   Variant="ButtonVariant.Primary"
+                                   Icon="plus">
+                            Registrar mascota
+                        </AppButton>
+                    }
+                    else
+                    {
+                        <div class="reservar-cita-page__field">
+                            <label for="mascota">Mascota</label>
+                            <select id="mascota"
+                                    class="reservar-cita-page__control"
+                                    @bind="IdMascotaSeleccionada"
+                                    @bind:after="LimpiarSeleccion">
+                                <option value="0">Selecciona una mascota</option>
+                                @foreach (var mascota in Mascotas)
+                                {
+                                    <option value="@mascota.Id">
+                                        @mascota.Nombre · @mascota.Especie
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        @if (MascotaSeleccionada is not null)
+                        {
+                            <div class="reservar-cita-page__pet-summary">
+                                <AppIcon Name="paw-print" Size="22" />
+                                <div>
+                                    <strong>@MascotaSeleccionada.Nombre</strong>
+                                    <span>
+                                        @MascotaSeleccionada.Especie
+                                        · @MascotaSeleccionada.Raza
+                                    </span>
+                                </div>
+                            </div>
+                        }
+                    }
+                </section>
+
+                <section class="reservar-cita-page__step">
+                    <div class="reservar-cita-page__step-heading">
+                        <span class="reservar-cita-page__step-number">2</span>
+                        <div>
+                            <h2>Tipo de atención</h2>
+                            <p>Indica el motivo inicial de la reserva.</p>
+                        </div>
+                    </div>
+
+                    <div class="reservar-cita-page__field">
+                        <label for="tipoAtencion">Tipo de atención</label>
+                        <select id="tipoAtencion"
+                                class="reservar-cita-page__control"
+                                @bind="TipoSeleccionado"
+                                @bind:after="LimpiarSeleccion">
+                            <option value="">Selecciona el tipo de atención</option>
+                            <option value="CONSULTA">Consulta general</option>
+                            <option value="CONTROL">Control</option>
+                            <option value="CIRUGIA">Cirugía</option>
+                            <option value="VACUNACION">Vacunación</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="reservar-cita-page__step">
+                    <div class="reservar-cita-page__step-heading">
+                        <span class="reservar-cita-page__step-number">3</span>
+                        <div>
+                            <h2>Selecciona un veterinario</h2>
+                            <p>Se muestran los profesionales compatibles con el tipo de atención.</p>
+                        </div>
+                    </div>
+
+                    @if (string.IsNullOrWhiteSpace(TipoSeleccionado))
+                    {
+                        <p class="reservar-cita-page__hint">
+                            Primero selecciona el tipo de atención.
+                        </p>
+                    }
+                    else if (VeterinariosCompatibles.Count == 0)
+                    {
+                        <AppEmptyState Icon="user"
+                                       Title="No hay veterinarios disponibles"
+                                       Description="No encontramos profesionales compatibles con este tipo de atención." />
+                    }
+                    else
+                    {
+                        <div class="reservar-cita-page__field">
+                            <label for="veterinario">Veterinario</label>
+                            <select id="veterinario"
+                                    class="reservar-cita-page__control"
+                                    @bind="IdVeterinarioSeleccionado"
+                                    @bind:after="LimpiarHorario">
+                                <option value="0">Selecciona un veterinario</option>
+                                @foreach (var veterinario in VeterinariosCompatibles)
+                                {
+                                    <option value="@veterinario.Id">
+                                        @veterinario.Nombre · @veterinario.Especialidad
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                    }
+                </section>
+
+                <section class="reservar-cita-page__step">
+                    <div class="reservar-cita-page__step-heading">
+                        <span class="reservar-cita-page__step-number">4</span>
+                        <div>
+                            <h2>Fecha y horario</h2>
+                            <p>Consulta los horarios disponibles del veterinario.</p>
+                        </div>
+                    </div>
+
+                    <div class="reservar-cita-page__field">
+                        <label for="fecha">Fecha de la cita</label>
+                        <input id="fecha"
+                               type="date"
+                               class="reservar-cita-page__control"
+                               min="@FechaMinima"
+                               @bind="FechaSeleccionada"
+                               @bind:after="LimpiarHorario" />
+                    </div>
+
+                    @if (VeterinarioSeleccionado is not null)
+                    {
+                        <div class="reservar-cita-page__schedule">
+                            <h3>Horarios disponibles</h3>
+
+                            @if (HorariosDisponibles.Count == 0)
+                            {
+                                <AppEmptyState Icon="clock"
+                                               Title="No hay horarios disponibles"
+                                               Description="Prueba con otra fecha o selecciona otro veterinario." />
+                            }
+                            else
+                            {
+                                <div class="reservar-cita-page__slots">
+                                    @foreach (var horario in HorariosDisponibles)
+                                    {
+                                        <button type="button"
+                                                class="reservar-cita-page__slot @(HoraSeleccionada == horario ? "is-selected" : "")"
+                                                aria-pressed="@(HoraSeleccionada == horario)"
+                                                @onclick="() => SeleccionarHorario(horario)">
+                                            @horario
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="reservar-cita-page__hint">
+                            Selecciona un veterinario para consultar sus horarios.
+                        </p>
+                    }
+                </section>
+
+            </div>
+        </ChildContent>
+    </AppCard>
+
+    <AppCard Title="Resumen de la reserva"
+             Subtitle="Verifica los datos antes de confirmar.">
+        <ChildContent>
+            <dl class="reservar-cita-page__summary">
+                <div>
+                    <dt>Mascota</dt>
+                    <dd>@(MascotaSeleccionada?.Nombre ?? "—")</dd>
+                </div>
+                <div>
+                    <dt>Tipo de atención</dt>
+                    <dd>@(NombreTipoAtencion(TipoSeleccionado) ?? "—")</dd>
+                </div>
+                <div>
+                    <dt>Veterinario</dt>
+                    <dd>@(VeterinarioSeleccionado?.Nombre ?? "—")</dd>
+                </div>
+                <div>
+                    <dt>Fecha</dt>
+                    <dd>@FormatoFecha(FechaSeleccionada)</dd>
+                </div>
+                <div>
+                    <dt>Horario</dt>
+                    <dd>@(string.IsNullOrWhiteSpace(HoraSeleccionada) ? "—" : HoraSeleccionada)</dd>
+                </div>
+            </dl>
+        </ChildContent>
+        <Footer>
+            <div class="reservar-cita-page__footer">
+                <span class="reservar-cita-page__hint">
+                    La cita se registrará con estado Reservada.
+                </span>
+                <AppButton Variant="ButtonVariant.Primary"
+                           Icon="calendar"
+                           Disabled="@(!PuedeReservar)"
+                           OnClick="ReservarCita">
+                    Confirmar reserva
+                </AppButton>
+            </div>
+        </Footer>
+    </AppCard>
+
+</main>
+
+@code {
+    private int IdMascotaSeleccionada { get; set; }
+    private int IdVeterinarioSeleccionado { get; set; }
+    private string TipoSeleccionado { get; set; } = "CONSULTA";
+    private DateOnly FechaSeleccionada { get; set; } = ProximoDiaLaborable();
+    private string HoraSeleccionada { get; set; } = "";
+
+    private CitaDemo? UltimaReserva { get; set; }
+
+    private DateOnly Hoy => DateOnly.FromDateTime(DateTime.Today);
+    private string FechaMinima => Hoy.ToString("yyyy-MM-dd");
+
+    private MascotaDemo? MascotaSeleccionada =>
+        Mascotas.FirstOrDefault(m => m.Id == IdMascotaSeleccionada);
+
+    private VeterinarioDemo? VeterinarioSeleccionado =>
+        Veterinarios.FirstOrDefault(v => v.Id == IdVeterinarioSeleccionado);
+
+    private List<VeterinarioDemo> VeterinariosCompatibles =>
+        Veterinarios
+            .Where(v => Permite(v.Especialidad, TipoSeleccionado))
+            .ToList();
+
+    private List<string> HorariosDisponibles
+    {
+        get
+        {
+            var veterinario = VeterinarioSeleccionado;
+
+            if (veterinario is null ||
+                !Permite(veterinario.Especialidad, TipoSeleccionado) ||
+                FechaSeleccionada < Hoy ||
+                !veterinario.DiasAtencion.Contains(FechaSeleccionada.DayOfWeek))
+            {
+                return [];
+            }
+
+            var horarios = new List<string>();
+            var hora = veterinario.HoraInicio;
+
+            while (hora < veterinario.HoraFin)
+            {
+                var ocupado = CitasDemo.Any(c =>
+                    c.IdVeterinario == veterinario.Id &&
+                    c.Fecha == FechaSeleccionada &&
+                    c.Hora == hora.ToString("HH:mm"));
+
+                var esHoraPasada =
+                    FechaSeleccionada == Hoy &&
+                    hora <= TimeOnly.FromDateTime(DateTime.Now);
+
+                if (!ocupado && !esHoraPasada)
+                    horarios.Add(hora.ToString("HH:mm"));
+
+                hora = hora.AddMinutes(30);
+            }
+
+            return horarios;
+        }
+    }
+
+    private bool PuedeReservar =>
+        MascotaSeleccionada is not null &&
+        VeterinarioSeleccionado is not null &&
+        Permite(VeterinarioSeleccionado.Especialidad, TipoSeleccionado) &&
+        FechaSeleccionada >= Hoy &&
+        HorariosDisponibles.Contains(HoraSeleccionada);
+
+    private readonly List<MascotaDemo> Mascotas =
+    [
+        new(1, "Luna", "Perro", "Mestiza"),
+        new(2, "Michi", "Gato", "Doméstico de pelo corto"),
+        new(3, "Rocky", "Perro", "Labrador")
+    ];
+
+    private readonly List<VeterinarioDemo> Veterinarios =
+    [
+        new(
+            1,
+            "Valeria Ruiz",
+            "MEDICINA_GENERAL",
+            "Medicina general",
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
+            new TimeOnly(9, 0),
+            new TimeOnly(13, 0)
+        ),
+        new(
+            2,
+            "Carlos Ramírez",
+            "CIRUGIA",
+            "Cirugía",
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
+            new TimeOnly(9, 0),
+            new TimeOnly(13, 0)
+        ),
+        new(
+            3,
+            "Andrea Torres",
+            "DERMATOLOGIA",
+            "Dermatología",
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
+            new TimeOnly(15, 0),
+            new TimeOnly(18, 0)
+        ),
+        new(
+            4,
+            "Luis Mendoza",
+            "CARDIOLOGIA",
+            "Cardiología",
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
+            new TimeOnly(15, 0),
+            new TimeOnly(18, 0)
+        ),
+        new(
+            5,
+            "Sofía Castro",
+            "ODONTOLOGIA",
+            "Odontología",
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                    DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday },
+            new TimeOnly(9, 0),
+            new TimeOnly(13, 0)
+        )
+    ];
+
+    private List<CitaDemo> CitasDemo { get; } = CrearCitasDemo();
+
+    private static List<CitaDemo> CrearCitasDemo()
+    {
+        var fecha = ProximoDiaLaborable();
+
+        return
+        [
+            new(1, 1, "Luna", 1, "Consulta general", fecha, "09:00", "Reservada"),
+            new(2, 2, "Michi", 1, "Control", fecha, "10:00", "Confirmada"),
+            new(3, 3, "Rocky", 2, "Cirugía", fecha, "09:30", "Reservada"),
+            new(4, 1, "Luna", 3, "Consulta general", fecha, "15:00", "Confirmada"),
+            new(5, 2, "Michi", 4, "Control", fecha, "16:00", "Reservada")
+        ];
+    }
+
+    private static DateOnly ProximoDiaLaborable()
+    {
+        var fecha = DateOnly.FromDateTime(DateTime.Today).AddDays(1);
+
+        while (fecha.DayOfWeek == DayOfWeek.Sunday)
+            fecha = fecha.AddDays(1);
+
+        return fecha;
+    }
+
+    private static bool Permite(string especialidad, string tipo)
+    {
+        return especialidad switch
+        {
+            "MEDICINA_GENERAL" =>
+                tipo is "CONSULTA" or "CONTROL" or "VACUNACION",
+
+            "CIRUGIA" =>
+                tipo is "CONSULTA" or "CONTROL" or "CIRUGIA",
+
+            "DERMATOLOGIA" or "CARDIOLOGIA" or "ODONTOLOGIA" =>
+                tipo is "CONSULTA" or "CONTROL",
+
+            _ => false
+        };
+    }
+
+    private static string? NombreTipoAtencion(string tipo) =>
+        tipo switch
+        {
+            "CONSULTA" => "Consulta general",
+            "CONTROL" => "Control",
+            "CIRUGIA" => "Cirugía",
+            "VACUNACION" => "Vacunación",
+            _ => null
+        };
+
+    private static string FormatoFecha(DateOnly fecha) =>
+        fecha.ToString("dd/MM/yyyy");
+
+    private void LimpiarSeleccion()
+    {
+        IdVeterinarioSeleccionado = 0;
+        HoraSeleccionada = "";
+        UltimaReserva = null;
+    }
+
+    private void LimpiarHorario()
+    {
+        HoraSeleccionada = "";
+        UltimaReserva = null;
+    }
+
+    private void SeleccionarHorario(string horario)
+    {
+        HoraSeleccionada = horario;
+        UltimaReserva = null;
+    }
+
+    private void ReservarCita()
+    {
+        if (!PuedeReservar)
+            return;
+
+        var mascota = MascotaSeleccionada!;
+        var veterinario = VeterinarioSeleccionado!;
+        var tipo = NombreTipoAtencion(TipoSeleccionado)!;
+
+        var nuevaCita = new CitaDemo(
+            CitasDemo.Count + 1,
+            mascota.Id,
+            mascota.Nombre,
+            veterinario.Id,
+            tipo,
+            FechaSeleccionada,
+            HoraSeleccionada,
+            "Reservada"
+        );
+
+        CitasDemo.Add(nuevaCita);
+        UltimaReserva = nuevaCita;
+        HoraSeleccionada = "";
+    }
+
+    private void NuevaReserva()
+    {
+        IdMascotaSeleccionada = 0;
+        TipoSeleccionado = "CONSULTA";
+        IdVeterinarioSeleccionado = 0;
+        FechaSeleccionada = ProximoDiaLaborable();
+        HoraSeleccionada = "";
+        UltimaReserva = null;
+    }
+
+    private sealed record MascotaDemo(
+        int Id,
+        string Nombre,
+        string Especie,
+        string Raza
+    );
+
+    private sealed record VeterinarioDemo(
+        int Id,
+        string Nombre,
+        string Especialidad,
+        string NombreEspecialidad,
+        DayOfWeek[] DiasAtencion,
+        TimeOnly HoraInicio,
+        TimeOnly HoraFin
+    );
+
+    private sealed record CitaDemo(
+        int Id,
+        int IdMascota,
+        string Mascota,
+        int IdVeterinario,
+        string TipoAtencion,
+        DateOnly Fecha,
+        string Hora,
+        string Estado
+    );
+}

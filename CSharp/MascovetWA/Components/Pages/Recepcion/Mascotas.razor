@@ -1,0 +1,222 @@
+@page "/recepcion/mascotas"
+@using System.ComponentModel.DataAnnotations
+@inject ToastService Toast
+
+<PageTitle>Mascotas | Mascovet</PageTitle>
+
+<div class="ms-page">
+    <PageHeader Title="Mascotas"
+                Description="Busca al propietario por su DNI para ver y administrar sus mascotas." />
+
+    <EditForm Model="busqueda" OnValidSubmit="Buscar" novalidate>
+        <DataAnnotationsValidator />
+
+        <AppCard Title="Buscar propietario"
+                 Subtitle="Las mascotas se consultan a partir del cliente al que pertenecen.">
+            <div class="busqueda">
+                <div class="busqueda__campo">
+                    <AppInput @bind-Value="busqueda.Dni" Label="DNI del propietario" Required="true"
+                              Placeholder="8 dígitos" inputmode="numeric" maxlength="8" autocomplete="off" />
+                </div>
+                <div class="busqueda__acciones">
+                    <AppButton Type="submit" Icon="search">Buscar</AppButton>
+                    <AppButton Variant="ButtonVariant.Tertiary" OnClick="Limpiar">Limpiar</AppButton>
+                </div>
+            </div>
+        </AppCard>
+    </EditForm>
+
+    @if (!buscado)
+    {
+        <AppCard>
+            <AppEmptyState Icon="search" Title="Busca al propietario"
+                           Description="Ingresa su DNI para ver y administrar las mascotas asociadas." />
+        </AppCard>
+    }
+    else if (propietario is null)
+    {
+        <AppCard>
+            <AppEmptyState Icon="users" Title="No encontramos a ese cliente"
+                           Description="@($"No hay un cliente registrado con el DNI {dniBuscado}.")">
+                <AppButton Href="@($"/recepcion/clientes/nuevo?dni={dniBuscado}")" Icon="plus">Registrar cliente</AppButton>
+            </AppEmptyState>
+        </AppCard>
+    }
+    else
+    {
+        <AppCard Title="Propietario">
+            <Actions>
+                <AppButton Href="@($"/recepcion/clientes/editar/{propietario.Id}")"
+                           Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver cliente</AppButton>
+            </Actions>
+            <ChildContent>
+                <dl class="propietario">
+                    <div><dt>Nombre</dt><dd>@propietario.Nombre</dd></div>
+                    <div><dt>DNI</dt><dd>@propietario.Dni</dd></div>
+                    <div><dt>Teléfono</dt><dd>@propietario.Telefono</dd></div>
+                    <div><dt>Correo</dt><dd>@propietario.Correo</dd></div>
+                </dl>
+            </ChildContent>
+        </AppCard>
+
+        <AppCard Title="@TituloMascotas" Subtitle="Registra, consulta, edita o inactiva sus mascotas.">
+            <Actions>
+                <AppButton Href="@($"/recepcion/mascotas/nueva?clienteId={propietario.Id}")" Icon="plus"
+                           Size="ButtonSize.Small">Registrar mascota</AppButton>
+            </Actions>
+            <ChildContent>
+                <AppTable TItem="MascotaDemo" Items="MascotasDelPropietario" ColumnCount="7"
+                          Caption="Mascotas del propietario">
+                    <HeaderContent>
+                        <th scope="col">Mascota</th>
+                        <th scope="col">Especie</th>
+                        <th scope="col">Raza</th>
+                        <th scope="col">Sexo</th>
+                        <th scope="col">Edad</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="m">
+                        <td><strong>@m.Nombre</strong></td>
+                        <td>@m.Especie</td>
+                        <td>@m.Raza</td>
+                        <td>@m.Sexo</td>
+                        <td>@Edad(m.Nacimiento)</td>
+                        <td><AppBadge Variant="EstadoVariant(m.Estado)">@m.Estado</AppBadge></td>
+                        <td>
+                            <div class="celda-acciones">
+                                <AppButton Href="@($"/recepcion/mascotas/{m.Id}")" Size="ButtonSize.Small"
+                                           Variant="ButtonVariant.Secondary">Ver ficha</AppButton>
+                                @if (m.Estado == "Activa")
+                                {
+                                    <AppButton Href="@($"/recepcion/mascotas/{m.Id}/editar")" Size="ButtonSize.Small"
+                                               Variant="ButtonVariant.Tertiary">Editar</AppButton>
+                                    <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger"
+                                               Disabled="@(m.CitasPendientes > 0)"
+                                               OnClick="() => AbrirInactivar(m)">Inactivar</AppButton>
+                                    @if (m.CitasPendientes > 0)
+                                    {
+                                        <span class="nota">@m.CitasPendientes cita pendiente</span>
+                                    }
+                                }
+                            </div>
+                        </td>
+                    </RowTemplate>
+                    <EmptyContent>
+                        <AppEmptyState Icon="heart" Title="Este cliente aún no tiene mascotas"
+                                       Description="Registra su primera mascota para poder reservarle citas.">
+                            <AppButton Href="@($"/recepcion/mascotas/nueva?clienteId={propietario.Id}")" Icon="plus">Registrar mascota</AppButton>
+                        </AppEmptyState>
+                    </EmptyContent>
+                </AppTable>
+            </ChildContent>
+        </AppCard>
+    }
+</div>
+
+<AppModal @bind-Visible="mostrarInactivar"
+          Title="Inactivar mascota"
+          ConfirmText="Sí, inactivar"
+          ConfirmVariant="ButtonVariant.Danger"
+          OnConfirm="ConfirmarInactivar">
+    @if (seleccionada is not null)
+    {
+        <p>¿Inactivar a <strong>@seleccionada.Nombre</strong>? Ya no podrá usarse para reservar citas. Su historial se conserva.</p>
+    }
+</AppModal>
+
+@code {
+    private sealed record Propietario(int Id, string Nombre, string Dni, string Telefono, string Correo);
+
+    private sealed record MascotaDemo(int Id, int PropietarioId, string Nombre, string Especie, string Raza,
+                                      string Sexo, DateOnly? Nacimiento, string Estado, int CitasPendientes);
+
+    private sealed class BusquedaModel
+    {
+        [Required(ErrorMessage = "Ingrese el DNI del propietario.")]
+        [RegularExpression(@"^\d{8}$", ErrorMessage = "El DNI debe tener 8 dígitos.")]
+        public string? Dni { get; set; }
+    }
+
+    // Datos de ejemplo hasta conectar el backend.
+    private readonly List<Propietario> propietarios = new()
+    {
+        new(1, "Ana Martínez López", "74859612", "987 765 432", "ana@correo.com"),
+        new(2, "Carlos Vega Ruiz", "72654321", "987 456 321", "carlos@correo.com"),
+        new(3, "María Solís Díaz", "70123456", "955 111 222", "maria@correo.com"),
+    };
+
+    private readonly List<MascotaDemo> mascotas = new()
+    {
+        new(1, 1, "Luna", "Perro", "Labrador", "Hembra", new DateOnly(2023, 3, 10), "Activa", 1),
+        new(2, 1, "Michi", "Gato", "Siamés", "Hembra", new DateOnly(2024, 6, 1), "Activa", 0),
+        new(3, 1, "Rocky", "Perro", "Desconocida", "Macho", null, "Inactiva", 0),
+        new(4, 2, "Max", "Gato", "Común", "Macho", new DateOnly(2022, 9, 15), "Activa", 0),
+    };
+
+    private BusquedaModel busqueda = new();
+    private bool buscado;
+    private string dniBuscado = string.Empty;
+    private Propietario? propietario;
+
+    private bool mostrarInactivar;
+    private MascotaDemo? seleccionada;
+
+    private string TituloMascotas => $"Mascotas de {propietario?.Nombre}";
+
+    private IEnumerable<MascotaDemo> MascotasDelPropietario => propietario is null
+        ? Array.Empty<MascotaDemo>()
+        : mascotas.Where(m => m.PropietarioId == propietario.Id)
+                  .OrderBy(m => m.Estado)   // activas primero
+                  .ThenBy(m => m.Nombre);
+
+    private void Buscar()
+    {
+        dniBuscado = busqueda.Dni!.Trim();
+        propietario = propietarios.FirstOrDefault(p => p.Dni == dniBuscado);
+        buscado = true;
+    }
+
+    private void Limpiar()
+    {
+        busqueda = new BusquedaModel();
+        buscado = false;
+        propietario = null;
+        dniBuscado = string.Empty;
+    }
+
+    private void AbrirInactivar(MascotaDemo m)
+    {
+        seleccionada = m;
+        mostrarInactivar = true;
+    }
+
+    private void ConfirmarInactivar()
+    {
+        if (seleccionada is null) return;
+
+        var i = mascotas.FindIndex(m => m.Id == seleccionada.Id);
+        if (i >= 0) mascotas[i] = mascotas[i] with { Estado = "Inactiva" };
+
+        Toast.Success($"{seleccionada.Nombre} fue inactivada.");
+        mostrarInactivar = false;
+        seleccionada = null;
+    }
+
+    private static SemanticVariant EstadoVariant(string estado) =>
+        estado == "Activa" ? SemanticVariant.Success : SemanticVariant.Neutral;
+
+    // RF012: la fecha de nacimiento puede ser desconocida.
+    private static string Edad(DateOnly? nacimiento)
+    {
+        if (nacimiento is not { } n) return "Desconocida";
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+        var años = hoy.Year - n.Year;
+        if (hoy < n.AddYears(años)) años--;
+        if (años >= 1) return años == 1 ? "1 año" : $"{años} años";
+
+        var meses = (hoy.Year - n.Year) * 12 + hoy.Month - n.Month - (hoy.Day < n.Day ? 1 : 0);
+        return meses <= 0 ? "Menos de 1 mes" : $"{meses} meses";
+    }
+}

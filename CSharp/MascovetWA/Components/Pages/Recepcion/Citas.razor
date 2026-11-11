@@ -1,0 +1,122 @@
+@page "/recepcion/citas"
+@inject ToastService Toast
+
+<PageTitle>Gestión de citas | Mascovet</PageTitle>
+
+<div class="citas">
+    <PageHeader Title="Gestión de citas"
+                Description="Confirma, reprograma o cancela según el estado de cada cita." />
+
+    <AppAlert Variant="SemanticVariant.Info" Title="Vista de demostración">
+        RF017–RF020 · La tabla muestra estados de ejemplo. No se guardan modificaciones ni se realizan reservas reales.
+    </AppAlert>
+
+    <AppCard Title="Citas registradas" Subtitle="Cada acción corresponde a la cita de su misma fila.">
+        <AppTable TItem="CitaDemo" Items="citas" ColumnCount="7" Caption="Citas de recepción">
+            <HeaderContent>
+                <th scope="col">ID</th>
+                <th scope="col">Mascota / Cliente</th>
+                <th scope="col">Veterinario</th>
+                <th scope="col">Tipo de atención</th>
+                <th scope="col">Fecha y hora</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+            </HeaderContent>
+            <RowTemplate Context="c">
+                <td>@c.Id</td>
+                <td><strong>@c.Mascota</strong> <span class="cliente">/ @c.Cliente</span></td>
+                <td>@c.Veterinario</td>
+                <td>@c.Tipo</td>
+                <td>@c.FechaHora</td>
+                <td><AppBadge Variant="EstadoColor(c.Estado)">@c.Estado</AppBadge></td>
+                <td>
+                    <div class="celda-acciones">
+                        @if (c.Estado == "Reservada")
+                        {
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Primary"
+                                       OnClick="() => AbrirConfirmacion(c)">Confirmar</AppButton>
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary"
+                                       Href="@($"/recepcion/citas/{c.Id}/reprogramar")">Reprogramar</AppButton>
+                        }
+                        @if (c.Estado is "Reservada" or "Confirmada")
+                        {
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Danger"
+                                       Href="@($"/recepcion/citas/{c.Id}/cancelar")">Cancelar</AppButton>
+                        }
+                        @if (c.Estado is "Atendida" or "Cancelada")
+                        {
+                            <span class="sin-acciones">Sin acciones disponibles</span>
+                        }
+                    </div>
+                </td>
+            </RowTemplate>
+            <EmptyContent>
+                <AppEmptyState Icon="calendar" Title="No hay citas registradas"
+                               Description="Cuando se registre una cita aparecerá aquí.">
+                    <AppButton Href="/recepcion/citas/nueva" Icon="plus">Registrar cita</AppButton>
+                </AppEmptyState>
+            </EmptyContent>
+        </AppTable>
+    </AppCard>
+
+    <div class="acciones">
+        <AppButton Href="/recepcion/citas/nueva" Variant="ButtonVariant.Primary">Registrar cita</AppButton>
+        <AppButton Href="/recepcion/disponibilidad" Variant="ButtonVariant.Secondary">Consultar disponibilidad</AppButton>
+    </div>
+</div>
+
+<AppModal @bind-Visible="mostrarConfirmacion"
+          Title="Confirmar cita"
+          ConfirmText="Sí, confirmar"
+          OnConfirm="ConfirmarCita">
+    @if (seleccionada is not null)
+    {
+        <p>¿Confirmar la cita <strong>N.º @seleccionada.Id</strong> de @seleccionada.Mascota para el @seleccionada.FechaHora?</p>
+    }
+    <p class="ms-type-small">La confirmación solo se simula en la pantalla.</p>
+</AppModal>
+
+@code {
+    private sealed record CitaDemo(int Id, string Mascota, string Cliente, string Veterinario,
+                                   string Tipo, string FechaHora, string Estado);
+
+    private readonly List<CitaDemo> citas = new()
+    {
+        new(101, "Luna", "Ana Martínez", "Dra. Lucía Paredes", "Consulta", "29/10/2026 09:00", "Reservada"),
+        new(102, "Max", "Carlos Vega", "Dr. Mateo Silva", "Control", "30/10/2026 11:30", "Confirmada"),
+        new(103, "Nina", "María Solís", "Dra. Lucía Paredes", "Vacunación", "22/10/2026 10:00", "Atendida"),
+        new(104, "Milo", "José Torres", "Dr. Mateo Silva", "Consulta", "20/10/2026 16:00", "Cancelada")
+    };
+
+    // Estados del RF020: Reservada, Confirmada, Atendida, Cancelada
+    private static SemanticVariant EstadoColor(string s) => s switch
+    {
+        "Reservada" => SemanticVariant.Warning,
+        "Confirmada" => SemanticVariant.Success,
+        "Atendida" => SemanticVariant.Info,
+        "Cancelada" => SemanticVariant.Error,
+        _ => SemanticVariant.Neutral
+    };
+
+    private bool mostrarConfirmacion;
+    private CitaDemo? seleccionada;
+
+    private void AbrirConfirmacion(CitaDemo c)
+    {
+        seleccionada = c;
+        mostrarConfirmacion = true;
+    }
+
+    private void ConfirmarCita()
+    {
+        if (seleccionada is null) return;
+
+        // Simulación local: solo cambia el estado en pantalla (RF020).
+        var i = citas.FindIndex(c => c.Id == seleccionada.Id);
+        if (i >= 0) citas[i] = citas[i] with { Estado = "Confirmada" };
+
+        mostrarConfirmacion = false;
+        Toast.Success($"Cita {seleccionada.Id} confirmada (simulado). No se modificó ninguna base de datos.");
+        seleccionada = null;
+    }
+}

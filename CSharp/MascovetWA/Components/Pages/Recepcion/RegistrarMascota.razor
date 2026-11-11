@@ -1,0 +1,105 @@
+
+@page "/recepcion/mascotas/nueva"
+@layout MainLayout
+
+@inject ToastService Toast
+
+<PageTitle>Registrar mascota de cliente | Mascovet</PageTitle>
+
+<div class="registrar-mascota">
+    <header class="registrar-mascota__header">
+        <div>
+            <h1>Registrar mascota de cliente</h1>
+            <p>Registra una mascota y asóciala con su propietario.</p>
+        </div>
+    </header>
+
+    <section class="registrar-mascota__content">
+        <AppCard Title="Datos de la mascota"
+                 Subtitle="RF012 · Primero selecciona el cliente propietario de la mascota.">
+
+            <ChildContent>
+                <div class="registrar-mascota__fields">
+                    <AppSelect TValue="int?"
+                               @bind-Value="ClienteSeleccionado"
+                               Options="OpcionesClientes"
+                               Label="Cliente propietario"
+                               Placeholder="Seleccione un cliente"
+                               Required="true" />
+
+                    <AppInput @bind-Value="Nombre"
+                              Label="Nombre de mascota"
+                              Placeholder="Ingrese el nombre"
+                              Required="true" />
+
+                    <AppSelect TValue="string"
+                               @bind-Value="Especie"
+                               Options="OpcionesEspecies"
+                               Label="Especie"
+                               Placeholder="Seleccione una especie"
+                               Required="true" />
+
+                    <AppInput @bind-Value="Raza"
+                              Label="Raza"
+                              Placeholder="Ingrese la raza" />
+
+                    <AppSelect TValue="string"
+                               @bind-Value="Sexo"
+                               Options="OpcionesSexo"
+                               Label="Sexo"
+                               Placeholder="Seleccione el sexo" />
+
+                    <AppDatePicker @bind-Value="FechaNacimiento"
+                                   Label="Fecha de nacimiento"
+                                   HelpText="Puede dejarse vacío si se desconoce." />
+                </div>
+
+                <div class="registrar-mascota__actions">
+                    <AppButton Variant="ButtonVariant.Primary"
+                               OnClick="MostrarAviso">
+                        Guardar mascota
+                    </AppButton>
+
+                    <AppButton Href="/recepcion/mascotas"
+                               Variant="ButtonVariant.Secondary">
+                        Volver
+                    </AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </section>
+</div>
+
+@code {
+    private int? ClienteSeleccionado { get; set; }
+
+    private string Nombre { get; set; } = string.Empty;
+    private string Especie { get; set; } = string.Empty;
+    private string Raza { get; set; } = string.Empty;
+    private string Sexo { get; set; } = string.Empty;
+    private DateOnly? FechaNacimiento { get; set; }
+
+    // Se llenará con los clientes obtenidos del backend Java.
+    private readonly List<SelectOption<int?>> OpcionesClientes = [];
+
+    private readonly List<SelectOption<string>> OpcionesEspecies =
+    [
+        new("No especificado", "No especificado"),
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Otro", "Otro")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesSexo =
+    [
+        new("No especificado", "No especificado"),
+        new("Macho", "Macho"),
+        new("Hembra", "Hembra")
+    ];
+
+    // Pendiente de integración con el backend Java.
+    private void MostrarAviso()
+    {
+        Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+    }
+}

@@ -1,0 +1,230 @@
+﻿@page "/registro"
+@layout AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using System.Net.Http
+@using System.Text.Json
+@using MascovetDomain.Usuarios
+@using MascovetWA.Servicios.REST
+
+@inject ClienteRestService ClienteRest
+
+<PageTitle>Crear cuenta | Mascovet</PageTitle>
+
+<main class="login-page">
+    <section class="login-panel">
+
+        <header class="login-brand">
+            <div class="login-logo" aria-hidden="true">
+                <AppIcon Name="paw-print" Size="28" />
+            </div>
+            <h1>Mascovet</h1>
+            <p class="login-tagline">Crea tu cuenta para continuar.</p>
+        </header>
+
+        <div class="login-heading">
+            <h2>Crear cuenta</h2>
+            <p>Completa tus datos para registrarte.</p>
+        </div>
+
+        <EditForm Model="@modelo" OnValidSubmit="@Registrar">
+            <DataAnnotationsValidator />
+
+            <div class="login-fields">
+
+                <AppInput TValue="string"
+                          Label="DNI"
+                          Type="text"
+                          Placeholder="Ingresa tu DNI"
+                          Required="true"
+                          @bind-Value="modelo.Dni" />
+
+                <ValidationMessage For="@(() => modelo.Dni)" />
+
+                <AppInput TValue="string"
+                          Label="Nombres"
+                          Placeholder="Ingresa tus nombres"
+                          Required="true"
+                          @bind-Value="modelo.Nombres" />
+
+                <ValidationMessage For="@(() => modelo.Nombres)" />
+
+                <AppInput TValue="string"
+                          Label="Apellido paterno"
+                          Placeholder="Ingresa tu apellido paterno"
+                          Required="true"
+                          @bind-Value="modelo.ApellidoPaterno" />
+
+                <ValidationMessage For="@(() => modelo.ApellidoPaterno)" />
+
+                <AppInput TValue="string"
+                          Label="Apellido materno"
+                          Placeholder="Ingresa tu apellido materno"
+                          Required="true"
+                          @bind-Value="modelo.ApellidoMaterno" />
+
+                <ValidationMessage For="@(() => modelo.ApellidoMaterno)" />
+
+                <AppInput TValue="string"
+                          Label="Correo electrónico"
+                          Type="email"
+                          Placeholder="nombre@correo.com"
+                          Required="true"
+                          @bind-Value="modelo.Correo"
+                          autocomplete="email" />
+
+                <ValidationMessage For="@(() => modelo.Correo)" />
+
+                <AppInput TValue="string"
+                          Label="Teléfono"
+                          Type="tel"
+                          Placeholder="Ingresa tu teléfono"
+                          Required="true"
+                          @bind-Value="modelo.Telefono"
+                          autocomplete="tel" />
+
+                <ValidationMessage For="@(() => modelo.Telefono)" />
+
+                <AppInput TValue="string"
+                          Label="Nombre de usuario"
+                          Placeholder="Elige un nombre de usuario"
+                          Required="true"
+                          @bind-Value="modelo.NombreUsuario"
+                          autocomplete="username" />
+
+                <ValidationMessage For="@(() => modelo.NombreUsuario)" />
+
+                <AppInput TValue="string"
+                          Label="Contraseña"
+                          Type="password"
+                          Placeholder="Mínimo 8 caracteres"
+                          Required="true"
+                          @bind-Value="modelo.Contrasena"
+                          autocomplete="new-password" />
+
+                <ValidationMessage For="@(() => modelo.Contrasena)" />
+
+            </div>
+
+            <div class="login-submit">
+                <AppButton Type="submit"
+                           Variant="ButtonVariant.Primary"
+                           Size="ButtonSize.Medium"
+                           Disabled="@enviando"
+                           Loading="@enviando">
+                    Crear cuenta
+                </AppButton>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(mensaje))
+            {
+                <p class="login-feedback" role="status">
+                    @mensaje
+                </p>
+            }
+        </EditForm>
+
+        <footer class="login-footer">
+            <span>¿Ya tienes una cuenta?</span>
+            <a href="/">Iniciar sesión</a>
+        </footer>
+
+    </section>
+</main>
+
+@code {
+    private RegistroModel modelo = new();
+
+    private bool enviando;
+    private string mensaje = string.Empty;
+
+    private async Task Registrar()
+    {
+        if (enviando)
+            return;
+
+        enviando = true;
+        mensaje = string.Empty;
+
+        try
+        {
+            var cliente = new Cliente(
+                0,
+                modelo.Dni.Trim(),
+                modelo.Nombres.Trim(),
+                modelo.ApellidoPaterno.Trim(),
+                modelo.ApellidoMaterno.Trim(),
+                modelo.NombreUsuario.Trim(),
+                modelo.Contrasena,
+                true,
+                modelo.Correo.Trim(),
+                modelo.Telefono.Trim()
+            );
+
+            var idCliente = await ClienteRest.InsertarAsync(cliente);
+
+            if (idCliente > 0)
+            {
+                mensaje = "Tu cuenta se creó correctamente. Ya puedes iniciar sesión.";
+                modelo = new RegistroModel();
+            }
+            else
+            {
+                mensaje = "No se pudo completar el registro.";
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine(ex);
+            mensaje = "No se pudo conectar con el servidor para registrar tu cuenta.";
+        }
+        catch (JsonException ex)
+        {
+            Console.WriteLine(ex);
+            mensaje = "El servidor devolvió una respuesta que no se pudo interpretar.";
+        }
+        finally
+        {
+            enviando = false;
+        }
+    }
+
+    private sealed class RegistroModel
+    {
+        [Required(ErrorMessage = "Ingresa tu DNI.")]
+        [RegularExpression(@"^\d{8}$",
+            ErrorMessage = "El DNI debe tener 8 dígitos.")]
+        public string Dni { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tus nombres.")]
+        [StringLength(150)]
+        public string Nombres { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu apellido paterno.")]
+        [StringLength(150)]
+        public string ApellidoPaterno { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu apellido materno.")]
+        [StringLength(150)]
+        public string ApellidoMaterno { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu correo electrónico.")]
+        [EmailAddress(ErrorMessage = "Ingresa un correo electrónico válido.")]
+        [StringLength(200)]
+        public string Correo { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu teléfono.")]
+        [StringLength(100)]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa un nombre de usuario.")]
+        [StringLength(100, MinimumLength = 3,
+            ErrorMessage = "Debe tener entre 3 y 100 caracteres.")]
+        public string NombreUsuario { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa una contraseña.")]
+        [MinLength(8,
+            ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
+        public string Contrasena { get; set; } = string.Empty;
+    }
+}

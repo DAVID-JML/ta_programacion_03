@@ -16,7 +16,6 @@ public static class NavCatalog
         // Navegación del cliente
         new("Inicio", "cliente", "home", Cli),
         new("Mis mascotas", "cliente/mascotas", "heart", Cli),
-        new("Consultar disponibilidad", "cliente/disponibilidad", "clock", Cli),
         new("Reservar cita", "cliente/reservar", "plus", Cli),
         new("Mis citas", "cliente/citas", "calendar", Cli),
         new("Mi perfil", "cliente/perfil", "user", Cli, true),

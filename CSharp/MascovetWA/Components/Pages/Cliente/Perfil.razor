@@ -1,0 +1,234 @@
+﻿@page "/cliente/perfil"
+@layout MainLayout
+
+@inject ToastService Toast
+
+<PageTitle>Mi perfil | Mascovet</PageTitle>
+
+<div class="perfil-cliente">
+
+    <header class="perfil-cliente__header">
+        <h1>Mi perfil</h1>
+        <p>
+            Consulta tus datos personales y administra la información
+            de tu cuenta.
+        </p>
+    </header>
+
+    <section class="perfil-cliente__section"
+             aria-label="Información personal">
+
+        <EditForm Model="@datos" OnValidSubmit="@GuardarDatos">
+            <DataAnnotationsValidator />
+
+            <AppCard Title="Datos personales"
+                     Subtitle="Consulta tu información y actualiza tus datos de contacto.">
+
+                <ChildContent>
+                    <div class="perfil-cliente__grid">
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-nombres"
+                                      Label="Nombres"
+                                      Placeholder="Se cargarán desde tu cuenta"
+                                      readonly
+                                      @bind-Value="datos.Nombres"
+                                      autocomplete="given-name" />
+                        </div>
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-apellidos"
+                                      Label="Apellidos"
+                                      Placeholder="Se cargarán desde tu cuenta"
+                                      readonly
+                                      @bind-Value="datos.Apellidos"
+                                      autocomplete="family-name" />
+                        </div>
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-dni"
+                                      Label="DNI"
+                                      Placeholder="Se cargará desde tu cuenta"
+                                      readonly
+                                      @bind-Value="datos.Dni" />
+                        </div>
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-telefono"
+                                      Label="Teléfono"
+                                      Type="tel"
+                                      Placeholder="Ingresa tu teléfono"
+                                      Required="true"
+                                      @bind-Value="datos.Telefono"
+                                      autocomplete="tel" />
+                        </div>
+
+                        <div class="perfil-cliente__field perfil-cliente__field--full">
+                            <AppInput TValue="string"
+                                      Id="perfil-correo"
+                                      Label="Correo electrónico"
+                                      Type="email"
+                                      Placeholder="nombre@correo.com"
+                                      Required="true"
+                                      @bind-Value="datos.Correo"
+                                      autocomplete="email" />
+                        </div>
+
+                    </div>
+                </ChildContent>
+
+                <Footer>
+                    <div class="perfil-cliente__actions">
+                        <AppButton Type="submit"
+                                   Variant="ButtonVariant.Primary"
+                                   Icon="check-circle">
+                            Guardar cambios
+                        </AppButton>
+                    </div>
+                </Footer>
+
+            </AppCard>
+        </EditForm>
+
+    </section>
+
+    <section class="perfil-cliente__section"
+             aria-label="Seguridad de la cuenta">
+
+        <EditForm Model="@contrasena"
+                  OnValidSubmit="@CambiarContrasena">
+
+            <DataAnnotationsValidator />
+
+            <AppCard Title="Seguridad de la cuenta"
+                     Subtitle="Cambia tu contraseña para mantener protegida tu cuenta.">
+
+                <ChildContent>
+                    <div class="perfil-cliente__password-fields">
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-contrasena-actual"
+                                      Label="Contraseña actual"
+                                      Type="password"
+                                      Placeholder="Ingresa tu contraseña actual"
+                                      Required="true"
+                                      @bind-Value="contrasena.Actual"
+                                      autocomplete="current-password" />
+                        </div>
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-contrasena-nueva"
+                                      Label="Nueva contraseña"
+                                      Type="password"
+                                      Placeholder="Ingresa tu nueva contraseña"
+                                      Required="true"
+                                      @bind-Value="contrasena.Nueva"
+                                      autocomplete="new-password" />
+                        </div>
+
+                        <div class="perfil-cliente__field">
+                            <AppInput TValue="string"
+                                      Id="perfil-contrasena-confirmacion"
+                                      Label="Confirmar nueva contraseña"
+                                      Type="password"
+                                      Placeholder="Repite la nueva contraseña"
+                                      Required="true"
+                                      @bind-Value="contrasena.Confirmacion"
+                                      autocomplete="new-password" />
+                        </div>
+
+                    </div>
+                </ChildContent>
+
+                <Footer>
+                    <div class="perfil-cliente__actions">
+                        <AppButton Type="submit"
+                                   Variant="ButtonVariant.Primary">
+                            Actualizar contraseña
+                        </AppButton>
+                    </div>
+                </Footer>
+
+            </AppCard>
+
+        </EditForm>
+
+    </section>
+
+    <div class="perfil-cliente__back">
+        <AppButton Href="/cliente"
+                   Variant="ButtonVariant.Tertiary"
+                   Icon="chevron-left">
+            Volver al inicio
+        </AppButton>
+    </div>
+
+</div>
+
+@code {
+    private readonly DatosPerfilModel datos = new();
+
+    private readonly ContrasenaModel contrasena = new();
+
+    private void GuardarDatos()
+    {
+        Toast.Info(
+            "Formulario validado. El guardado se habilitará al conectar el backend.");
+    }
+
+    private void CambiarContrasena()
+    {
+        if (!string.Equals(
+                contrasena.Nueva,
+                contrasena.Confirmacion,
+                StringComparison.Ordinal))
+        {
+            Toast.Warning("La nueva contraseña y su confirmación no coinciden.");
+            return;
+        }
+
+        Toast.Info(
+            "Formulario validado. El cambio de contraseña se habilitará al conectar el backend.");
+    }
+
+    private sealed class DatosPerfilModel
+    {
+        public string Nombres { get; set; } = string.Empty;
+
+        public string Apellidos { get; set; } = string.Empty;
+
+        public string Dni { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu teléfono.")]
+        [Phone(ErrorMessage = "Ingresa un teléfono válido.")]
+        [StringLength(20, ErrorMessage = "El teléfono no puede superar los 20 caracteres.")]
+        public string Telefono { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa tu correo electrónico.")]
+        [EmailAddress(ErrorMessage = "Ingresa un correo electrónico válido.")]
+        [StringLength(254, ErrorMessage = "El correo no puede superar los 254 caracteres.")]
+        public string Correo { get; set; } = string.Empty;
+    }
+
+    private sealed class ContrasenaModel
+    {
+        [Required(ErrorMessage = "Ingresa tu contraseña actual.")]
+        public string Actual { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingresa una nueva contraseña.")]
+        [StringLength(100, ErrorMessage = "La contraseña no puede superar los 100 caracteres.")]
+        public string Nueva { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Confirma la nueva contraseña.")]
+        [Compare(nameof(Nueva),
+            ErrorMessage = "Las contraseñas no coinciden.")]
+        public string Confirmacion { get; set; } = string.Empty;
+    }
+}
+

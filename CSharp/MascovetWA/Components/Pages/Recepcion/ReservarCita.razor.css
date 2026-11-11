@@ -1,0 +1,121 @@
+
+.registrar-cita {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    max-width: 1100px;
+}
+
+.registrar-cita__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+}
+
+.registrar-cita__header h1 {
+    margin: 0;
+    color: var(--ms-color-text);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+}
+
+.registrar-cita__header p {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-text-muted);
+}
+
+.registrar-cita__search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--ms-space-3);
+}
+
+.registrar-cita__search-input {
+    min-width: 0;
+}
+
+.registrar-cita__results {
+    margin-top: var(--ms-space-6);
+}
+
+.registrar-cita__empty {
+    margin-top: var(--ms-space-4);
+}
+
+.registrar-cita__client-data {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-6) var(--ms-space-8);
+}
+
+.registrar-cita__client-data > div {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-1);
+    min-width: 0;
+}
+
+.registrar-cita__client-data span {
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+}
+
+.registrar-cita__client-data strong {
+    color: var(--ms-color-text);
+    font-size: var(--ms-font-size-body);
+    font-weight: var(--ms-font-weight-semibold);
+    overflow-wrap: anywhere;
+}
+
+.registrar-cita__pet-selection {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: var(--ms-space-3);
+}
+
+.registrar-cita__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-6) var(--ms-space-8);
+}
+
+.registrar-cita__modal-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-6);
+}
+
+.registrar-cita__actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--ms-space-3);
+}
+
+.registrar-cita__error {
+    margin: var(--ms-space-2) 0 0;
+    color: var(--ms-color-error-text);
+    font-size: var(--ms-font-size-small);
+}
+
+@media (max-width: 700px) {
+    .registrar-cita__client-data,
+    .registrar-cita__fields,
+    .registrar-cita__modal-fields {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 520px) {
+    .registrar-cita__search,
+    .registrar-cita__pet-selection {
+        grid-template-columns: 1fr;
+    }
+
+    .registrar-cita__actions {
+        flex-direction: column-reverse;
+    }
+}

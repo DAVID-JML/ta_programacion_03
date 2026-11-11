@@ -1,0 +1,296 @@
+﻿
+@page "/cliente/mascotas/{IdMascota:int}/historial"
+@page "/recepcion/mascotas/{IdMascota:int}/historial"
+@page "/veterinario/historias/{IdMascota:int}"
+@layout MainLayout
+
+@inject UserContext User
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<PageTitle>Historia clínica | MascoVet</PageTitle>
+
+<main class="historial-page">
+
+    @if (Mascota is null)
+    {
+        <header class="historial-page__header">
+            <div>
+                <h1>Historia clínica</h1>
+                <p>Consulta el historial médico de la mascota.</p>
+            </div>
+
+            <AppButton Href="@RutaVolver"
+                       Variant="ButtonVariant.Secondary"
+                       Icon="chevron-left">
+                Volver
+            </AppButton>
+        </header>
+
+        <AppCard>
+            <ChildContent>
+                <AppEmptyState Icon="paw-print"
+                               Title="No se encontró la mascota"
+                               Description="No hay información disponible para la mascota solicitada." />
+            </ChildContent>
+        </AppCard>
+    }
+    else
+    {
+        <header class="historial-page__header">
+            <div>
+                <span class="historial-page__eyebrow">
+                    HISTORIAL DEL PACIENTE
+                </span>
+
+                <h1>Historia clínica de @Mascota.Nombre</h1>
+
+                <p>
+                    @Mascota.Especie
+                    @if (!string.IsNullOrWhiteSpace(Mascota.Raza))
+                    {
+                        <span> · @Mascota.Raza</span>
+                    }
+                    <span> · Código MV-@Mascota.Id.ToString("D3")</span>
+                </p>
+            </div>
+
+            <div class="historial-page__actions">
+                <AppButton Href="@RutaVolver"
+                           Variant="ButtonVariant.Secondary"
+                           Icon="chevron-left">
+                    Volver
+                </AppButton>
+
+                @if (EsVeterinario || EsAdministrador)
+                {
+                    <AppButton Variant="ButtonVariant.Primary"
+                               Icon="file-text"
+                               OnClick="ImprimirReporte">
+                        Imprimir historia
+                    </AppButton>
+                }
+            </div>
+        </header>
+
+        <section class="historial-page__summary">
+            <AppCard Title="Atenciones médicas">
+                <ChildContent>
+                    <div class="historial-page__stat">
+                        <AppIcon Name="stethoscope" Size="22" />
+                        <strong>@Atenciones.Count</strong>
+                    </div>
+                </ChildContent>
+            </AppCard>
+
+            <AppCard Title="Vacunaciones">
+                <ChildContent>
+                    <div class="historial-page__stat">
+                        <AppIcon Name="heart" Size="22" />
+                        <strong>@Vacunaciones.Count</strong>
+                    </div>
+                </ChildContent>
+            </AppCard>
+
+            <AppCard Title="Recetas médicas">
+                <ChildContent>
+                    <div class="historial-page__stat">
+                        <AppIcon Name="file-text" Size="22" />
+                        <strong>@Recetas.Count</strong>
+                    </div>
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        <section class="historial-page__section">
+            <AppCard Title="Atenciones médicas"
+                     Subtitle="Consultas, controles y procedimientos veterinarios">
+                <ChildContent>
+                    @if (Atenciones.Count == 0)
+                    {
+                        <AppEmptyState Icon="stethoscope"
+                                       Title="Sin atenciones médicas"
+                                       Description="No hay atenciones registradas para esta mascota." />
+                    }
+                    else
+                    {
+                        <AppTable TItem="AtencionHistorial"
+                                  Items="@Atenciones"
+                                  ColumnCount="5">
+                            <HeaderContent>
+                                <th>Fecha</th>
+                                <th>Veterinario</th>
+                                <th>Tipo de atención</th>
+                                <th>Diagnóstico</th>
+                                <th>Tratamiento</th>
+                            </HeaderContent>
+                            <RowTemplate Context="atencion">
+                                <td>@FormatoFecha(atencion.Fecha)</td>
+                                <td>@atencion.Veterinario</td>
+                                <td>@atencion.Tipo</td>
+                                <td>@(atencion.Diagnostico ?? "—")</td>
+                                <td>@(atencion.Tratamiento ?? "—")</td>
+                            </RowTemplate>
+                        </AppTable>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        <section class="historial-page__section">
+            <AppCard Title="Vacunaciones"
+                     Subtitle="Registro de vacunas y próximas dosis">
+                <ChildContent>
+                    @if (Vacunaciones.Count == 0)
+                    {
+                        <AppEmptyState Icon="check-circle"
+                                       Title="Sin vacunaciones registradas"
+                                       Description="No hay vacunas registradas para esta mascota." />
+                    }
+                    else
+                    {
+                        <AppTable TItem="VacunacionHistorial"
+                                  Items="@Vacunaciones"
+                                  ColumnCount="5">
+                            <HeaderContent>
+                                <th>Vacuna</th>
+                                <th>Fecha de aplicación</th>
+                                <th>Próxima dosis</th>
+                                <th>Veterinario</th>
+                                <th>Estado</th>
+                            </HeaderContent>
+                            <RowTemplate Context="vacuna">
+                                <td>@vacuna.Nombre</td>
+                                <td>@FormatoFecha(vacuna.Fecha)</td>
+                                <td>
+                                    @(vacuna.ProximaDosis.HasValue
+                                        ? FormatoFecha(vacuna.ProximaDosis.Value)
+                                        : "No registrada")
+                                </td>
+                                <td>@vacuna.Veterinario</td>
+                                <td>@EstadoVacuna(vacuna.ProximaDosis)</td>
+                            </RowTemplate>
+                        </AppTable>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        <section class="historial-page__section">
+            <AppCard Title="Recetas médicas"
+                     Subtitle="Medicamentos e indicaciones prescritas">
+                <ChildContent>
+                    @if (Recetas.Count == 0)
+                    {
+                        <AppEmptyState Icon="file-text"
+                                       Title="Sin recetas médicas"
+                                       Description="No hay recetas registradas para esta mascota." />
+                    }
+                    else
+                    {
+                        <AppTable TItem="RecetaHistorial"
+                                  Items="@Recetas"
+                                  ColumnCount="5">
+                            <HeaderContent>
+                                <th>Fecha</th>
+                                <th>Medicamento</th>
+                                <th>Dosis y frecuencia</th>
+                                <th>Duración</th>
+                                <th>Indicaciones</th>
+                            </HeaderContent>
+                            <RowTemplate Context="receta">
+                                <td>@FormatoFecha(receta.Fecha)</td>
+                                <td>@receta.Medicamento</td>
+                                <td>@receta.DosisFrecuencia</td>
+                                <td>@receta.Duracion</td>
+                                <td>@(receta.Indicaciones ?? "—")</td>
+                            </RowTemplate>
+                        </AppTable>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+    }
+</main>
+
+@code {
+    [Parameter]
+    public int IdMascota { get; set; }
+
+    private bool EsVeterinario =>
+        User.IsAuthenticated &&
+        User.Role == UserRole.Veterinario;
+
+    private bool EsAdministrador =>
+        User.IsAuthenticated &&
+        User.Role == UserRole.Administrador;
+
+    private bool EsRecepcion =>
+        Navigation.ToBaseRelativePath(Navigation.Uri)
+            .StartsWith("recepcion/", StringComparison.OrdinalIgnoreCase);
+
+    private string RutaVolver =>
+        EsVeterinario || EsAdministrador
+            ? "/veterinario/historias"
+            : EsRecepcion
+                ? "/recepcion/mascotas"
+                : "/cliente/mascotas";
+
+    private MascotaHistorial? Mascota { get; set; }
+
+    private List<AtencionHistorial> Atenciones { get; set; } = [];
+    private List<VacunacionHistorial> Vacunaciones { get; set; } = [];
+    private List<RecetaHistorial> Recetas { get; set; } = [];
+
+    private static string FormatoFecha(DateOnly fecha) =>
+        fecha.ToString("dd/MM/yyyy");
+
+    private static string EstadoVacuna(DateOnly? proximaDosis)
+    {
+        if (proximaDosis is null)
+            return "Sin fecha programada";
+
+        var hoy = DateOnly.FromDateTime(DateTime.Today);
+
+        return proximaDosis.Value < hoy
+            ? "Dosis pendiente"
+            : proximaDosis.Value == hoy
+                ? "Programada para hoy"
+                : "Registrada";
+    }
+
+    private async Task ImprimirReporte()
+    {
+        await JS.InvokeVoidAsync("window.print");
+    }
+
+    private sealed record MascotaHistorial(
+        int Id,
+        string Nombre,
+        string Especie,
+        string? Raza
+    );
+
+    private sealed record AtencionHistorial(
+        DateOnly Fecha,
+        string Veterinario,
+        string Tipo,
+        string? Diagnostico,
+        string? Tratamiento
+    );
+
+    private sealed record VacunacionHistorial(
+        string Nombre,
+        DateOnly Fecha,
+        DateOnly? ProximaDosis,
+        string Veterinario
+    );
+
+    private sealed record RecetaHistorial(
+        DateOnly Fecha,
+        string Medicamento,
+        string DosisFrecuencia,
+        string Duracion,
+        string? Indicaciones
+    );
+}

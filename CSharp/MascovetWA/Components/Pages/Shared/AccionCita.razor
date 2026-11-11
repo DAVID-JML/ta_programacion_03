@@ -1,0 +1,154 @@
+@page "/recepcion/citas/{Id:int}/{Accion}"
+@page "/cliente/citas/{Id:int}/{Accion}"
+@layout MainLayout
+@inject NavigationManager Navigation
+
+<PageTitle>Acción sobre cita | Mascovet</PageTitle>
+
+<main class="cita-accion-page">
+
+    <header class="cita-accion-page__header">
+        <div>
+            <span class="cita-accion-page__eyebrow">GESTIÓN DE CITAS</span>
+            <h1>
+                @(EsReprogramacion
+                    ? "Reprogramar cita"
+                    : EsCancelacion
+                        ? "Cancelar cita"
+                        : "Acción sobre cita")
+            </h1>
+            <p>RF018 y RF020 · Los datos de la cita seleccionada son de solo lectura.</p>
+        </div>
+    </header>
+
+    @if (!EsReprogramacion && !EsCancelacion)
+    {
+        <AppCard Title="Acción no válida">
+            <ChildContent>
+                <AppEmptyState Icon="alert-circle"
+                               Title="No se reconoce la acción solicitada"
+                               Description="La acción indicada en la dirección no está disponible." />
+            </ChildContent>
+        </AppCard>
+    }
+    else
+    {
+        <AppCard Title="Cita seleccionada"
+                 Subtitle="Identifica la cita que deseas modificar.">
+            <ChildContent>
+                <dl class="cita-accion-page__details">
+                    <div>
+                        <dt>ID de cita</dt>
+                        <dd>@Id</dd>
+                    </div>
+                </dl>
+
+                <AppEmptyState Icon="calendar"
+                               Title="Datos de la cita no disponibles"
+                               Description="No se ha cargado la información de esta cita. No es posible verificar sus datos ni su estado." />
+            </ChildContent>
+        </AppCard>
+
+        @if (EsReprogramacion)
+        {
+            <AppCard Title="Nueva fecha y hora"
+                     Subtitle="La reprogramación requiere consultar la disponibilidad y el estado actual de la cita.">
+                <ChildContent>
+                    <div class="cita-accion-page__fields">
+                        <div class="cita-accion-page__field">
+                            <label for="nuevaFecha">Nueva fecha</label>
+                            <input id="nuevaFecha"
+                                   type="date"
+                                   class="cita-accion-page__control"
+                                   disabled />
+                        </div>
+
+                        <div class="cita-accion-page__field">
+                            <label for="nuevaHora">Nueva hora</label>
+                            <input id="nuevaHora"
+                                   type="time"
+                                   class="cita-accion-page__control"
+                                   disabled />
+                        </div>
+                    </div>
+                </ChildContent>
+
+                <Footer>
+                    <div class="cita-accion-page__card-actions">
+                        <AppButton Variant="ButtonVariant.Primary"
+                                   Disabled="true">
+                            Reprogramar cita
+                        </AppButton>
+                    </div>
+                </Footer>
+            </AppCard>
+        }
+        else
+        {
+            <AppCard Title="Motivo de cancelación"
+                     Subtitle="Indica el motivo por el que solicitas cancelar la cita.">
+                <ChildContent>
+                    <div class="cita-accion-page__field">
+                        <label for="motivo">Motivo de cancelación</label>
+                        <textarea id="motivo"
+                                  class="cita-accion-page__control cita-accion-page__control--textarea"
+                                  rows="4"
+                                  placeholder="Escribe el motivo de cancelación"
+                                  disabled></textarea>
+                    </div>
+                </ChildContent>
+
+                <Footer>
+                    <div class="cita-accion-page__card-actions">
+                        <AppButton Variant="ButtonVariant.Danger"
+                                   Disabled="true">
+                            Cancelar cita
+                        </AppButton>
+                    </div>
+                </Footer>
+            </AppCard>
+        }
+    }
+
+    <div class="cita-accion-page__actions">
+        <AppButton Href="@VolverHref"
+                   Variant="ButtonVariant.Secondary">
+            Volver a citas
+        </AppButton>
+
+        <AppButton Href="@DisponibilidadHref"
+                   Variant="ButtonVariant.Tertiary">
+            Consultar disponibilidad
+        </AppButton>
+    </div>
+
+</main>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    [Parameter] public string Accion { get; set; } = string.Empty;
+
+    private bool EsCliente =>
+        Navigation.ToBaseRelativePath(Navigation.Uri)
+            .StartsWith("cliente/", StringComparison.OrdinalIgnoreCase);
+
+    private bool EsReprogramacion =>
+        string.Equals(
+            Accion,
+            "reprogramar",
+            StringComparison.OrdinalIgnoreCase);
+
+    private bool EsCancelacion =>
+        string.Equals(
+            Accion,
+            "cancelar",
+            StringComparison.OrdinalIgnoreCase);
+
+    private string VolverHref =>
+        EsCliente ? "/cliente/citas" : "/recepcion/citas";
+
+    private string DisponibilidadHref =>
+        EsCliente
+            ? "/cliente/disponibilidad"
+            : "/recepcion/disponibilidad";
+}

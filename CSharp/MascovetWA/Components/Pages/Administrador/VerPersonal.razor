@@ -1,0 +1,54 @@
+﻿@page "/administrador/personal/ver/{Id:int}"
+@layout MainLayout
+
+<PageTitle>Ver personal | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div><h1>Ver personal</h1><p>RF006 · Consulta de datos sin modificar el registro.</p></div>
+        <span class="ms-demo-pill">Solo lectura</span>
+    </header>
+    @if (Persona is null)
+    {
+        <AppCard Title="Personal no encontrado"><p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Datos del personal" Subtitle="Vista de solo lectura del registro seleccionado.">
+                <div class="ms-feature-grid">
+                    <label class="ms-demo-field"><span>Tipo de personal</span><input class="ms-demo-input" value="@Persona.Rol" readonly /></label>
+                    <label class="ms-demo-field"><span>Nombres</span><input class="ms-demo-input" value="@Persona.Nombre" readonly /></label>
+                    <label class="ms-demo-field"><span>Apellido paterno</span><input class="ms-demo-input" value="@Persona.Paterno" readonly /></label>
+                    <label class="ms-demo-field"><span>Apellido materno</span><input class="ms-demo-input" value="@Persona.Materno" readonly /></label>
+                    <label class="ms-demo-field"><span>Teléfono</span><input class="ms-demo-input" value="@Persona.Telefono" readonly /></label>
+                    <label class="ms-demo-field"><span>Correo</span><input class="ms-demo-input" value="@Persona.Correo" readonly /></label>
+                    @if (Persona.Rol == "Veterinario")
+                    {
+                        <label class="ms-demo-field"><span>Especialidad</span><input class="ms-demo-input" value="@Persona.Especialidad" readonly /></label>
+                        <label class="ms-demo-field"><span>Número de colegiatura</span><input class="ms-demo-input" value="@Persona.Colegiatura" readonly /></label>
+                    }
+                </div>
+                <div class="ms-demo-actions">
+                    <AppButton Href="@($"/administrador/personal/editar/{Id}")">Editar</AppButton>
+                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+
+    // Información ilustrativa, sin consultas ni operaciones de negocio.
+    private PersonaDemo? Persona => Id switch
+    {
+        1 => new("Veterinario", "Lucía", "Paredes", "Ríos", "987654321", "lucia@mascovet.pe", "Cirugía", "CMPV-125"),
+        2 => new("Recepcionista", "Diego", "Ruiz", "Soto", "955321456", "diego@mascovet.pe", "", ""),
+        _ => null
+    };
+
+    private sealed record PersonaDemo(string Rol, string Nombre, string Paterno, string Materno,
+        string Telefono, string Correo, string Especialidad, string Colegiatura);
+}
