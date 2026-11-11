@@ -4,6 +4,7 @@ import pe.com.mascovet.usuario.bo.IUsuarioBO;
 import pe.com.mascovet.usuario.dao.UsuarioDAO;
 import pe.com.mascovet.usuario.impl.UsuarioImpl;
 import pe.com.mascovet.usuario.model.Usuario;
+import pe.com.mascovet.usuario.seguridad.ContrasenaHash;
 
 import java.util.List;
 

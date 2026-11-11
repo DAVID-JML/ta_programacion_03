@@ -4,6 +4,7 @@ import pe.com.mascovet.usuario.bo.IClienteBO;
 import pe.com.mascovet.usuario.dao.ClienteDAO;
 import pe.com.mascovet.usuario.impl.ClienteImpl;
 import pe.com.mascovet.usuario.model.Cliente;
+import pe.com.mascovet.usuario.seguridad.ContrasenaHash;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class ClienteBOImpl implements IClienteBO {
         daoCliente = new ClienteImpl();
     }
 
-    private void validarCliente(Cliente cliente) {
+    private void validarCliente(Cliente cliente, boolean esRegistro) {
         if (cliente == null)
             throw new RuntimeException("El cliente que se quiere registrar es null");
         if (cliente.getDni() == null || cliente.getDni().trim().isEmpty())
@@ -38,10 +39,20 @@ public class ClienteBOImpl implements IClienteBO {
             throw new RuntimeException("El nombre de usuario es obligatorio");
         if (cliente.getNombreUsuario().length() > 100)
             throw new RuntimeException("El nombre de usuario no debe exceder los 100 caracteres");
-        if (cliente.getContrasena() == null || cliente.getContrasena().trim().isEmpty())
-            throw new RuntimeException("La contraseña es obligatoria");
-        if (cliente.getContrasena().length() > 255)
-            throw new RuntimeException("La contraseña no debe exceder los 255 caracteres");
+
+        if (esRegistro) {
+            if (cliente.getContrasena() == null
+                    || cliente.getContrasena().trim().isEmpty()) {
+                throw new RuntimeException("La contraseña es obligatoria");
+            }
+
+            if (cliente.getContrasena().length() > 255) {
+                throw new RuntimeException(
+                        "La contraseña no debe exceder los 255 caracteres"
+                );
+            }
+        }
+
         if (cliente.getCorreo() == null || cliente.getCorreo().trim().isEmpty())
             throw new RuntimeException("El correo del cliente es obligatorio");
         if (cliente.getCorreo().length() > 200)
@@ -54,14 +65,22 @@ public class ClienteBOImpl implements IClienteBO {
 
     @Override
     public int insertar(Cliente cliente) {
-        validarCliente(cliente);
+        validarCliente(cliente, true);
         cliente.setActivo(true);
-        return daoCliente.insertar(cliente);
+
+        String contrasenaOriginal = cliente.getContrasena();
+        cliente.setContrasena(ContrasenaHash.generar(contrasenaOriginal));
+
+        try {
+            return daoCliente.insertar(cliente);
+        } finally {
+            cliente.setContrasena(contrasenaOriginal);
+        }
     }
 
     @Override
     public int modificar(Cliente cliente) {
-        validarCliente(cliente);
+        validarCliente(cliente, false);
         if (cliente.getIdUsuario() <= 0)
             throw new RuntimeException("El identificador del cliente no es válido");
         return daoCliente.modificar(cliente);
