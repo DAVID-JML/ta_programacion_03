@@ -187,7 +187,12 @@
             }
 
             // Actualizamos el contexto de usuario de Blazor.
-            User.SignIn(rol, sesion.Nombre);
+            User.SignIn(
+                rol,
+                sesion.Nombre,
+                sesion.NombreUsuario,
+                sesion.IdUsuario
+            );
 
             // Redirigimos al dashboard correspondiente.
             Navigation.NavigateTo(NavCatalog.HomeFor(rol));
