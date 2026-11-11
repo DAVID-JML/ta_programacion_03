@@ -10,7 +10,7 @@ builder.Services.AddScoped(sp =>
 {
     var cargando = sp.GetRequiredService<MascovetWA.Servicios.LoadingService>();
     HttpClient client = new HttpClient(new MascovetWA.Servicios.LoadingHttpMessageHandler(cargando));
-    client.BaseAddress = new Uri("http://localhost:8080/mascovet_services-1.0-SNAPSHOT/webresources/");
+    client.BaseAddress = new Uri("http://localhost:8080/mascovet_services/webresources/");
     return client;
 });
 
@@ -36,6 +36,7 @@ builder.Services.AddScoped<MascovetWA.Servicios.REST.MedicamentoRestService>();
 builder.Services.AddScoped<MascovetWA.Servicios.REST.RecetaRestService>();
 builder.Services.AddScoped<MascovetWA.Servicios.REST.DetalleRecetaRestService>();
 builder.Services.AddScoped<MascovetWA.Servicios.REST.ReservaCitaRestService>();
+builder.Services.AddScoped<MascovetWA.Servicios.REST.AuthRestService>();
 
 var app = builder.Build();
 

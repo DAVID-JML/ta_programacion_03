@@ -104,4 +104,33 @@ public class ClienteBOImpl implements IClienteBO {
             throw new RuntimeException("El identificador del cliente no es válido");
         return daoCliente.obtenerPorId(idCliente);
     }
+
+    @Override
+    public IClienteBO.SesionCliente autenticar(
+            String correo, String contrasena) {
+
+        if (correo == null || correo.isBlank()
+                || contrasena == null || contrasena.isBlank()) {
+            return null;
+        }
+
+        String correoLimpio = correo.trim();
+        if (correoLimpio.length() > 200 || contrasena.length() > 255) {
+            return null;
+        }
+
+        ClienteDAO.DatosLogin datos = daoCliente.buscarParaLogin(correoLimpio);
+
+        if (datos == null
+                || !ContrasenaHash.verificar(contrasena, datos.hashContrasena())) {
+            return null;
+        }
+
+        return new IClienteBO.SesionCliente(
+                datos.idUsuario(),
+                datos.nombre(),
+                datos.nombreUsuario(),
+                "CLIENTE"
+        );
+    }
 }

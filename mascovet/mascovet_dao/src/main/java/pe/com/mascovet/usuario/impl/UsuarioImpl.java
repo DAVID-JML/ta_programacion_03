@@ -214,4 +214,35 @@ public class UsuarioImpl implements UsuarioDAO {
             throw new RuntimeException(ex);
         }
     }
+
+    @Override
+    public UsuarioDAO.DatosLoginPersonal buscarPersonalParaLogin(
+            String nombreUsuario) {
+
+        String sql = "{call BUSCAR_PERSONAL_PARA_LOGIN(?)}";
+
+        try (Connection con = DBManager.getInstance().getConnection();
+             CallableStatement cs = con.prepareCall(sql)) {
+
+            cs.setString(1, nombreUsuario);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new UsuarioDAO.DatosLoginPersonal(
+                        rs.getInt("id_usuario"),
+                        rs.getString("nombre"),
+                        rs.getString("nombre_usuario"),
+                        rs.getString("hash_contrasena"),
+                        rs.getString("rol")
+                );
+            }
+        } catch (java.sql.SQLException ex) {
+            throw new RuntimeException(
+                    "Error al buscar la cuenta del personal", ex
+            );
+        }
+    }
 }

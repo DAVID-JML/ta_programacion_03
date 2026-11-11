@@ -98,7 +98,7 @@ public class ClienteImpl implements ClienteDAO {
                     cliente.setApellidoPaterno(rs.getString("apellido_paterno"));
                     cliente.setApellidoMaterno(rs.getString("apellido_materno"));
                     cliente.setNombreUsuario(rs.getString("nombre_usuario"));
-                    cliente.setContrasena(rs.getString("contrasena"));
+                    //cliente.setContrasena(rs.getString("contrasena"));
                     cliente.setActivo(rs.getBoolean("activo"));
                     cliente.setCorreo(rs.getString("correo"));
                     cliente.setTelefono(rs.getString("telefono"));
@@ -126,7 +126,7 @@ public class ClienteImpl implements ClienteDAO {
                 cliente.setApellidoPaterno(rs.getString("apellido_paterno"));
                     cliente.setApellidoMaterno(rs.getString("apellido_materno"));
                 cliente.setNombreUsuario(rs.getString("nombre_usuario"));
-                cliente.setContrasena(rs.getString("contrasena"));
+                //cliente.setContrasena(rs.getString("contrasena"));
                 cliente.setActivo(rs.getBoolean("activo"));
                 cliente.setCorreo(rs.getString("correo"));
                 cliente.setTelefono(rs.getString("telefono"));
@@ -136,6 +136,34 @@ public class ClienteImpl implements ClienteDAO {
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR CLIENTES: " + ex.getMessage());
             throw new RuntimeException(ex);
+        }
+    }
+
+    @Override
+    public ClienteDAO.DatosLogin buscarParaLogin(String correo) {
+        String sql = "{call BUSCAR_CLIENTE_PARA_LOGIN(?)}";
+
+        try (Connection con = DBManager.getInstance().getConnection();
+             CallableStatement cs = con.prepareCall(sql)) {
+
+            cs.setString(1, correo);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new ClienteDAO.DatosLogin(
+                        rs.getInt("id_usuario"),
+                        rs.getString("nombre"),
+                        rs.getString("nombre_usuario"),
+                        rs.getString("hash_contrasena")
+                );
+            }
+        } catch (java.sql.SQLException ex) {
+            throw new RuntimeException(
+                    "Error al buscar el cliente para iniciar sesión", ex
+            );
         }
     }
 }

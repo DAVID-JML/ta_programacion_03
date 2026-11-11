@@ -4,5 +4,12 @@ import pe.com.mascovet.dao.IDAO;
 import pe.com.mascovet.usuario.model.Cliente;
 
 public interface ClienteDAO extends IDAO<Cliente> {
+    DatosLogin buscarParaLogin(String correo);
 
+    record DatosLogin(
+            int idUsuario,
+            String nombre,
+            String nombreUsuario,
+            String hashContrasena
+    ) {}
 }

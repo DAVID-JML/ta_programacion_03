@@ -1,9 +1,10 @@
 @page "/"
 @layout AuthLayout
-@inject AuthService Auth
+@inject AuthRestService Auth
 @inject UserContext User
 @inject NavigationManager Navigation
 @using System.ComponentModel.DataAnnotations
+@using MascovetWA.Servicios.REST
 
 <PageTitle>Iniciar sesión | Mascovet</PageTitle>
 
@@ -137,24 +138,57 @@
         mostrarModalRecuperacion = false;
         mensaje = "No se pudo enviar la solicitud. El servicio de recuperación no está disponible.";
     }
+
     private async Task IniciarSesion()
     {
         enviando = true;
         mensaje = string.Empty;
-        await Task.Delay(400); // simula latencia; se quita con el servicio real
 
-        var resultado = Auth.Validar(modelo.Usuario, modelo.Contrasena);
-        enviando = false;
-
-        if (resultado is null || resultado.Role.ToString() != rolSeleccionado)
+        try
         {
-            mensaje = "Usuario o contraseña incorrectos.";
-            modelo.Contrasena = string.Empty;
-            return;
-        }
+            string usuario = modelo.Usuario.Trim();
+            bool esCliente = rolSeleccionado == "Cliente";
 
-        User.SignIn(resultado.Role, resultado.Nombre, resultado.UsuarioVinculado);
-        Navigation.NavigateTo(NavCatalog.HomeFor(resultado.Role));
+            var sesion = esCliente
+                ? await Auth.AutenticarAsync(usuario, modelo.Contrasena)
+                : await Auth.AutenticarPersonalAsync(usuario, modelo.Contrasena);
+
+            if (sesion is null)
+            {
+                mensaje = esCliente
+                    ? "Correo o contraseña incorrectos."
+                    : "Nombre de usuario o contraseña incorrectos.";
+                return;
+            }
+
+            UserRole? rolRecibido = sesion.Rol switch
+            {
+                "CLIENTE" => UserRole.Cliente,
+                "RECEPCIONISTA" => UserRole.Recepcionista,
+                "VETERINARIO" => UserRole.Veterinario,
+                "ADMINISTRADOR" => UserRole.Administrador,
+                _ => null
+            };
+
+            if (rolRecibido is not UserRole rol ||
+                !string.Equals(sesion.Rol, rolSeleccionado, StringComparison.OrdinalIgnoreCase))
+            {
+                mensaje = "La cuenta no corresponde al tipo de usuario seleccionado.";
+                return;
+            }
+
+            User.SignIn(rol, sesion.Nombre, sesion.NombreUsuario);
+            Navigation.NavigateTo(NavCatalog.HomeFor(rol));
+        }
+        catch (Exception)
+        {
+            mensaje = "No se pudo iniciar sesión. Inténtalo nuevamente.";
+        }
+        finally
+        {
+            modelo.Contrasena = string.Empty;
+            enviando = false;
+        }
     }
 
     private sealed class LoginModel

@@ -78,4 +78,35 @@ public class UsuarioBOImpl implements IUsuarioBO {
             throw new RuntimeException("El identificador del usuario no es válido");
         return daoUsuario.obtenerPorId(idUsuario);
     }
+
+    @Override
+    public IUsuarioBO.SesionPersonal autenticarPersonal(
+            String nombreUsuario, String contrasena) {
+
+        if (nombreUsuario == null || nombreUsuario.isBlank()
+                || contrasena == null || contrasena.isBlank()) {
+            return null;
+        }
+
+        String usuarioLimpio = nombreUsuario.trim();
+
+        if (usuarioLimpio.length() > 100 || contrasena.length() > 255) {
+            return null;
+        }
+
+        UsuarioDAO.DatosLoginPersonal datos =
+                daoUsuario.buscarPersonalParaLogin(usuarioLimpio);
+
+        if (datos == null
+                || !ContrasenaHash.verificar(contrasena, datos.hashContrasena())) {
+            return null;
+        }
+
+        return new IUsuarioBO.SesionPersonal(
+                datos.idUsuario(),
+                datos.nombre(),
+                datos.nombreUsuario(),
+                datos.rol()
+        );
+    }
 }
