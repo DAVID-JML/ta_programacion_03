@@ -1,0 +1,21 @@
+﻿@page "/cliente/mascotas/{IdMascota:int}/editar"
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Editar mascota | Mascovet</PageTitle>
+<div class="ms-feature-page">
+  <header class="ms-feature-header"><div><h1>Editar mascota</h1><p>RF012 · Modifica los datos de tu mascota.</p></div><span class="ms-demo-pill">Vista de demostración</span></header>
+  <div class="seccion"><AppCard Title="Datos de la mascota" Subtitle="Se permiten datos desconocidos cuando corresponda.">
+    <div class="ms-feature-grid">
+     <label class="ms-demo-field"><span>Nombre</span><input class="ms-demo-input" value="Luna" /></label>
+     <label class="ms-demo-field"><span>Especie</span><select class="ms-demo-input"><option>Perro</option><option>Gato</option><option>Otro</option><option>No especificado</option></select></label>
+     <label class="ms-demo-field"><span>Raza</span><input class="ms-demo-input" value="Mestiza" /></label>
+     <label class="ms-demo-field"><span>Sexo</span><select class="ms-demo-input"><option>Hembra</option><option>Macho</option><option>No especificado</option></select></label>
+     <label class="ms-demo-field"><span>Fecha de nacimiento</span><input type="date" class="ms-demo-input" /></label>
+    </div>
+    <div class="ms-demo-actions"><AppButton OnClick="Guardar">Guardar cambios</AppButton><AppButton Href="/cliente/mascotas" Variant="ButtonVariant.Secondary">Cancelar</AppButton></div>
+  </AppCard></div>
+</div>
+@code {
+ [Parameter] public int IdMascota {get;set;}
+ private void Guardar() => Toast.Info("Cambio de demostración. Se conectará con el backend Java.");
+}

@@ -1,0 +1,362 @@
+﻿@page "/administrador"
+@layout MainLayout
+
+@using MascovetWA.Components.Layout
+@using MascovetWA.Components.DesignSystem
+@using MascovetWA.Components.DesignSystem.Buttons
+@using MascovetWA.Components.DesignSystem.DataDisplay
+@using MascovetWA.Components.DesignSystem.Icons
+
+<PageTitle>Administración | Mascovet</PageTitle>
+
+<div class="admin-dashboard">
+
+    <header class="admin-header">
+        <div class="admin-header__heading">
+            <span class="admin-eyebrow">GESTIÓN DE LA CLÍNICA</span>
+
+            <h1>Panel de administración</h1>
+
+            <p>
+                Administra el personal, organiza la atención veterinaria
+                y consulta los reportes de Mascovet.
+            </p>
+        </div>
+
+        <div class="admin-header__actions">
+            <AppButton Href="/administrador/personal"
+                       Icon="users">
+                Gestionar personal
+            </AppButton>
+        </div>
+    </header>
+
+    <section class="admin-metrics"
+             aria-label="Resumen administrativo">
+
+        <article class="admin-metric admin-metric--staff">
+            <AppCard Title="Personal registrado"
+                     Subtitle="Cuentas de empleados">
+                <ChildContent>
+                    <div class="admin-metric__body">
+                        <strong class="admin-metric__number">8</strong>
+
+                        <span class="admin-metric__icon">
+                            <AppIcon Name="users" Size="24" />
+                        </span>
+                    </div>
+
+                    <p>
+                        Gestión de veterinarios y recepcionistas.
+                    </p>
+                </ChildContent>
+
+                <Footer>
+                    <a class="admin-metric__link"
+                       href="/administrador/personal">
+                        Administrar cuentas
+                        <AppIcon Name="chevron-right" Size="16" />
+                    </a>
+                </Footer>
+            </AppCard>
+        </article>
+
+        <article class="admin-metric admin-metric--schedules">
+            <AppCard Title="Horarios configurados"
+                     Subtitle="Programación de atención">
+                <ChildContent>
+                    <div class="admin-metric__body">
+                        <strong class="admin-metric__number">12</strong>
+
+                        <span class="admin-metric__icon">
+                            <AppIcon Name="clock" Size="24" />
+                        </span>
+                    </div>
+
+                    <p>
+                        Configuración de jornadas veterinarias.
+                    </p>
+                </ChildContent>
+
+                <Footer>
+                    <a class="admin-metric__link"
+                       href="/administrador/horarios">
+                        Gestionar horarios
+                        <AppIcon Name="chevron-right" Size="16" />
+                    </a>
+                </Footer>
+            </AppCard>
+        </article>
+
+        <article class="admin-metric admin-metric--services">
+            <AppCard Title="Servicios registrados"
+                     Subtitle="Catálogo de atención">
+                <ChildContent>
+                    <div class="admin-metric__body">
+                        <strong class="admin-metric__number">6</strong>
+
+                        <span class="admin-metric__icon">
+                            <AppIcon Name="grid" Size="24" />
+                        </span>
+                    </div>
+
+                    <p>
+                        Servicios ofrecidos por la clínica.
+                    </p>
+                </ChildContent>
+
+                <Footer>
+                    <a class="admin-metric__link"
+                       href="/administrador/servicios">
+                        Administrar servicios
+                        <AppIcon Name="chevron-right" Size="16" />
+                    </a>
+                </Footer>
+            </AppCard>
+        </article>
+
+        <article class="admin-metric admin-metric--medicines">
+            <AppCard Title="Medicamentos"
+                     Subtitle="Catálogo farmacológico">
+                <ChildContent>
+                    <div class="admin-metric__body">
+                        <strong class="admin-metric__number">24</strong>
+
+                        <span class="admin-metric__icon">
+                            <AppIcon Name="file-text" Size="24" />
+                        </span>
+                    </div>
+
+                    <p>
+                        Medicamentos registrados en el catálogo.
+                    </p>
+                </ChildContent>
+
+                <Footer>
+                    <a class="admin-metric__link"
+                       href="/administrador/medicamentos">
+                        Consultar catálogo
+                        <AppIcon Name="chevron-right" Size="16" />
+                    </a>
+                </Footer>
+            </AppCard>
+        </article>
+
+    </section>
+
+    <section class="admin-section"
+             aria-labelledby="management-heading">
+
+        <div class="admin-section__heading">
+            <div>
+                <h2 id="management-heading">Gestión administrativa</h2>
+                <p>
+                    Accede a los módulos que permiten configurar
+                    y mantener la operación de la clínica.
+                </p>
+            </div>
+        </div>
+
+        <div class="admin-management-grid">
+
+            <article class="admin-management-card">
+                <AppCard Title="Personal"
+                         Subtitle="Cuentas y permisos">
+                    <ChildContent>
+                        <span class="admin-management-card__icon">
+                            <AppIcon Name="users" Size="25" />
+                        </span>
+
+                        <p>
+                            Registra veterinarios y recepcionistas,
+                            consulta sus datos, modifica sus cuentas
+                            y administra sus roles y accesos.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/personal"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="users">
+                            Ir a personal
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="admin-management-card">
+                <AppCard Title="Horarios de atención"
+                         Subtitle="Disponibilidad veterinaria">
+                    <ChildContent>
+                        <span class="admin-management-card__icon">
+                            <AppIcon Name="clock" Size="25" />
+                        </span>
+
+                        <p>
+                            Configura los horarios de cada veterinario
+                            y valida que sus intervalos no se
+                            superpongan.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/horarios"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="clock">
+                            Configurar horarios
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="admin-management-card">
+                <AppCard Title="Servicios veterinarios"
+                         Subtitle="Oferta de la clínica">
+                    <ChildContent>
+                        <span class="admin-management-card__icon">
+                            <AppIcon Name="grid" Size="25" />
+                        </span>
+
+                        <p>
+                            Registra, consulta, modifica y elimina
+                            los servicios veterinarios ofrecidos.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/servicios"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="grid">
+                            Gestionar servicios
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="admin-management-card">
+                <AppCard Title="Medicamentos"
+                         Subtitle="Catálogo farmacológico">
+                    <ChildContent>
+                        <span class="admin-management-card__icon">
+                            <AppIcon Name="file-text" Size="25" />
+                        </span>
+
+                        <p>
+                            Mantén el catálogo de medicamentos,
+                            sus descripciones y fechas de vencimiento.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/medicamentos"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="file-text">
+                            Gestionar medicamentos
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+        </div>
+    </section>
+
+    <section class="admin-section"
+             aria-labelledby="reports-heading">
+
+        <div class="admin-section__heading">
+            <div>
+                <h2 id="reports-heading">Reportes</h2>
+                <p>
+                    Consulta información consolidada para el
+                    seguimiento de la actividad veterinaria.
+                </p>
+            </div>
+
+            <AppButton Href="/administrador/reportes"
+                       Variant="ButtonVariant.Tertiary"
+                       Icon="bar-chart">
+                Ver todos
+            </AppButton>
+        </div>
+
+        <div class="admin-reports-grid">
+
+            <article class="admin-report-card">
+                <AppCard Title="Citas por servicio"
+                         Subtitle="RF027">
+                    <ChildContent>
+                        <span class="admin-report-card__icon">
+                            <AppIcon Name="bar-chart" Size="24" />
+                        </span>
+
+                        <p>
+                            Consulta la cantidad de citas programadas,
+                            atendidas y canceladas, agrupadas por
+                            servicio dentro de un rango de fechas.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/reportes?tipo=citas-servicio"
+                                   Variant="ButtonVariant.Secondary"
+                                   Size="ButtonSize.Small">
+                            Consultar reporte
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="admin-report-card">
+                <AppCard Title="Citas por especialidad"
+                         Subtitle="RF028">
+                    <ChildContent>
+                        <span class="admin-report-card__icon">
+                            <AppIcon Name="grid" Size="24" />
+                        </span>
+
+                        <p>
+                            Consulta la distribución de las citas
+                            registradas según la especialidad
+                            médica y el período seleccionado.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/reportes?tipo=citas-especialidad"
+                                   Variant="ButtonVariant.Secondary"
+                                   Size="ButtonSize.Small">
+                            Consultar reporte
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="admin-report-card">
+                <AppCard Title="Historias clínicas"
+                         Subtitle="RF029">
+                    <ChildContent>
+                        <span class="admin-report-card__icon">
+                            <AppIcon Name="file-text" Size="24" />
+                        </span>
+
+                        <p>
+                            Genera un reporte cronológico con fechas
+                            de atención, veterinarios, diagnósticos
+                            y tratamientos registrados.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/administrador/reportes?tipo=historial-clinico"
+                                   Variant="ButtonVariant.Secondary"
+                                   Size="ButtonSize.Small">
+                            Consultar reporte
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+        </div>
+    </section>
+</div>
+

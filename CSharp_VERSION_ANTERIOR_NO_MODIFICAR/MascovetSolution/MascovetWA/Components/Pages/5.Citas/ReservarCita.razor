@@ -1,0 +1,202 @@
+﻿@page "/cliente/reservar"
+@layout MainLayout
+
+<PageTitle>Reservar cita | Mascovet</PageTitle>
+
+<div class="reserva-cita">
+
+    <header class="reserva-cita__header">
+        <h1>Reservar una cita</h1>
+        <p>
+            Selecciona tu mascota, el servicio veterinario y el horario
+            que mejor se adapte a tus necesidades.
+        </p>
+    </header>
+
+    <div class="reserva-cita__layout">
+
+        <section class="reserva-cita__main"
+                 aria-label="Datos de la reserva">
+
+            <AppCard Title="Datos de la cita"
+                     Subtitle="Completa los datos para consultar la disponibilidad.">
+
+                <ChildContent>
+                    <div class="reserva-cita__fields">
+
+                        <div class="reserva-cita__field">
+                            <AppSelect TValue="string"
+                                       Id="reserva-mascota"
+                                       Label="Mascota"
+                                       Placeholder="Selecciona tu mascota"
+                                       Required="true"
+                                       Disabled="true"
+                                       Options="@OpcionesVacias"
+                                       @bind-Value="MascotaSeleccionada"
+                                       HelpText="La lista de tus mascotas estará disponible al conectar los datos de tu cuenta." />
+                        </div>
+
+                        <div class="reserva-cita__field">
+                            <AppSelect TValue="string"
+                                       Id="reserva-servicio"
+                                       Label="Servicio veterinario"
+                                       Placeholder="Selecciona el servicio"
+                                       Required="true"
+                                       Options="@Servicios"
+                                       @bind-Value="ServicioSeleccionado" />
+                        </div>
+
+                        <div class="reserva-cita__field">
+                            <AppSelect TValue="string"
+                                       Id="reserva-veterinario"
+                                       Label="Veterinario"
+                                       Placeholder="Selecciona un veterinario"
+                                       Required="true"
+                                       Disabled="true"
+                                       Options="@OpcionesVacias"
+                                       @bind-Value="VeterinarioSeleccionado"
+                                       HelpText="Los veterinarios disponibles dependerán del servicio y la fecha seleccionados." />
+                        </div>
+
+                        <div class="reserva-cita__field">
+                            <AppDatePicker Id="reserva-fecha"
+                                           Label="Fecha de atención"
+                                           Required="true"
+                                           Min="@FechaMinima"
+                                           @bind-Value="FechaSeleccionada"
+                                           HelpText="Selecciona una fecha a partir de hoy." />
+                        </div>
+
+                    </div>
+                </ChildContent>
+
+            </AppCard>
+
+            <AppCard Title="Horarios disponibles"
+                     Subtitle="Selecciona una hora de atención.">
+
+                <ChildContent>
+                    <div class="reserva-cita__availability">
+                        <AppEmptyState Icon="clock"
+                                       Title="Horarios pendientes de consulta"
+                                       Description="Los horarios se mostrarán cuando esté conectada la consulta de disponibilidad de los veterinarios." />
+                    </div>
+                </ChildContent>
+
+            </AppCard>
+
+        </section>
+
+        <aside class="reserva-cita__aside">
+
+            <AppCard Title="Resumen de la reserva"
+                     Subtitle="Revisa los datos seleccionados.">
+
+                <ChildContent>
+                    <div class="reserva-cita__summary">
+
+                        <div class="reserva-cita__summary-item">
+                            <span class="reserva-cita__summary-icon">
+                                <AppIcon Name="heart" Size="19" />
+                            </span>
+
+                            <div>
+                                <span>Mascota</span>
+                                <strong>Sin seleccionar</strong>
+                            </div>
+                        </div>
+
+                        <div class="reserva-cita__summary-item">
+                            <span class="reserva-cita__summary-icon">
+                                <AppIcon Name="calendar" Size="19" />
+                            </span>
+
+                            <div>
+                                <span>Fecha</span>
+                                <strong>
+                                    @(FechaSeleccionada?.ToString("dd/MM/yyyy") ?? "Sin seleccionar")
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="reserva-cita__summary-item">
+                            <span class="reserva-cita__summary-icon">
+                                <AppIcon Name="clock" Size="19" />
+                            </span>
+
+                            <div>
+                                <span>Horario</span>
+                                <strong>Sin seleccionar</strong>
+                            </div>
+                        </div>
+
+                        <div class="reserva-cita__summary-item">
+                            <span class="reserva-cita__summary-icon">
+                                <AppIcon Name="check-circle" Size="19" />
+                            </span>
+
+                            <div>
+                                <span>Estado inicial</span>
+                                <strong>Reservada</strong>
+                            </div>
+                        </div>
+
+                    </div>
+                </ChildContent>
+
+                <Footer>
+                    <div class="reserva-cita__summary-actions">
+
+                        <AppButton Href="/cliente/citas"
+                                   Variant="ButtonVariant.Secondary">
+                            Mis citas
+                        </AppButton>
+
+                        <AppButton Type="button"
+                                   Variant="ButtonVariant.Primary"
+                                   Icon="check-circle"
+                                   Disabled="true">
+                            Confirmar reserva
+                        </AppButton>
+
+                    </div>
+                </Footer>
+
+            </AppCard>
+
+        </aside>
+
+    </div>
+
+    <div class="reserva-cita__footer">
+        <AppButton Href="/cliente"
+                   Variant="ButtonVariant.Tertiary"
+                   Icon="chevron-left">
+            Volver al inicio
+        </AppButton>
+    </div>
+
+</div>
+
+@code {
+    private DateOnly? FechaSeleccionada { get; set; }
+
+    private DateOnly FechaMinima =>
+        DateOnly.FromDateTime(DateTime.Today);
+
+    private string MascotaSeleccionada { get; set; } = string.Empty;
+
+    private string ServicioSeleccionado { get; set; } = string.Empty;
+
+    private string VeterinarioSeleccionado { get; set; } = string.Empty;
+
+    private static readonly List<SelectOption<string>> Servicios =
+    [
+        new("Consulta general", "Consulta general"),
+        new("Control", "Control"),
+        new("Vacunación", "Vacunación"),
+        new("Cirugías", "Cirugías")
+    ];
+
+    private static readonly List<SelectOption<string>> OpcionesVacias = [];
+}
