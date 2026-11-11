@@ -1,0 +1,120 @@
+@page "/cliente/mascotas/{IdMascota:int}"
+@page "/recepcion/mascotas/{IdMascota:int}"
+@layout MainLayout
+@inject NavigationManager Navigation
+
+<PageTitle>Ficha de mascota | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Ficha de mascota</h1>
+            <p>Consulta los datos, citas, vacunas y recetas de la mascota seleccionada.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    @if (Mascota is null)
+    {
+        <AppCard Title="Mascota no encontrada">
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Datos de la mascota" Subtitle="Información general y del propietario.">
+                <div class="ms-feature-grid">
+                    <AppInput TValue="string" Label="Nombre" Value="@Mascota.Nombre" Disabled="true" />
+                    <AppInput TValue="string" Label="Especie" Value="@Mascota.Especie" Disabled="true" />
+                    <AppInput TValue="string" Label="Raza" Value="@Mascota.Raza" Disabled="true" />
+                    <AppInput TValue="string" Label="Sexo" Value="@Mascota.Sexo" Disabled="true" />
+                    <AppInput TValue="string" Label="Fecha de nacimiento" Value="@Mascota.FechaNacimiento" Disabled="true" />
+                    <AppInput TValue="string" Label="Propietario" Value="@Mascota.Propietario" Disabled="true" />
+                </div>
+            </AppCard>
+        </div>
+
+        <div class="seccion">
+            <AppCard Title="Historial de atenciones" Subtitle="Registros de ejemplo para la demostración">
+                <AppTable TItem="AtencionDemo" Items="@Mascota.Atenciones" ColumnCount="4" Caption="Historial de atenciones">
+                    <HeaderContent>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Tipo de atención</th>
+                        <th scope="col">Veterinario</th>
+                        <th scope="col">Resultado</th>
+                    </HeaderContent>
+                    <RowTemplate Context="atencion">
+                        <td>@atencion.Fecha</td>
+                        <td>@atencion.Tipo</td>
+                        <td>@atencion.Veterinario</td>
+                        <td>@atencion.Resultado</td>
+                    </RowTemplate>
+                </AppTable>
+            </AppCard>
+        </div>
+
+        <div class="seccion">
+            <AppCard Title="Vacunaciones y recetas" Subtitle="Consulta la información asociada a la mascota.">
+                <AppTable TItem="ComplementoDemo" Items="@RegistrosComplementarios" ColumnCount="3" Caption="Vacunas y recetas">
+                    <HeaderContent>
+                        <th scope="col">Registro</th>
+                        <th scope="col">Detalle</th>
+                        <th scope="col">Fecha</th>
+                    </HeaderContent>
+                    <RowTemplate Context="fila">
+                        <td>@fila.Tipo</td>
+                        <td>@fila.Detalle</td>
+                        <td>@fila.Fecha</td>
+                    </RowTemplate>
+                </AppTable>
+                <div class="ms-demo-actions">
+                    <AppButton Href="@HistorialHref" Variant="ButtonVariant.Secondary">Ver historial completo</AppButton>
+                    <AppButton Href="@VolverHref" Variant="ButtonVariant.Secondary">Volver al listado</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int IdMascota { get; set; }
+
+    private bool EsRecepcion => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .StartsWith("recepcion/", StringComparison.OrdinalIgnoreCase);
+
+    private string VolverHref => EsRecepcion ? "/recepcion/mascotas" : "/cliente/mascotas";
+    private string HistorialHref => $"/{(EsRecepcion ? "recepcion" : "cliente")}/mascotas/{IdMascota}/historial";
+
+    private MascotaDemo? Mascota => (EsRecepcion, IdMascota) switch
+    {
+        (_, 1) => new("Luna", "Perro", "Mestiza", "Hembra", "14/03/2022", "Ana Martínez López",
+            new()
+            {
+                new("23/10/2026", "Consulta", "Dra. Lucía Paredes", "Otitis externa en tratamiento"),
+                new("14/09/2026", "Vacunación", "Dr. Mateo Silva", "Vacuna séxtuple aplicada")
+            }),
+        (_, 2) => new("Max", "Gato", "Siamés", "Macho", "10/08/2021", "Carlos Vega Ruiz",
+            new()
+            {
+                new("25/10/2026", "Vacunación", "Dr. Mateo Silva", "Triple felina aplicada")
+            }),
+        _ => null
+    };
+
+    private List<ComplementoDemo> RegistrosComplementarios => IdMascota switch
+    {
+        1 => [
+            new("Vacunación", "Séxtuple — anual", "14/09/2026"),
+            new("Receta", "Gotas óticas — 7 días", "23/10/2026")
+        ],
+        2 => [new("Vacunación", "Triple felina — una dosis", "25/10/2026")],
+        _ => []
+    };
+
+    private sealed record ComplementoDemo(string Tipo, string Detalle, string Fecha);
+    private sealed record AtencionDemo(string Fecha, string Tipo, string Veterinario, string Resultado);
+    private sealed record MascotaDemo(string Nombre, string Especie, string Raza, string Sexo,
+        string FechaNacimiento, string Propietario, List<AtencionDemo> Atenciones);
+}

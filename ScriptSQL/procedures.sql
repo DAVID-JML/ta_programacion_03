@@ -121,7 +121,6 @@ SELECT * FROM ADMINISTRADOR;
 DELIMITER //
 
 DROP PROCEDURE IF EXISTS asignar_horario_veterinario //
-
 CREATE PROCEDURE asignar_horario_veterinario(
     IN p_dni VARCHAR(9),
     IN p_dia VARCHAR(10),
@@ -132,7 +131,20 @@ BEGIN
     DECLARE v_id_usuario INT;
     DECLARE v_es_veterinario INT DEFAULT 0;
 
-    -- Buscar al usuario segun DNI
+    -- Convertir a mayúsculas y remover tildes
+    SET p_dia = UPPER(
+        REPLACE(
+            REPLACE(
+                REPLACE(
+                    REPLACE(
+                        REPLACE(p_dia, 'Á', 'A'),
+                    'É', 'E'),
+                'Í', 'I'),
+            'Ó', 'O'),
+        'Ú', 'U')
+    );
+
+    -- Buscar al usuario según DNI
     SELECT id_usuario
     INTO v_id_usuario
     FROM USUARIO
@@ -145,13 +157,10 @@ BEGIN
     WHERE id_usuario = v_id_usuario;
 
     IF v_es_veterinario = 0 THEN
-
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'El usuario indicado por DNI no es un veterinario';
-
     ELSE
-
-        -- Asignar horario
+        -- Asignar horario limpio
         INSERT INTO HORARIO_ATENCION (
             id_veterinario,
             dia,
@@ -164,7 +173,6 @@ BEGIN
             p_hora_inicio,
             p_hora_fin
         );
-
     END IF;
 
 END //

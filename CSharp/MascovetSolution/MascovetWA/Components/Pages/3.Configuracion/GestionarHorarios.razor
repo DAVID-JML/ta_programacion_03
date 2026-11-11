@@ -1,5 +1,13 @@
-﻿<h3>GestionarHorarios</h3>
-
-@code {
-
-}
+﻿@page "/administrador/horarios"
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Horarios de atención | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Horarios de atención</h1><p>Gestión de disponibilidad semanal por veterinario.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="seccion"><AppCard Title="Gestionar horario" Subtitle="RF008 · Selecciona el veterinario, día y rango horario."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Veterinario</span><select class="ms-demo-input" ><option value="Dra. Lucía Paredes">Dra. Lucía Paredes</option><option value="Dr. Mateo Silva">Dr. Mateo Silva</option></select></label><label class="ms-demo-field"><span>Día de la semana</span><select class="ms-demo-input" ><option value="Lunes">Lunes</option><option value="Martes">Martes</option><option value="Miércoles">Miércoles</option><option value="Jueves">Jueves</option><option value="Viernes">Viernes</option><option value="Sábado">Sábado</option><option value="Domingo">Domingo</option></select></label><label class="ms-demo-field"><span>Hora de inicio</span><input class="ms-demo-input" type="time" placeholder="" value="" /></label><label class="ms-demo-field"><span>Hora de fin</span><input class="ms-demo-input" type="time" placeholder="" value="" /></label></div><div class="ms-demo-note"><AppIcon Name="check-circle" Size="16" /> <span>RF011: Los horarios del mismo veterinario no deben superponerse. Esta validación real corresponde al BO de Java.</span></div><div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar horario</AppButton></div></ChildContent></AppCard></div><div class="seccion"><AppCard Title="Horarios registrados" Subtitle="Registros de ejemplo para la demostración"><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Veterinario</th><th scope="col">Día</th><th scope="col">Inicio</th><th scope="col">Fin</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>Dra. Lucía Paredes</td><td>Lunes</td><td>08:00</td><td>12:00</td><td>Activo</td><td><AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar / Inactivar</AppButton></td></tr><tr><td>Dr. Mateo Silva</td><td>Martes</td><td>09:00</td><td>13:00</td><td>Activo</td><td><AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="MostrarAviso">Editar / Inactivar</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div>
+</div>
+@code { // Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
+ private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java."); }

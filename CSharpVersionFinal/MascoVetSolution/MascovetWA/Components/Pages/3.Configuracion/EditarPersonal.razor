@@ -1,0 +1,85 @@
+@page "/administrador/personal/editar/{Id:int}"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Editar personal | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Editar personal</h1>
+            <p>Formulario de edición del registro seleccionado.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    @if (Persona is null)
+    {
+        <AppCard Title="Personal no encontrado">
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Datos del personal" Subtitle="Los cambios no se guardarán hasta integrar el backend.">
+                <div class="ms-feature-grid">
+                    <AppInput TValue="string" Label="Tipo de personal" Value="@Persona.Rol" Disabled="true" />
+                    <AppInput TValue="string" Label="Nombres" Value="@Persona.Nombre" />
+                    <AppInput TValue="string" Label="Apellido paterno" Value="@Persona.Paterno" />
+                    <AppInput TValue="string" Label="Apellido materno" Value="@Persona.Materno" />
+                    <AppInput TValue="string" Label="DNI" Value="@Persona.Dni" />
+                    <AppInput TValue="string" Label="Teléfono" Value="@Persona.Telefono" Type="tel" />
+                    <AppInput TValue="string" Label="Correo" Value="@Persona.Correo" Type="email" />
+
+                    @if (Persona.Rol == "Recepcionista")
+                    {
+                        <AppSelect TValue="string" Label="Turno" Value="@turnoSeleccionado" Options="@opcionesTurno" />
+                    }
+                    @if (Persona.Rol == "Veterinario")
+                    {
+                        <AppSelect TValue="string" Label="Especialidad" Value="@Persona.Especialidad" Options="@opcionesEspecialidad" />
+                        <AppInput TValue="string" Label="Número de colegiatura" Value="@Persona.Colegiatura" MaxLength="10" />
+                    }
+                </div>
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
+                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Cancelar</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private string turnoSeleccionado = "Mañana";
+
+    private List<SelectOption<string>> opcionesTurno = new()
+    {
+        new("Mañana", "Mañana"),
+        new("Tarde", "Tarde"),
+        new("Noche", "Noche")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Cirugía", "Cirugía"),
+        new("Medicina general", "Medicina general"),
+        new("Dermatología", "Dermatología")
+    };
+
+    private PersonaDemo? Persona => Id switch
+    {
+        1 => new("Veterinario", "Lucía", "Paredes", "Ríos", "72845631", "987654321", "lucia@mascovet.pe", "Cirugía", "CMPV-125"),
+        2 => new("Recepcionista", "Diego", "Ruiz", "Soto", "71654321", "955321456", "diego@mascovet.pe", "", ""),
+        _ => null
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+
+    private sealed record PersonaDemo(string Rol, string Nombre, string Paterno, string Materno,
+        string Dni, string Telefono, string Correo, string Especialidad, string Colegiatura);
+}

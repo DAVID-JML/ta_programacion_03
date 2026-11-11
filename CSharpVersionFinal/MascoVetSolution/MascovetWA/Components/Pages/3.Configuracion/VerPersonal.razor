@@ -1,0 +1,64 @@
+@page "/administrador/personal/ver/{Id:int}"
+@layout MainLayout
+
+<PageTitle>Ver personal | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Ver personal</h1>
+            <p>Consulta de datos sin modificar el registro.</p>
+        </div>
+        <span class="ms-demo-pill">Solo lectura</span>
+    </header>
+
+    @if (Persona is null)
+    {
+        <AppCard Title="Personal no encontrado">
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Datos del personal" Subtitle="Vista de solo lectura del registro seleccionado.">
+                <div class="ms-feature-grid">
+                    <AppInput TValue="string" Label="Tipo de personal" Value="@Persona.Rol" Disabled="true" />
+                    <AppInput TValue="string" Label="Nombres" Value="@Persona.Nombre" Disabled="true" />
+                    <AppInput TValue="string" Label="Apellido paterno" Value="@Persona.Paterno" Disabled="true" />
+                    <AppInput TValue="string" Label="Apellido materno" Value="@Persona.Materno" Disabled="true" />
+                    <AppInput TValue="string" Label="Teléfono" Value="@Persona.Telefono" Disabled="true" />
+                    <AppInput TValue="string" Label="Correo" Value="@Persona.Correo" Disabled="true" />
+
+                    @if (Persona.Rol == "Recepcionista")
+                    {
+                        <AppInput TValue="string" Label="Turno" Value="@("Mañana")" Disabled="true" />
+                    }
+                    @if (Persona.Rol == "Veterinario")
+                    {
+                        <AppInput TValue="string" Label="Especialidad" Value="@Persona.Especialidad" Disabled="true" />
+                        <AppInput TValue="string" Label="Número de colegiatura" Value="@Persona.Colegiatura" Disabled="true" />
+                    }
+                </div>
+                <div class="ms-demo-actions">
+                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private PersonaDemo? Persona => Id switch
+    {
+        1 => new("Veterinario", "Lucía", "Paredes", "Ríos", "987654321", "lucia@mascovet.pe", "Cirugía", "CMPV-125"),
+        2 => new("Recepcionista", "Diego", "Ruiz", "Soto", "955321456", "diego@mascovet.pe", "", ""),
+        _ => null
+    };
+
+    private sealed record PersonaDemo(string Rol, string Nombre, string Paterno, string Materno,
+        string Telefono, string Correo, string Especialidad, string Colegiatura);
+}

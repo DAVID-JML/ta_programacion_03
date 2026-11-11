@@ -1,0 +1,59 @@
+@page "/recepcion/clientes/nuevo"
+@page "/recepcion/clientes/editar/{Id:int}"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Registrar / Editar cliente | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Registrar / Editar cliente</h1>
+            <p>Formulario de datos personales y contacto para recepción.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Datos del cliente" Subtitle="La recepcionista gestiona datos de contacto y personales.">
+            <ChildContent>
+                <div class="ms-feature-grid">
+                    <AppInput TValue="string" Label="Nombres" MaxLength="50" @bind-Value="nombres" />
+                    <AppInput TValue="string" Label="Apellido paterno" MaxLength="50" @bind-Value="paterno" />
+                    <AppInput TValue="string" Label="Apellido materno" MaxLength="50" @bind-Value="materno" />
+                    <AppInput TValue="string" Label="DNI" MaxLength="8" @bind-Value="dni" />
+                    <AppInput TValue="string" Label="Teléfono" Type="tel" MaxLength="20" @bind-Value="telefono" />
+                    <AppInput TValue="string" Label="Correo electrónico" Type="email" MaxLength="200" @bind-Value="correo" />
+                </div>
+
+                @if (!Id.HasValue)
+                {
+                    <div class="ms-feature-grid">
+                        <AppInput TValue="string" Label="Nombre de usuario" MaxLength="100" @bind-Value="usuario" />
+                        <AppInput TValue="string" Label="Contraseña inicial" Type="password" MaxLength="255" @bind-Value="password" />
+                    </div>
+                    <p class="ms-demo-note">Los datos de acceso se muestran solo al registrar una cuenta.</p>
+                }
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cliente</AppButton>
+                    <AppButton Href="/recepcion/clientes" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private string nombres = "";
+    private string paterno = "";
+    private string materno = "";
+    private string dni = "";
+    private string telefono = "";
+    private string correo = "";
+    private string usuario = "";
+    private string password = "";
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+}

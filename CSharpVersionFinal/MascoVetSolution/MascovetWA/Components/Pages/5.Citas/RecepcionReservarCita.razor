@@ -1,0 +1,93 @@
+@page "/recepcion/citas/nueva"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Registrar cita | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Registrar cita</h1>
+            <p>Nueva cita gestionada por recepción.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Datos de la reserva" Subtitle="La recepcionista registra una cita en representación del cliente.">
+            <ChildContent>
+                <div class="ms-feature-grid">
+                    <AppSelect TValue="string" Label="Cliente" @bind-Value="cliente" Options="@opcionesClientes" />
+                    <AppSelect TValue="string" Label="Mascota" @bind-Value="mascota" Options="@opcionesMascotas" />
+                    <AppSelect TValue="string" Label="Especialidad" @bind-Value="especialidad" Options="@opcionesEspecialidad" />
+                    <AppSelect TValue="string" Label="Veterinario" @bind-Value="veterinario" Options="@opcionesVeterinarios" />
+                    <AppSelect TValue="string" Label="Tipo de atención" @bind-Value="tipoAtencion" Options="@opcionesTipo" />
+                    <AppDatePicker Label="Fecha" @bind-Value="fecha" />
+                    <AppSelect TValue="string" Label="Hora disponible" @bind-Value="hora" Options="@opcionesHoras" />
+                </div>
+            </ChildContent>
+        </AppCard>
+    </div>
+
+    <div class="ms-demo-note">
+        <AppIcon Name="check-circle" Size="16" />
+        <span>Antes de registrar, se verificará la disponibilidad y el horario del veterinario.</span>
+    </div>
+
+    <div class="ms-demo-actions">
+        <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Registrar cita</AppButton>
+        <AppButton Href="/recepcion/citas" Variant="ButtonVariant.Secondary">Volver</AppButton>
+    </div>
+</div>
+
+@code {
+    private string cliente = "Ana Martínez López";
+    private string mascota = "Luna";
+    private string especialidad = "Medicina general";
+    private string veterinario = "Dra. Lucía Paredes";
+    private string tipoAtencion = "Consulta";
+    private DateOnly? fecha;
+    private string hora = "09:00";
+
+    private List<SelectOption<string>> opcionesClientes = new()
+    {
+        new("Ana Martínez López", "Ana Martínez López"),
+        new("Carlos Vega Ruiz", "Carlos Vega Ruiz")
+    };
+
+    private List<SelectOption<string>> opcionesMascotas = new()
+    {
+        new("Luna", "Luna"),
+        new("Max", "Max")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Medicina general", "Medicina general"),
+        new("Cirugía", "Cirugía"),
+        new("Dermatología", "Dermatología")
+    };
+
+    private List<SelectOption<string>> opcionesVeterinarios = new()
+    {
+        new("Dra. Lucía Paredes", "Dra. Lucía Paredes"),
+        new("Dr. Mateo Silva", "Dr. Mateo Silva")
+    };
+
+    private List<SelectOption<string>> opcionesTipo = new()
+    {
+        new("Consulta", "Consulta"),
+        new("Control", "Control"),
+        new("Cirugía", "Cirugía"),
+        new("Vacunación", "Vacunación")
+    };
+
+    private List<SelectOption<string>> opcionesHoras = new()
+    {
+        new("09:00", "09:00"),
+        new("10:30", "10:30"),
+        new("11:30", "11:30")
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+}

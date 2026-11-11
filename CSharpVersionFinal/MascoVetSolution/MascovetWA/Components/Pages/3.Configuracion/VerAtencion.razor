@@ -1,0 +1,95 @@
+@page "/administrador/atenciones/ver/{Id:int}"
+@page "/administrador/atenciones/editar/{Id:int}"
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<PageTitle>@(EsEdicion ? "Editar atención" : "Ver atención") | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>@(EsEdicion ? "Editar atención" : "Ver atención")</h1>
+            <p>@(EsEdicion ? "Formulario de la atención seleccionada." : "Información de la atención en modo solo lectura.")</p>
+        </div>
+        <span class="ms-demo-pill">@(EsEdicion ? "Vista de demostración" : "Solo lectura")</span>
+    </header>
+
+    @if (Atencion is null)
+    {
+        <AppCard Title="Atención no encontrada">
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Detalle de atención" Subtitle="@(EsEdicion ? "Campos de edición ilustrativos; no se registran cambios." : "Los datos no pueden modificarse desde esta vista.")">
+                <div class="ms-feature-grid">
+                    <AppInput TValue="string" Label="ID de atención" Value="@($"AT-{Id}")" Disabled="true" />
+                    <AppInput TValue="string" Label="Mascota" Value="@Atencion.Mascota" Disabled="true" />
+
+                    @if (EsEdicion)
+                    {
+                        <AppSelect TValue="string" Label="Tipo de atención" Value="@tipoEdicion" Options="@opcionesTipo" />
+                    }
+                    else
+                    {
+                        <AppInput TValue="string" Label="Tipo de atención" Value="@Atencion.Tipo" Disabled="true" />
+                    }
+
+                    <AppInput TValue="string" Label="Veterinario" Value="@Atencion.Veterinario" Disabled="true" />
+
+                    @if (EsEdicion)
+                    {
+                        <AppInput TValue="string" Label="Fecha de atención" Type="date" Value="@Atencion.FechaISO" />
+                    }
+                    else
+                    {
+                        <AppInput TValue="string" Label="Fecha de atención" Value="@Atencion.Fecha" Disabled="true" />
+                    }
+
+                    <div class="ms-demo-wide">
+                        <AppTextArea Label="Observaciones" Rows="3" Value="@Atencion.Observaciones" ReadOnly="@(!EsEdicion)" />
+                    </div>
+                </div>
+                <div class="ms-demo-actions">
+                    @if (EsEdicion)
+                    {
+                        <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
+                    }
+                    <AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private string tipoEdicion = "Consulta";
+
+    private List<SelectOption<string>> opcionesTipo = new()
+    {
+        new("Consulta", "Consulta"),
+        new("Control", "Control"),
+        new("Cirugía", "Cirugía"),
+        new("Vacunación", "Vacunación")
+    };
+
+    private bool EsEdicion => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .StartsWith("administrador/atenciones/editar/", StringComparison.OrdinalIgnoreCase);
+
+    private AtencionDemo? Atencion => Id switch
+    {
+        101 => new("Luna", "Consulta", "Dra. Lucía Paredes", "23/10/2026", "2026-10-23", "Revisión general y control de evolución."),
+        102 => new("Max", "Vacunación", "Dr. Mateo Silva", "25/10/2026", "2026-10-25", "Vacuna séxtuple aplicada correctamente."),
+        _ => null
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+
+    private sealed record AtencionDemo(string Mascota, string Tipo, string Veterinario, string Fecha, string FechaISO, string Observaciones);
+}

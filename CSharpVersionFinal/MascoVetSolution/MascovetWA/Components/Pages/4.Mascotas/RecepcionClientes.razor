@@ -1,0 +1,57 @@
+@page "/recepcion/clientes"
+@layout MainLayout
+
+<PageTitle>Gestión de clientes | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Gestión de clientes</h1>
+            <p>Registra y consulta clientes de la clínica.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Clientes registrados" Subtitle="La recepcionista gestiona datos personales y de contacto.">
+            <ChildContent>
+                <AppTable TItem="ClienteDemo" Items="@clientes" ColumnCount="6" Caption="Clientes registrados">
+                    <HeaderContent>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">DNI</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="c">
+                        <td>@c.NombreCompleto</td>
+                        <td>@c.Dni</td>
+                        <td>@c.Telefono</td>
+                        <td>@c.Correo</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@c.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="@($"/recepcion/clientes/editar/{c.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
+            </ChildContent>
+        </AppCard>
+    </div>
+
+    <div class="ms-demo-actions">
+        <AppButton Href="/recepcion/clientes/nuevo" Variant="ButtonVariant.Primary">Registrar cliente</AppButton>
+    </div>
+</div>
+
+@code {
+    private sealed record ClienteDemo(int Id, string NombreCompleto, string Dni, string Telefono, string Correo, string Estado);
+
+    private readonly List<ClienteDemo> clientes = new()
+    {
+        new(1, "Ana Martínez López", "74859612", "987 765 432", "ana@correo.com", "Activo"),
+        new(2, "Carlos Vega Ruiz", "72654321", "987 456 321", "carlos@correo.com", "Activo")
+    };
+}

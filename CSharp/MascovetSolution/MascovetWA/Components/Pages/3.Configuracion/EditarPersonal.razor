@@ -1,0 +1,66 @@
+﻿@page "/administrador/personal/editar/{Id:int}"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Editar personal | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div><h1>Editar personal</h1><p>RF006 · Formulario de edición del registro seleccionado.</p></div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    @if (Persona is null)
+    {
+        <AppCard Title="Personal no encontrado">
+            <p>El registro seleccionado no está disponible en los datos de ejemplo.</p>
+            <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+        </AppCard>
+    }
+    else
+    {
+        <div class="seccion">
+            <AppCard Title="Datos del personal" Subtitle="Los cambios no se guardarán hasta integrar el backend Java.">
+                <div class="ms-feature-grid">
+                    <label class="ms-demo-field"><span>Tipo de personal</span><input class="ms-demo-input" value="@Persona.Rol" readonly /></label>
+                    <label class="ms-demo-field"><span>Nombres</span><input class="ms-demo-input" value="@Persona.Nombre" /></label>
+                    <label class="ms-demo-field"><span>Apellido paterno</span><input class="ms-demo-input" value="@Persona.Paterno" /></label>
+                    <label class="ms-demo-field"><span>Apellido materno</span><input class="ms-demo-input" value="@Persona.Materno" /></label>
+                    <label class="ms-demo-field"><span>DNI</span><input class="ms-demo-input" value="@Persona.Dni" /></label>
+                    <label class="ms-demo-field"><span>Teléfono</span><input type="tel" class="ms-demo-input" value="@Persona.Telefono" /></label>
+                    <label class="ms-demo-field"><span>Correo</span><input type="email" class="ms-demo-input" value="@Persona.Correo" /></label>
+                    @if (Persona.Rol == "Veterinario")
+                    {
+                        <label class="ms-demo-field"><span>Especialidad</span>
+                            <select class="ms-demo-input">
+                                <option selected="@(Persona.Especialidad == "Cirugía")">Cirugía</option>
+                                <option selected="@(Persona.Especialidad == "Medicina general")">Medicina general</option>
+                                <option>Dermatología</option>
+                            </select>
+                        </label>
+                        <label class="ms-demo-field"><span>Número de colegiatura</span><input class="ms-demo-input" maxlength="10" value="@Persona.Colegiatura" /></label>
+                    }
+                </div>
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar cambios</AppButton>
+                    <AppButton Variant="ButtonVariant.Danger" OnClick="MostrarAviso">Inactivar personal</AppButton>
+                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </AppCard>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+
+    // Información ilustrativa. No modifica datos reales.
+    private PersonaDemo? Persona => Id switch
+    {
+        1 => new("Veterinario", "Lucía", "Paredes", "Ríos", "72845631", "987654321", "lucia@mascovet.pe", "Cirugía", "CMPV-125"),
+        2 => new("Recepcionista", "Diego", "Ruiz", "Soto", "71563248", "955321456", "diego@mascovet.pe", "", ""),
+        _ => null
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+
+    private sealed record PersonaDemo(string Rol, string Nombre, string Paterno, string Materno,
+        string Dni, string Telefono, string Correo, string Especialidad, string Colegiatura);
+}

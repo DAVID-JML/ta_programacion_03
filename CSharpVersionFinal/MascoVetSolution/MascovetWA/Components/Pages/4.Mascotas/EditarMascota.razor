@@ -1,0 +1,57 @@
+@page "/cliente/mascotas/{IdMascota:int}/editar"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Editar mascota | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Editar mascota</h1>
+            <p>Modifica los datos de tu mascota.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Datos de la mascota" Subtitle="Especie y sexo coinciden con los datos registrados.">
+            <div class="ms-feature-grid">
+                <AppInput TValue="string" Label="Nombre" @bind-Value="nombre" />
+                <AppSelect TValue="string" Label="Especie" @bind-Value="especie" Options="@opcionesEspecie" />
+                <AppInput TValue="string" Label="Raza" @bind-Value="raza" />
+                <AppSelect TValue="string" Label="Sexo" @bind-Value="sexo" Options="@opcionesSexo" />
+                <AppDatePicker Label="Fecha de nacimiento" @bind-Value="fechaNacimiento" Required="true" />
+            </div>
+            <div class="ms-demo-actions">
+                <AppButton OnClick="Guardar">Guardar cambios</AppButton>
+                <AppButton Href="/cliente/mascotas" Variant="ButtonVariant.Secondary">Cancelar</AppButton>
+            </div>
+        </AppCard>
+    </div>
+</div>
+
+@code {
+    [Parameter] public int IdMascota { get; set; }
+
+    private string nombre = "Luna";
+    private string especie = "Perro";
+    private string raza = "Mestiza";
+    private string sexo = "Hembra";
+    private DateOnly? fechaNacimiento = new DateOnly(2022, 3, 14);
+
+    private List<SelectOption<string>> opcionesEspecie = new()
+    {
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Ave", "Ave"),
+        new("Conejo", "Conejo")
+    };
+
+    private List<SelectOption<string>> opcionesSexo = new()
+    {
+        new("Hembra", "Hembra"),
+        new("Macho", "Macho")
+    };
+
+    private void Guardar() => Toast.Info("Cambio de demostración. Se conectará con el backend.");
+}

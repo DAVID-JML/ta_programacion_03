@@ -1,5 +1,12 @@
-﻿<h3>GestionarServicios</h3>
+﻿@page "/administrador/atenciones"
+@page "/administrador/servicios"
+@layout MainLayout
 
-@code {
-
-}
+<PageTitle>Gestión de atenciones médicas | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+       <div><h1>Gestión de atenciones médicas</h1><p>Consulta, Control, Cirugía y Vacunación.</p></div>
+       <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+    <div class="ms-demo-note"><AppIcon Name="check-circle" Size="16" /> <span>RF009 adaptado: se gestionan las atenciones de Consulta, Control, Cirugía y Vacunación. No existe la entidad Servicio.</span></div><div class="seccion"><AppCard Title="Atenciones registradas" Subtitle="Consultar, modificar o inactivar registros clínicos por tipo de atención."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Código</th><th scope="col">Mascota</th><th scope="col">Tipo de atención</th><th scope="col">Veterinario</th><th scope="col">Fecha</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>AT-101</td><td>Luna</td><td>Consulta</td><td>Dra. Lucía Paredes</td><td>23/10/2026</td><td>Activo</td><td><AppButton Href="/administrador/atenciones/ver/101" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton> <AppButton Href="/administrador/atenciones/editar/101" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton></td></tr><tr><td>AT-102</td><td>Max</td><td>Vacunación</td><td>Dr. Mateo Silva</td><td>25/10/2026</td><td>Activo</td><td><AppButton Href="/administrador/atenciones/ver/102" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton> <AppButton Href="/administrador/atenciones/editar/102" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div><div class="ms-demo-actions"><AppButton Href="/administrador/atenciones/nueva" Variant="ButtonVariant.Primary">Nueva consulta</AppButton><AppButton Href="/administrador/atenciones/nueva" Variant="ButtonVariant.Secondary">Nuevo control</AppButton><AppButton Href="/administrador/atenciones/nueva" Variant="ButtonVariant.Secondary">Nueva cirugía</AppButton><AppButton Href="/administrador/atenciones/nueva" Variant="ButtonVariant.Secondary">Nueva vacunación</AppButton></div>
+</div>

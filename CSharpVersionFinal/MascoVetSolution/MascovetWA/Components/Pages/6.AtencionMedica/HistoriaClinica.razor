@@ -1,5 +1,7 @@
-﻿@page "/cliente/mascotas/{IdMascota:int}/historial"
+@page "/cliente/mascotas/{IdMascota:int}/historial"
+@page "/recepcion/mascotas/{IdMascota:int}/historial"
 @layout MainLayout
+@inject NavigationManager Navigation
 
 <PageTitle>Historial médico | Mascovet</PageTitle>
 
@@ -14,10 +16,10 @@
             </p>
         </div>
 
-        <AppButton Href="/cliente/mascotas"
+        <AppButton Href="@VolverHref"
                    Variant="ButtonVariant.Secondary"
                    Icon="heart">
-            Mis mascotas
+            Volver a mascotas
         </AppButton>
     </header>
 
@@ -72,4 +74,7 @@
 @code{
     [Parameter]
     public int IdMascota { get; set; }
+    private string VolverHref => Navigation.ToBaseRelativePath(Navigation.Uri)
+        .StartsWith("recepcion/", StringComparison.OrdinalIgnoreCase)
+        ? "/recepcion/mascotas" : "/cliente/mascotas";
 }

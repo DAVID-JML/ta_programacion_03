@@ -1,0 +1,68 @@
+@page "/administrador/atenciones"
+@layout MainLayout
+
+<PageTitle>Gestión de atenciones médicas | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Gestión de atenciones médicas</h1>
+            <p>Consulta, Control, Cirugía y Vacunación.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="ms-demo-note">
+        <AppIcon Name="check-circle" Size="16" />
+        <span>Se gestionan las atenciones de Consulta, Control, Cirugía y Vacunación.</span>
+    </div>
+
+    <div class="seccion">
+        <AppCard Title="Atenciones registradas" Subtitle="Consultar, modificar o inactivar registros clínicos por tipo de atención.">
+            <ChildContent>
+                <AppTable TItem="AtencionDemo" Items="@listaAtenciones" ColumnCount="7" Caption="Atenciones médicas">
+                    <HeaderContent>
+                        <th scope="col">Código</th>
+                        <th scope="col">Mascota</th>
+                        <th scope="col">Tipo de atención</th>
+                        <th scope="col">Veterinario</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="atencion">
+                        <td>@atencion.Codigo</td>
+                        <td>@atencion.Mascota</td>
+                        <td>@atencion.Tipo</td>
+                        <td>@atencion.Veterinario</td>
+                        <td>@atencion.Fecha</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@atencion.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="@($"/administrador/atenciones/ver/{atencion.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton>
+                            <AppButton Href="@($"/administrador/atenciones/editar/{atencion.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
+            </ChildContent>
+        </AppCard>
+    </div>
+
+    <div class="ms-demo-actions">
+        <AppButton Href="/administrador/atenciones/nueva?tipo=Consulta" Variant="ButtonVariant.Primary">Nueva consulta</AppButton>
+        <AppButton Href="/administrador/atenciones/nueva?tipo=Control" Variant="ButtonVariant.Secondary">Nuevo control</AppButton>
+        <AppButton Href="/administrador/atenciones/nueva?tipo=Cirugía" Variant="ButtonVariant.Secondary">Nueva cirugía</AppButton>
+        <AppButton Href="/administrador/atenciones/nueva?tipo=Vacunación" Variant="ButtonVariant.Secondary">Nueva vacunación</AppButton>
+    </div>
+</div>
+
+@code {
+    private sealed record AtencionDemo(int Id, string Codigo, string Mascota, string Tipo, string Veterinario, string Fecha, string Estado);
+
+    private readonly List<AtencionDemo> listaAtenciones = new()
+    {
+        new(101, "AT-101", "Luna", "Consulta", "Dra. Lucía Paredes", "23/10/2026", "Activo"),
+        new(102, "AT-102", "Max", "Vacunación", "Dr. Mateo Silva", "25/10/2026", "Activo")
+    };
+}

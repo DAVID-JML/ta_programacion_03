@@ -1,0 +1,65 @@
+@page "/recepcion/mascotas/nueva"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Registrar mascota de cliente | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Registrar mascota de cliente</h1>
+            <p>Formulario utilizado por la recepcionista.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Registrar mascota" Subtitle="Selecciona primero el cliente propietario de la mascota.">
+            <ChildContent>
+                <div class="ms-feature-grid">
+                    <AppSelect TValue="string" Label="Cliente" @bind-Value="clienteSeleccionado" Options="@opcionesClientes" />
+                    <AppInput TValue="string" Label="Nombre de mascota" MaxLength="150" @bind-Value="nombreMascota" />
+                    <AppSelect TValue="string" Label="Especie" @bind-Value="especie" Options="@opcionesEspecie" />
+                    <AppInput TValue="string" Label="Raza" MaxLength="150" Required="true" @bind-Value="raza" />
+                    <AppSelect TValue="string" Label="Sexo" @bind-Value="sexo" Options="@opcionesSexo" />
+                    <AppDatePicker Label="Fecha de nacimiento" @bind-Value="fechaNacimiento" Required="true" />
+                </div>
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar mascota</AppButton>
+                    <AppButton Href="/recepcion/mascotas" Variant="ButtonVariant.Secondary">Volver</AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </div>
+</div>
+
+@code {
+    private string clienteSeleccionado = "Ana Martínez López";
+    private string nombreMascota = "";
+    private string especie = "PERRO";
+    private string raza = "";
+    private string sexo = "MACHO";
+    private DateOnly? fechaNacimiento;
+
+    private List<SelectOption<string>> opcionesClientes = new()
+    {
+        new("Ana Martínez López", "Ana Martínez López"),
+        new("Carlos Vega Ruiz", "Carlos Vega Ruiz")
+    };
+
+    private List<SelectOption<string>> opcionesEspecie = new()
+    {
+        new("Perro", "PERRO"),
+        new("Gato", "GATO"),
+        new("Ave", "AVE"),
+        new("Conejo", "CONEJO")
+    };
+
+    private List<SelectOption<string>> opcionesSexo = new()
+    {
+        new("Macho", "MACHO"),
+        new("Hembra", "HEMBRA")
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+}

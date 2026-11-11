@@ -1,0 +1,45 @@
+@page "/administrador/reportes/historial"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Reporte de historia clínica | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Reporte de historia clínica</h1>
+            <p>Reporte cronológico consolidado por paciente.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Seleccionar mascota y periodo" Subtitle="Reporte del historial con fecha, veterinario, diagnóstico y tratamiento.">
+            <ChildContent>
+                <div class="ms-feature-grid">
+                    <AppSelect TValue="string" Label="Mascota" @bind-Value="mascotaSeleccionada" Options="@opcionesMascotas" />
+                    <AppDatePicker Label="Fecha inicio" @bind-Value="fechaInicio" />
+                    <AppDatePicker Label="Fecha fin" @bind-Value="fechaFin" />
+                </div>
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Generar reporte</AppButton>
+                    <AppButton Href="/administrador" Variant="ButtonVariant.Secondary">Volver al panel</AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </div>
+</div>
+
+@code {
+    private string mascotaSeleccionada = "Luna — Perro";
+    private DateOnly? fechaInicio;
+    private DateOnly? fechaFin;
+
+    private List<SelectOption<string>> opcionesMascotas = new()
+    {
+        new("Luna — Perro", "Luna — Perro"),
+        new("Max — Gato", "Max — Gato")
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta función se conectará con el servicio de reportes.");
+}

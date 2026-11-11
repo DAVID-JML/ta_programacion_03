@@ -1,0 +1,12 @@
+<svg class="ms-icon" width="@Size" height="@Size" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+    @((MarkupString)IconCatalog.Get(Name))
+</svg>
+
+@code {
+    /// <summary>Nombre del icono definido en IconCatalog (p. ej. "search").</summary>
+    [Parameter, EditorRequired] public string Name { get; set; } = string.Empty;
+
+    /// <summary>Tamaño en píxeles (ancho y alto).</summary>
+    [Parameter] public int Size { get; set; } = 18;
+}

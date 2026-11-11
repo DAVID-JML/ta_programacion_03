@@ -1,5 +1,341 @@
-﻿<h3>AgendaVeterinario</h3>
+﻿@page "/veterinario/agenda"
+@layout MainLayout
+
+<PageTitle>Mi agenda | Mascovet</PageTitle>
+
+<div class="agenda-veterinario">
+
+    <header class="agenda-veterinario__header">
+        <div>
+            <h1>Mi agenda</h1>
+            <p>
+                Consulta tus citas programadas y revisa la información
+                de las mascotas que recibirán atención.
+            </p>
+        </div>
+
+        <AppButton Href="/veterinario/atencion"
+                   Variant="ButtonVariant.Primary"
+                   Icon="plus">
+            Registrar atención
+        </AppButton>
+    </header>
+
+    <section class="agenda-veterinario__filters"
+             aria-label="Filtros de agenda">
+
+        <AppCard Title="Buscar citas"
+                 Subtitle="Filtra las citas por mascota, cliente, servicio, estado o fecha.">
+
+            <ChildContent>
+                <AppFilterBar SearchText="@busqueda"
+                              SearchTextChanged="@CambiarBusqueda"
+                              SearchLabel="Buscar cita"
+                              SearchPlaceholder="Mascota, cliente o servicio"
+                              OnClear="@LimpiarFiltros">
+
+                    <ChildContent>
+                        <AppDatePicker Id="agenda-fecha-desde"
+                                       Label="Fecha desde"
+                                       Max="@FechaHasta"
+                                       @bind-Value="FechaDesde"
+                                       @bind-Value:after="ReiniciarPagina" />
+
+                        <AppDatePicker Id="agenda-fecha-hasta"
+                                       Label="Fecha hasta"
+                                       Min="@FechaDesde"
+                                       @bind-Value="FechaHasta"
+                                       @bind-Value:after="ReiniciarPagina" />
+
+                        <AppSelect TValue="string"
+                                   Id="agenda-filtro-servicio"
+                                   Label="Servicio"
+                                   Placeholder="Todos los servicios"
+                                   Options="@OpcionesServicio"
+                                   @bind-Value="ServicioSeleccionado"
+                                   @bind-Value:after="ReiniciarPagina" />
+
+                        <AppSelect TValue="string"
+                                   Id="agenda-filtro-estado"
+                                   Label="Estado de la cita"
+                                   Placeholder="Todos los estados"
+                                   Options="@OpcionesEstado"
+                                   @bind-Value="EstadoSeleccionado"
+                                   @bind-Value:after="ReiniciarPagina" />
+                    </ChildContent>
+
+                </AppFilterBar>
+
+                @if (RangoFechasInvalido)
+                {
+                    <p class="agenda-veterinario__filter-error"
+                       role="alert">
+                        La fecha inicial no puede ser posterior a la fecha final.
+                    </p>
+                }
+            </ChildContent>
+
+        </AppCard>
+    </section>
+
+    <section class="agenda-veterinario__results"
+             aria-label="Citas del veterinario">
+
+        <div class="agenda-veterinario__section-heading">
+            <div>
+                <h2>Citas programadas</h2>
+                <p>
+                    Consulta la fecha, el horario, la mascota y el estado
+                    de cada cita asignada a tu agenda.
+                </p>
+            </div>
+        </div>
+
+        @{
+            var citasVisibles = CitasFiltradas.ToList();
+        }
+
+        <AppCard class="agenda-veterinario__table-card"
+                 Title="Agenda de atención"
+                 Subtitle="Las citas se mostrarán según los filtros seleccionados.">
+
+            <ChildContent>
+                <div class="agenda-veterinario__table-info">
+                    <span>
+                        @if (citas.Count > 0 && !RangoFechasInvalido)
+                        {
+                            <text>
+                                @citasVisibles.Count
+                                @(citasVisibles.Count == 1
+                                    ? "cita encontrada"
+                                    : "citas encontradas")
+                            </text>
+                        }
+                        else
+                        {
+                            <text>Listado de citas</text>
+                        }
+                    </span>
+                </div>
+
+                <AppTable TItem="CitaAgenda"
+                          Items="@Pagina(citasVisibles, paginaActual)"
+                          ColumnCount="6"
+                          Caption="Agenda de citas del veterinario">
+
+                    <HeaderContent>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Hora</th>
+                        <th scope="col">Mascota</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Servicio</th>
+                        <th scope="col">Estado</th>
+                    </HeaderContent>
+
+                    <RowTemplate Context="cita">
+
+                        <td class="agenda-veterinario__date">
+                            @cita.Fecha.ToString("dd/MM/yyyy")
+                        </td>
+
+                        <td class="agenda-veterinario__time">
+                            @cita.Hora.ToString("HH:mm")
+                        </td>
+
+                        <td>
+                            <div class="agenda-veterinario__pet">
+                                <span class="agenda-veterinario__pet-icon"
+                                      aria-hidden="true">
+                                    <AppIcon Name="@ObtenerIconoEspecie(cita.Especie)"
+                                             Size="20" />
+                                </span>
+
+                                <span>
+                                    <strong>@cita.Mascota</strong>
+                                    <small>@cita.Especie</small>
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>@cita.Cliente</td>
+
+                        <td>@cita.Servicio</td>
+
+                        <td>
+                            <AppBadge Variant="@VarianteEstado(cita.Estado)"
+                                      ShowIcon="false">
+                                @cita.Estado
+                            </AppBadge>
+                        </td>
+
+                    </RowTemplate>
+
+                    <EmptyContent>
+                        @if (RangoFechasInvalido)
+                        {
+                            <AppEmptyState Icon="calendar"
+                                           Title="Revisa el rango de fechas"
+                                           Description="Selecciona una fecha inicial anterior o igual a la fecha final." />
+                        }
+                        else if (citas.Count == 0)
+                        {
+                            <AppEmptyState Icon="calendar"
+                                           Title="Agenda pendiente de conexión"
+                                           Description="Las citas asignadas a tu agenda aparecerán aquí cuando se cargue la información del backend." />
+                        }
+                        else
+                        {
+                            <AppEmptyState Icon="search"
+                                           Title="No hay citas con estos filtros"
+                                           Description="Prueba con otro criterio de búsqueda o limpia los filtros." />
+                        }
+                    </EmptyContent>
+
+                </AppTable>
+            </ChildContent>
+
+            <Footer>
+                <div class="agenda-veterinario__pagination">
+                    <AppPagination @bind-CurrentPage="paginaActual"
+                                   TotalItems="@citasVisibles.Count"
+                                   PageSize="@TamPagina"
+                                   AriaLabel="Paginación de la agenda" />
+                </div>
+            </Footer>
+
+        </AppCard>
+    </section>
+
+</div>
 
 @code {
+    private const int TamPagina = 10;
 
+    private string? busqueda;
+    private string ServicioSeleccionado { get; set; } = string.Empty;
+    private string EstadoSeleccionado { get; set; } = string.Empty;
+
+    private DateOnly? FechaDesde { get; set; }
+    private DateOnly? FechaHasta { get; set; }
+
+    private int paginaActual = 1;
+
+    private bool RangoFechasInvalido =>
+        FechaDesde.HasValue &&
+        FechaHasta.HasValue &&
+        FechaDesde.Value > FechaHasta.Value;
+
+    private readonly List<SelectOption<string>> OpcionesServicio =
+    [
+        new("Consulta general", "Consulta general"),
+        new("Control", "Control"),
+        new("Vacunación", "Vacunación"),
+        new("Cirugías", "Cirugías")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesEstado =
+    [
+        new("Reservada", "Reservada"),
+        new("Confirmada", "Confirmada"),
+        new("Atendida", "Atendida"),
+        new("Cancelada", "Cancelada")
+    ];
+
+    // No se agregan citas ficticias.
+    // Esta lista permanecerá vacía hasta cargar los datos reales.
+    private readonly List<CitaAgenda> citas = [];
+
+    private IEnumerable<CitaAgenda> CitasFiltradas
+    {
+        get
+        {
+            if (RangoFechasInvalido)
+                return Enumerable.Empty<CitaAgenda>();
+
+            return citas.Where(c =>
+                (string.IsNullOrWhiteSpace(busqueda) ||
+                 Coincide(c.Mascota, busqueda) ||
+                 Coincide(c.Cliente, busqueda) ||
+                 Coincide(c.Servicio, busqueda)) &&
+
+                (!FechaDesde.HasValue ||
+                 c.Fecha >= FechaDesde.Value) &&
+
+                (!FechaHasta.HasValue ||
+                 c.Fecha <= FechaHasta.Value) &&
+
+                (string.IsNullOrWhiteSpace(ServicioSeleccionado) ||
+                 string.Equals(
+                     c.Servicio,
+                     ServicioSeleccionado,
+                     StringComparison.OrdinalIgnoreCase)) &&
+
+                (string.IsNullOrWhiteSpace(EstadoSeleccionado) ||
+                 string.Equals(
+                     c.Estado,
+                     EstadoSeleccionado,
+                     StringComparison.OrdinalIgnoreCase))
+            );
+        }
+    }
+
+    private static bool Coincide(string? valor, string criterio) =>
+        !string.IsNullOrWhiteSpace(valor) &&
+        valor.Contains(
+            criterio.Trim(),
+            StringComparison.OrdinalIgnoreCase);
+
+    private static IEnumerable<T> Pagina<T>(
+        IEnumerable<T> fuente,
+        int pagina) =>
+        fuente
+            .Skip((Math.Max(1, pagina) - 1) * TamPagina)
+            .Take(TamPagina);
+
+    private static SemanticVariant VarianteEstado(string estado) =>
+        estado switch
+        {
+            "Reservada" => SemanticVariant.Warning,
+            "Confirmada" => SemanticVariant.Success,
+            "Atendida" => SemanticVariant.Info,
+            "Cancelada" => SemanticVariant.Error,
+            _ => SemanticVariant.Neutral
+        };
+
+    private static string ObtenerIconoEspecie(string especie) =>
+        especie.Trim().ToLowerInvariant() switch
+        {
+            "perro" => "dog",
+            "gato" => "cat",
+            _ => "paw-print"
+        };
+
+    private Task CambiarBusqueda(string? texto)
+    {
+        busqueda = texto;
+        ReiniciarPagina();
+        return Task.CompletedTask;
+    }
+
+    private void LimpiarFiltros()
+    {
+        busqueda = string.Empty;
+        FechaDesde = null;
+        FechaHasta = null;
+        ServicioSeleccionado = string.Empty;
+        EstadoSeleccionado = string.Empty;
+        ReiniciarPagina();
+    }
+
+    private void ReiniciarPagina() => paginaActual = 1;
+
+    private sealed record CitaAgenda(
+        int Id,
+        DateOnly Fecha,
+        TimeOnly Hora,
+        string Mascota,
+        string Especie,
+        string Cliente,
+        string Servicio,
+        string Estado);
 }

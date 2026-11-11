@@ -1,0 +1,14 @@
+.ms-filterbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--ms-space-4);
+    margin-bottom: var(--ms-space-4);
+}
+
+.ms-filterbar__search { flex: 1 1 18rem; }
+
+.ms-filterbar__filters { display: flex; flex-wrap: wrap; gap: var(--ms-space-4); }
+.ms-filterbar__filters ::deep .ms-field { min-width: 11rem; }
+
+.ms-filterbar__clear { padding-bottom: var(--ms-space-1); }

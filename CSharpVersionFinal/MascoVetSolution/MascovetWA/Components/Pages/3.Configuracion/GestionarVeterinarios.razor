@@ -1,0 +1,132 @@
+@page "/administrador/personal"
+@layout MainLayout
+@inject ToastService Toast
+
+<PageTitle>Gestión de personal | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Gestión de personal</h1>
+            <p>Administración de veterinarios y recepcionistas.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Registrar personal" Subtitle="Define el rol antes de completar el formulario.">
+            <ChildContent>
+                <div class="ms-feature-grid">
+                    <AppSelect TValue="string" Label="Tipo de personal" @bind-Value="tipoPersonal" Options="@opcionesTipoPersonal" />
+                    <AppInput TValue="string" Label="Nombres" MaxLength="50" @bind-Value="nombres" />
+                    <AppInput TValue="string" Label="Apellido paterno" MaxLength="50" @bind-Value="paterno" />
+                    <AppInput TValue="string" Label="Apellido materno" MaxLength="50" @bind-Value="materno" />
+                    <AppInput TValue="string" Label="DNI" MaxLength="9" @bind-Value="dni" />
+                    <AppInput TValue="string" Label="Teléfono" Type="tel" MaxLength="20" @bind-Value="telefono" />
+                    <AppInput TValue="string" Label="Correo electrónico" Type="email" MaxLength="200" @bind-Value="correo" />
+                    <AppInput TValue="string" Label="Nombre de usuario" MaxLength="100" @bind-Value="usuario" />
+                    <AppInput TValue="string" Label="Contraseña" Type="password" MaxLength="255" @bind-Value="password" />
+                </div>
+
+                @if (tipoPersonal == "Veterinario")
+                {
+                    <div class="ms-feature-grid">
+                        <AppSelect TValue="string" Label="Especialidad" @bind-Value="especialidad" Options="@opcionesEspecialidad" />
+                        <AppInput TValue="string" Label="Número de colegiatura" MaxLength="10" @bind-Value="colegiatura" />
+                    </div>
+                }
+                @if (tipoPersonal == "Recepcionista")
+                {
+                    <div class="ms-feature-grid">
+                        <AppSelect TValue="string" Label="Turno" @bind-Value="turno" Options="@opcionesTurno" />
+                    </div>
+                }
+                <div class="ms-demo-actions">
+                    <AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar personal</AppButton>
+                    <AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Limpiar formulario</AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </div>
+
+    <div class="seccion">
+        <AppCard Title="Personal registrado" Subtitle="Consulta, modifica o inactiva cuentas del personal.">
+            <ChildContent>
+                <AppTable TItem="PersonalDemo" Items="@listaPersonal" ColumnCount="8" Caption="Lista de personal">
+                    <HeaderContent>
+                        <th scope="col">Nombre completo</th>
+                        <th scope="col">Rol</th>
+                        <th scope="col">Teléfono</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Especialidad</th>
+                        <th scope="col">Colegiatura</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="p">
+                        <td>@p.NombreCompleto</td>
+                        <td>@p.Rol</td>
+                        <td>@p.Telefono</td>
+                        <td>@p.Correo</td>
+                        <td>@p.Especialidad</td>
+                        <td>@p.Colegiatura</td>
+                        <td>
+                            <AppBadge Variant="SemanticVariant.Success" ShowIcon="false">@p.Estado</AppBadge>
+                        </td>
+                        <td>
+                            <AppButton Href="@($"/administrador/personal/ver/{p.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton>
+                            <AppButton Href="@($"/administrador/personal/editar/{p.Id}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton>
+                        </td>
+                    </RowTemplate>
+                </AppTable>
+            </ChildContent>
+        </AppCard>
+    </div>
+</div>
+
+@code {
+    private string tipoPersonal = "Veterinario";
+    private string nombres = "";
+    private string paterno = "";
+    private string materno = "";
+    private string dni = "";
+    private string telefono = "";
+    private string correo = "";
+    private string usuario = "";
+    private string password = "";
+    private string especialidad = "MEDICINA_GENERAL";
+    private string colegiatura = "";
+    private string turno = "MANANA";
+
+    private List<SelectOption<string>> opcionesTipoPersonal = new()
+    {
+        new("Veterinario", "Veterinario"),
+        new("Recepcionista", "Recepcionista")
+    };
+
+    private List<SelectOption<string>> opcionesEspecialidad = new()
+    {
+        new("Medicina general", "MEDICINA_GENERAL"),
+        new("Cirugía", "CIRUGIA"),
+        new("Dermatología", "DERMATOLOGIA"),
+        new("Odontología", "ODONTOLOGIA"),
+        new("Cardiología", "CARDIOLOGIA")
+    };
+
+    private List<SelectOption<string>> opcionesTurno = new()
+    {
+        new("Mañana", "MANANA"),
+        new("Tarde", "TARDE"),
+        new("Noche", "NOCHE")
+    };
+
+    private sealed record PersonalDemo(int Id, string NombreCompleto, string Rol, string Telefono, string Correo, string Especialidad, string Colegiatura, string Estado);
+
+    private readonly List<PersonalDemo> listaPersonal = new()
+    {
+        new(1, "Lucía Paredes Ríos", "Veterinario", "987 654 321", "lucia@mascovet.pe", "Cirugía", "CMPV-125", "Activo"),
+        new(2, "Diego Ruiz Soto", "Recepcionista", "955 321 456", "diego@mascovet.pe", "—", "—", "Activo")
+    };
+
+    private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend.");
+}

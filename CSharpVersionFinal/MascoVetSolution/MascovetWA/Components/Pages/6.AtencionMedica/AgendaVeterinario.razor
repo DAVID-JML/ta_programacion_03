@@ -1,0 +1,65 @@
+@page "/veterinario/agenda"
+@layout MainLayout
+
+<PageTitle>Mi agenda médica | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Mi agenda médica</h1>
+            <p>Citas asignadas al veterinario y acceso al registro clínico.</p>
+        </div>
+        <span class="ms-demo-pill">Vista de demostración</span>
+    </header>
+
+    <div class="seccion">
+        <AppCard Title="Mis citas programadas" Subtitle="Consulta fecha, hora, mascota, tipo de atención y estado.">
+            <AppTable Items="citas" ColumnCount="6" Caption="Agenda del veterinario">
+                <HeaderContent>
+                    <th scope="col">Fecha</th>
+                    <th scope="col">Hora</th>
+                    <th scope="col">Mascota</th>
+                    <th scope="col">Tipo de atención</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Acción</th>
+                </HeaderContent>
+                <RowTemplate Context="c">
+                    <td>@c.Fecha</td>
+                    <td>@c.Hora</td>
+                    <td>@c.Mascota</td>
+                    <td>@c.Tipo</td>
+                    <td>
+                        <AppBadge Variant="@(c.Estado == "Confirmada" ? SemanticVariant.Success : SemanticVariant.Info)" ShowIcon="false">@c.Estado</AppBadge>
+                    </td>
+                    <td>
+                        @if (c.Estado == "Confirmada")
+                        {
+                            <AppButton Size="ButtonSize.Small" Variant="ButtonVariant.Primary" Href="/veterinario/atencion">Registrar atención</AppButton>
+                        }
+                        else
+                        {
+                            <span class="ms-demo-muted">Atención registrada</span>
+                        }
+                    </td>
+                </RowTemplate>
+            </AppTable>
+        </AppCard>
+    </div>
+
+    <div class="ms-demo-actions">
+        <AppButton Href="/veterinario/historias" Variant="ButtonVariant.Secondary">Historias clínicas</AppButton>
+        <AppButton Href="/veterinario/recetas" Variant="ButtonVariant.Secondary">Recetas</AppButton>
+        <AppButton Href="/veterinario/vacunas" Variant="ButtonVariant.Secondary">Vacunaciones</AppButton>
+    </div>
+</div>
+
+@code {
+    private sealed record AgendaFila(string Fecha, string Hora, string Mascota, string Tipo, string Estado);
+
+    private readonly List<AgendaFila> citas = new()
+    {
+        new("29/10/2026", "09:00", "Luna", "Consulta", "Confirmada"),
+        new("30/10/2026", "11:30", "Max", "Control", "Confirmada"),
+        new("22/10/2026", "10:00", "Nina", "Vacunación", "Atendida")
+    };
+}
