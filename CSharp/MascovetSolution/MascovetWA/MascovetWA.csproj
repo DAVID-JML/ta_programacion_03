@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <Folder Include="Components\DesignSystem\DataDisplay\" />
+    <Folder Include="Components\Shared\" />
   </ItemGroup>
 
   <ItemGroup>

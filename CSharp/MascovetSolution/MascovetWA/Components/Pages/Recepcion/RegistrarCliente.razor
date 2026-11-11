@@ -1,0 +1,90 @@
+
+@page "/recepcion/clientes/nuevo"
+@page "/recepcion/clientes/editar/{Id:int}"
+@layout MainLayout
+
+@inject ToastService Toast
+
+<PageTitle>@TituloPagina | Mascovet</PageTitle>
+
+<div class="cliente-formulario">
+    <header class="cliente-formulario__header">
+        <div>
+            <h1>@TituloPagina</h1>
+            <p>Registra o actualiza los datos personales y de contacto del cliente.</p>
+        </div>
+    </header>
+
+    <section class="cliente-formulario__content">
+        <AppCard Title="Datos del cliente"
+                 Subtitle="Información personal y medios de contacto. La recepcionista no puede consultar ni modificar la contraseña del cliente.">
+
+            <ChildContent>
+                <div class="cliente-formulario__fields">
+                    <AppInput @bind-Value="Nombres"
+                              Label="Nombres"
+                              Placeholder="Ingrese los nombres"
+                              Required="true" />
+
+                    <AppInput @bind-Value="ApellidoPaterno"
+                              Label="Apellido paterno"
+                              Placeholder="Ingrese el apellido paterno"
+                              Required="true" />
+
+                    <AppInput @bind-Value="ApellidoMaterno"
+                              Label="Apellido materno"
+                              Placeholder="Ingrese el apellido materno" />
+
+                    <AppInput @bind-Value="Dni"
+                              Label="DNI"
+                              Placeholder="Ingrese el DNI"
+                              Required="true"
+                              maxlength="8" />
+
+                    <AppInput @bind-Value="Telefono"
+                              Label="Teléfono"
+                              Type="tel"
+                              Placeholder="Ingrese el teléfono" />
+
+                    <AppInput @bind-Value="Correo"
+                              Label="Correo electrónico"
+                              Type="email"
+                              Placeholder="Ingrese el correo electrónico"
+                              Required="true" />
+                </div>
+
+                <div class="cliente-formulario__actions">
+                    <AppButton Variant="ButtonVariant.Primary"
+                               OnClick="MostrarAviso">
+                        Guardar cliente
+                    </AppButton>
+
+                    <AppButton Href="/recepcion/clientes"
+                               Variant="ButtonVariant.Secondary">
+                        Volver
+                    </AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </section>
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private string TituloPagina =>
+        Id.HasValue ? "Editar cliente" : "Registrar cliente";
+
+    private string Nombres { get; set; } = string.Empty;
+    private string ApellidoPaterno { get; set; } = string.Empty;
+    private string ApellidoMaterno { get; set; } = string.Empty;
+    private string Dni { get; set; } = string.Empty;
+    private string Telefono { get; set; } = string.Empty;
+    private string Correo { get; set; } = string.Empty;
+
+    // Pendiente de integración con el backend Java.
+    private void MostrarAviso()
+    {
+        Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+    }
+}

@@ -1,13 +1,105 @@
+
 @page "/recepcion/mascotas/nueva"
 @layout MainLayout
+
 @inject ToastService Toast
+
 <PageTitle>Registrar mascota de cliente | Mascovet</PageTitle>
-<div class="ms-feature-page">
-    <header class="ms-feature-header">
-       <div><h1>Registrar mascota de cliente</h1><p>Formulario utilizado por la recepcionista.</p></div>
-       <span class="ms-demo-pill">Vista de demostración</span>
+
+<div class="registrar-mascota">
+    <header class="registrar-mascota__header">
+        <div>
+            <h1>Registrar mascota de cliente</h1>
+            <p>Registra una mascota y asóciala con su propietario.</p>
+        </div>
     </header>
-    <div class="seccion"><AppCard Title="Registrar mascota" Subtitle="RF012 · Selecciona primero el cliente propietario de la mascota."><ChildContent><div class="ms-feature-grid"><label class="ms-demo-field"><span>Cliente</span><select class="ms-demo-input" ><option value="Ana Martínez López">Ana Martínez López</option><option value="Carlos Vega Ruiz">Carlos Vega Ruiz</option></select></label><label class="ms-demo-field"><span>Nombre de mascota</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Especie</span><select class="ms-demo-input" ><option value="No especificado">No especificado</option><option value="Perro">Perro</option><option value="Gato">Gato</option><option value="Otro">Otro</option></select></label><label class="ms-demo-field"><span>Raza</span><input class="ms-demo-input" type="text" placeholder="" value="" /></label><label class="ms-demo-field"><span>Sexo</span><select class="ms-demo-input" ><option value="No especificado">No especificado</option><option value="Macho">Macho</option><option value="Hembra">Hembra</option></select></label><label class="ms-demo-field"><span>Fecha de nacimiento</span><input class="ms-demo-input" type="date" placeholder="" value="" /></label></div><div class="ms-demo-actions"><AppButton Variant="ButtonVariant.Primary" OnClick="MostrarAviso">Guardar mascota</AppButton><AppButton Href="/recepcion/mascotas" Variant="ButtonVariant.Secondary">Volver</AppButton></div></ChildContent></AppCard></div>
+
+    <section class="registrar-mascota__content">
+        <AppCard Title="Datos de la mascota"
+                 Subtitle="RF012 · Primero selecciona el cliente propietario de la mascota.">
+
+            <ChildContent>
+                <div class="registrar-mascota__fields">
+                    <AppSelect TValue="int?"
+                               @bind-Value="ClienteSeleccionado"
+                               Options="OpcionesClientes"
+                               Label="Cliente propietario"
+                               Placeholder="Seleccione un cliente"
+                               Required="true" />
+
+                    <AppInput @bind-Value="Nombre"
+                              Label="Nombre de mascota"
+                              Placeholder="Ingrese el nombre"
+                              Required="true" />
+
+                    <AppSelect TValue="string"
+                               @bind-Value="Especie"
+                               Options="OpcionesEspecies"
+                               Label="Especie"
+                               Placeholder="Seleccione una especie"
+                               Required="true" />
+
+                    <AppInput @bind-Value="Raza"
+                              Label="Raza"
+                              Placeholder="Ingrese la raza" />
+
+                    <AppSelect TValue="string"
+                               @bind-Value="Sexo"
+                               Options="OpcionesSexo"
+                               Label="Sexo"
+                               Placeholder="Seleccione el sexo" />
+
+                    <AppDatePicker @bind-Value="FechaNacimiento"
+                                   Label="Fecha de nacimiento"
+                                   HelpText="Puede dejarse vacío si se desconoce." />
+                </div>
+
+                <div class="registrar-mascota__actions">
+                    <AppButton Variant="ButtonVariant.Primary"
+                               OnClick="MostrarAviso">
+                        Guardar mascota
+                    </AppButton>
+
+                    <AppButton Href="/recepcion/mascotas"
+                               Variant="ButtonVariant.Secondary">
+                        Volver
+                    </AppButton>
+                </div>
+            </ChildContent>
+        </AppCard>
+    </section>
 </div>
-@code { // Solo demostración visual: no se guardan cambios ni se consulta una base de datos.
- private void MostrarAviso() => Toast.Info("Esta operación se habilitará al integrar el backend Java."); }
+
+@code {
+    private int? ClienteSeleccionado { get; set; }
+
+    private string Nombre { get; set; } = string.Empty;
+    private string Especie { get; set; } = string.Empty;
+    private string Raza { get; set; } = string.Empty;
+    private string Sexo { get; set; } = string.Empty;
+    private DateOnly? FechaNacimiento { get; set; }
+
+    // Se llenará con los clientes obtenidos del backend Java.
+    private readonly List<SelectOption<int?>> OpcionesClientes = [];
+
+    private readonly List<SelectOption<string>> OpcionesEspecies =
+    [
+        new("No especificado", "No especificado"),
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Otro", "Otro")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesSexo =
+    [
+        new("No especificado", "No especificado"),
+        new("Macho", "Macho"),
+        new("Hembra", "Hembra")
+    ];
+
+    // Pendiente de integración con el backend Java.
+    private void MostrarAviso()
+    {
+        Toast.Info("Esta operación se habilitará al integrar el backend Java.");
+    }
+}

@@ -1,11 +1,93 @@
 @page "/recepcion/clientes"
-@layout MainLayout
 
 <PageTitle>Gestión de clientes | Mascovet</PageTitle>
-<div class="ms-feature-page">
-    <header class="ms-feature-header">
-       <div><h1>Gestión de clientes</h1><p>Registra y consulta clientes de la clínica.</p></div>
-       <span class="ms-demo-pill">Vista de demostración</span>
-    </header>
-    <div class="seccion"><AppCard Title="Clientes registrados" Subtitle="RF002 y RF013 · La recepcionista gestiona datos personales y contacto, no contraseñas."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Cliente</th><th scope="col">DNI</th><th scope="col">Teléfono</th><th scope="col">Correo</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>Ana Martínez López</td><td>74859612</td><td>987 765 432</td><td>ana@correo.com</td><td>Activo</td><td><AppButton Href="/recepcion/clientes/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton></td></tr><tr><td>Carlos Vega Ruiz</td><td>72654321</td><td>987 456 321</td><td>carlos@correo.com</td><td>Activo</td><td><AppButton Href="/recepcion/clientes/editar/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div><div class="ms-demo-actions"><AppButton Href="/recepcion/clientes/nuevo" Variant="ButtonVariant.Primary">Registrar cliente</AppButton></div>
+
+<div class="clientes">
+    <PageHeader Title="Gestión de clientes"
+                Description="Registra y consulta clientes de la clínica." />
+
+    <AppAlert Variant="SemanticVariant.Info" Title="Vista de demostración">
+        Los datos son de ejemplo. No se guardan cambios ni se consulta una base de datos.
+    </AppAlert>
+
+    <AppCard Title="Clientes registrados"
+             Subtitle="RF002 y RF013 · La recepcionista gestiona datos personales y contacto, no contraseñas.">
+        <AppFilterBar @bind-SearchText="busqueda"
+                      SearchLabel="Buscar cliente"
+                      SearchPlaceholder="Nombre, DNI o correo"
+                      OnClear="Limpiar" />
+
+        <AppTable TItem="ClienteDemo" Items="Filtrados" ColumnCount="6" Caption="Clientes registrados">
+            <HeaderContent>
+                <th scope="col">Cliente</th>
+                <th scope="col">DNI</th>
+                <th scope="col">Teléfono</th>
+                <th scope="col">Correo</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Acciones</th>
+            </HeaderContent>
+            <RowTemplate Context="c">
+                <td><strong>@c.Nombre</strong></td>
+                <td>@c.Dni</td>
+                <td>@c.Telefono</td>
+                <td>@c.Correo</td>
+                <td><AppBadge Variant="EstadoVariant(c.Estado)">@c.Estado</AppBadge></td>
+                <td>
+                    <AppButton Href="@($"/recepcion/clientes/editar/{c.Id}")"
+                               Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver / Editar</AppButton>
+                </td>
+            </RowTemplate>
+            <EmptyContent>
+                @if (!string.IsNullOrWhiteSpace(busqueda))
+                {
+                    <AppEmptyState Icon="search" Title="Sin resultados"
+                                   Description="Ningún cliente coincide con la búsqueda.">
+                        <AppButton Variant="ButtonVariant.Secondary" OnClick="Limpiar">Limpiar búsqueda</AppButton>
+                    </AppEmptyState>
+                }
+                else
+                {
+                    <AppEmptyState Icon="users" Title="Aún no hay clientes registrados"
+                                   Description="Registra al primer cliente para comenzar.">
+                        <AppButton Href="/recepcion/clientes/nuevo" Icon="plus">Registrar cliente</AppButton>
+                    </AppEmptyState>
+                }
+            </EmptyContent>
+        </AppTable>
+    </AppCard>
+
+    <div class="acciones">
+        <AppButton Href="/recepcion/clientes/nuevo" Variant="ButtonVariant.Primary">Registrar cliente</AppButton>
+    </div>
 </div>
+
+@code {
+    private sealed record ClienteDemo(int Id, string Nombre, string Dni, string Telefono, string Correo, string Estado);
+
+    private readonly List<ClienteDemo> clientes = new()
+    {
+        new(1, "Ana Martínez López", "74859612", "987 765 432", "ana@correo.com", "Activo"),
+        new(2, "Carlos Vega Ruiz", "72654321", "987 456 321", "carlos@correo.com", "Activo")
+    };
+
+    private string? busqueda;
+
+    private IEnumerable<ClienteDemo> Filtrados
+    {
+        get
+        {
+            var texto = busqueda?.Trim();
+            if (string.IsNullOrEmpty(texto)) return clientes;
+
+            return clientes.Where(c =>
+                c.Nombre.Contains(texto, StringComparison.OrdinalIgnoreCase)
+                || c.Dni.Contains(texto)
+                || c.Correo.Contains(texto, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private void Limpiar() => busqueda = string.Empty;
+
+    private static SemanticVariant EstadoVariant(string estado) =>
+        estado == "Activo" ? SemanticVariant.Success : SemanticVariant.Neutral;
+}

@@ -1,11 +1,528 @@
-@page "/recepcion/mascotas"
+
+@page "/recepcion/citas/nueva"
 @layout MainLayout
 
-<PageTitle>Mascotas de clientes | Mascovet</PageTitle>
-<div class="ms-feature-page">
-    <header class="ms-feature-header">
-       <div><h1>Mascotas de clientes</h1><p>Consulta y administra las mascotas asociadas a los clientes.</p></div>
-       <span class="ms-demo-pill">Vista de demostración</span>
+<PageTitle>Registrar cita | Mascovet</PageTitle>
+
+<div class="registrar-cita">
+    <header class="registrar-cita__header">
+        <div>
+            <h1>Registrar cita</h1>
+            <p>Busca al cliente y completa los datos de la reserva.</p>
+        </div>
     </header>
-    <div class="seccion"><AppCard Title="Mascotas de clientes" Subtitle="RF012–RF014 · Registro, edición, consulta e inactivación de mascotas."><ChildContent><div class="ms-table-wrap"><table class="ms-table"><thead><tr><th scope="col">Mascota</th><th scope="col">Especie</th><th scope="col">Propietario</th><th scope="col">Estado</th><th scope="col">Acciones</th></tr></thead><tbody><tr><td>Luna</td><td>Perro</td><td>Ana Martínez López</td><td>Activa</td><td><AppButton Href="/recepcion/mascotas/1" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver ficha</AppButton></td></tr><tr><td>Max</td><td>Gato</td><td>Carlos Vega Ruiz</td><td>Activa</td><td><AppButton Href="/recepcion/mascotas/2" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Ver ficha</AppButton></td></tr></tbody></table></div></ChildContent></AppCard></div><div class="ms-demo-actions"><AppButton Href="/recepcion/mascotas/nueva" Variant="ButtonVariant.Primary">Registrar mascota</AppButton></div>
+
+    <section>
+        <AppCard Title="Identificar cliente"
+                 Subtitle="Busca al cliente utilizando su DNI">
+
+            <ChildContent>
+                <div class="registrar-cita__search">
+                    <div class="registrar-cita__search-input">
+                        <AppInput TValue="string"
+                                  @bind-Value="BusquedaCliente"
+                                  Label="DNI o nombre del cliente"
+                                  Placeholder="Ingrese DNI o nombre completo" />
+                    </div>
+
+                    <AppButton Variant="ButtonVariant.Primary"
+                               Icon="search"
+                               OnClick="BuscarCliente">
+                        Buscar cliente
+                    </AppButton>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(ErrorBusqueda))
+                {
+                    <p class="registrar-cita__error" role="alert">
+                        @ErrorBusqueda
+                    </p>
+                }
+
+                @if (ResultadosClientes.Count > 0)
+                {
+                    <div class="registrar-cita__results">
+                        <AppTable TItem="ClienteResultado"
+                                  Items="ResultadosClientes"
+                                  ColumnCount="4"
+                                  Caption="Resultados de búsqueda de clientes">
+
+                            <HeaderContent>
+                                <th scope="col">Cliente</th>
+                                <th scope="col">DNI</th>
+                                <th scope="col">Contacto</th>
+                                <th scope="col">Acción</th>
+                            </HeaderContent>
+
+                            <RowTemplate Context="cliente">
+                                <td>@cliente.NombreCompleto</td>
+                                <td>@cliente.Dni</td>
+                                <td>@(cliente.Telefono ?? cliente.Correo ?? "—")</td>
+                                <td>
+                                    <AppButton Size="ButtonSize.Small"
+                                               Variant="ButtonVariant.Secondary"
+                                               OnClick="@(() => SeleccionarCliente(cliente))">
+                                        Seleccionar
+                                    </AppButton>
+                                </td>
+                            </RowTemplate>
+                        </AppTable>
+                    </div>
+                }
+                else if (BusquedaRealizada)
+                {
+                    <div class="registrar-cita__empty">
+                        <AppEmptyState Title="No se encontraron coincidencias"
+                                       Description="Verifica el DNI o intenta buscar por el nombre del cliente." />
+                    </div>
+                }
+                else
+                {
+                    <div class="registrar-cita__empty">
+                        <AppEmptyState Icon="user"
+                                       Title="Busca un cliente para comenzar"
+                                       Description="Puedes utilizar su DNI o nombre completo." />
+                    </div>
+                }
+            </ChildContent>
+        </AppCard>
+    </section>
+
+    @if (ClienteSeleccionado is not null)
+    {
+        <section>
+            <AppCard Title="Cliente seleccionado">
+                <Actions>
+                    <AppButton Variant="ButtonVariant.Tertiary"
+                               Size="ButtonSize.Small"
+                               OnClick="CambiarCliente">
+                        Cambiar cliente
+                    </AppButton>
+                </Actions>
+
+                <ChildContent>
+                    <div class="registrar-cita__client-data">
+                        <div>
+                            <span>Nombre completo</span>
+                            <strong>@ClienteSeleccionado.NombreCompleto</strong>
+                        </div>
+
+                        <div>
+                            <span>DNI</span>
+                            <strong>@ClienteSeleccionado.Dni</strong>
+                        </div>
+
+                        <div>
+                            <span>Teléfono</span>
+                            <strong>@(ClienteSeleccionado.Telefono ?? "No registrado")</strong>
+                        </div>
+
+                        <div>
+                            <span>Correo electrónico</span>
+                            <strong>@(ClienteSeleccionado.Correo ?? "No registrado")</strong>
+                        </div>
+                    </div>
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        <section>
+            <AppCard Title="Seleccionar mascota"
+                     Subtitle="Selecciona una mascota perteneciente al cliente identificado.">
+
+                <ChildContent>
+                    @if (MascotasCliente.Count > 0)
+                    {
+                        <div class="registrar-cita__pet-selection">
+                            <AppSelect TValue="int?"
+                                       @bind-Value="MascotaSeleccionada"
+                                       @bind-Value:after="CambiarMascota"
+                                       Options="OpcionesMascotas"
+                                       Label="Mascota"
+                                       Placeholder="Seleccione una mascota"
+                                       Required="true" />
+
+                            <AppButton Variant="ButtonVariant.Secondary"
+                                       Icon="plus"
+                                       OnClick="AbrirModalMascota">
+                                Registrar mascota
+                            </AppButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <AppEmptyState Icon="inbox"
+                                       Title="Este cliente no tiene mascotas registradas"
+                                       Description="Registra una mascota para poder continuar.">
+                            <AppButton Variant="ButtonVariant.Primary"
+                                       Icon="plus"
+                                       OnClick="AbrirModalMascota">
+                                Registrar mascota
+                            </AppButton>
+                        </AppEmptyState>
+                    }
+                </ChildContent>
+            </AppCard>
+        </section>
+
+        @if (MascotaSeleccionada is not null)
+        {
+            <section>
+                <AppCard Title="Servicio"
+                         Subtitle="Selecciona el motivo por el cual se está reservando la cita.">
+
+                    <ChildContent>
+                        <div class="registrar-cita__fields">
+                            <AppSelect TValue="string"
+                                       @bind-Value="TipoAtencionInicial"
+                                       @bind-Value:after="CambiarTipoAtencion"
+                                       Options="TiposAtencion"
+                                       Label="Tipo de atención"
+                                       Placeholder="Seleccione una atención"
+                                       Required="true" />
+
+                            <AppSelect TValue="int?"
+                                       @bind-Value="VeterinarioSeleccionado"
+                                       @bind-Value:after="CambiarVeterinario"
+                                       Options="OpcionesVeterinarios"
+                                       Label="Veterinario"
+                                       Placeholder="Seleccione un veterinario"
+                                       HelpText="Los veterinarios disponibles dependen del tipo de atención."
+                                       Disabled="@string.IsNullOrWhiteSpace(TipoAtencionInicial)"
+                                       Required="true" />
+                        </div>
+                    </ChildContent>
+                </AppCard>
+            </section>
+
+            @if (VeterinarioSeleccionado is not null)
+            {
+                <section>
+                    <AppCard Title="Fecha y horario"
+                             Subtitle="Selecciona un horario disponible del veterinario.">
+
+                        <ChildContent>
+                            <div class="registrar-cita__fields">
+                                <AppDatePicker @bind-Value="FechaSeleccionada"
+                                               @bind-Value:after="CambiarFecha"
+                                               Label="Fecha de la cita"
+                                               Min="FechaMinima"
+                                               Required="true" />
+
+                                <AppSelect TValue="string"
+                                           @bind-Value="HoraSeleccionada"
+                                           Options="OpcionesHorarios"
+                                           Label="Hora disponible"
+                                           Placeholder="Seleccione un horario"
+                                           HelpText="Solo se mostrarán horarios compatibles con la jornada y las citas existentes."
+                                           Disabled="@(FechaSeleccionada is null || HorariosDisponibles.Count == 0)"
+                                           Required="true" />
+                            </div>
+                        </ChildContent>
+                    </AppCard>
+                </section>
+            }
+
+            <section class="registrar-cita__actions">
+                <AppButton Href="/recepcion/citas"
+                           Variant="ButtonVariant.Secondary">
+                    Cancelar
+                </AppButton>
+
+                <AppButton Variant="ButtonVariant.Primary"
+                           Icon="calendar"
+                           Disabled="@(!PuedeRegistrar)"
+                           OnClick="RegistrarCita">
+                    Registrar cita
+                </AppButton>
+            </section>
+        }
+    }
+
+    <AppModal @bind-Visible="ModalMascotaVisible"
+              Title="Registrar mascota"
+              ConfirmText="Guardar mascota"
+              CancelText="Cancelar">
+
+        <ChildContent>
+            <div class="registrar-cita__modal-fields">
+                <AppInput TValue="string"
+                          @bind-Value="NombreNuevaMascota"
+                          Label="Nombre de mascota"
+                          Placeholder="Ingrese el nombre"
+                          Required="true" />
+
+                <AppSelect TValue="string"
+                           @bind-Value="EspecieNuevaMascota"
+                           Options="OpcionesEspecies"
+                           Label="Especie"
+                           Placeholder="Seleccione una especie"
+                           Required="true" />
+
+                <AppInput TValue="string"
+                          @bind-Value="RazaNuevaMascota"
+                          Label="Raza"
+                          Placeholder="Ingrese la raza" />
+
+                <AppSelect TValue="string"
+                           @bind-Value="SexoNuevaMascota"
+                           Options="OpcionesSexo"
+                           Label="Sexo"
+                           Placeholder="Seleccione el sexo" />
+
+                <AppDatePicker @bind-Value="FechaNacimientoNuevaMascota"
+                               Label="Fecha de nacimiento"
+                               Max="FechaMaxima"
+                               HelpText="Puede dejarse vacío si se desconoce." />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(ErrorNuevaMascota))
+            {
+                <p class="registrar-cita__error" role="alert">
+                    @ErrorNuevaMascota
+                </p>
+            }
+        </ChildContent>
+
+        <Actions>
+            <AppButton Variant="ButtonVariant.Tertiary"
+                       OnClick="CerrarModalMascota">
+                Cancelar
+            </AppButton>
+
+            <AppButton Variant="ButtonVariant.Primary"
+                       OnClick="AgregarMascota">
+                Guardar mascota
+            </AppButton>
+        </Actions>
+    </AppModal>
 </div>
+
+@code {
+    private string BusquedaCliente { get; set; } = string.Empty;
+    private bool BusquedaRealizada { get; set; }
+    private string? ErrorBusqueda { get; set; }
+
+    private ClienteResultado? ClienteSeleccionado { get; set; }
+
+    private List<ClienteResultado> ResultadosClientes { get; set; } = [];
+    private List<MascotaCliente> MascotasCliente { get; set; } = [];
+    private List<VeterinarioDisponible> VeterinariosDisponibles { get; set; } = [];
+    private List<string> HorariosDisponibles { get; set; } = [];
+
+    private int? MascotaSeleccionada { get; set; }
+    private string TipoAtencionInicial { get; set; } = string.Empty;
+    private int? VeterinarioSeleccionado { get; set; }
+    private DateOnly? FechaSeleccionada { get; set; }
+    private string HoraSeleccionada { get; set; } = string.Empty;
+
+    private bool ModalMascotaVisible { get; set; }
+
+    private string NombreNuevaMascota { get; set; } = string.Empty;
+    private string EspecieNuevaMascota { get; set; } = string.Empty;
+    private string RazaNuevaMascota { get; set; } = string.Empty;
+    private string SexoNuevaMascota { get; set; } = string.Empty;
+    private DateOnly? FechaNacimientoNuevaMascota { get; set; }
+    private string? ErrorNuevaMascota { get; set; }
+
+    private int siguienteIdMascota = -1;
+
+    private DateOnly FechaMinima =>
+        DateOnly.FromDateTime(DateTime.Today);
+
+    private DateOnly FechaMaxima =>
+        DateOnly.FromDateTime(DateTime.Today);
+
+    private bool PuedeRegistrar =>
+        ClienteSeleccionado is not null &&
+        MascotaSeleccionada is not null &&
+        !string.IsNullOrWhiteSpace(TipoAtencionInicial) &&
+        VeterinarioSeleccionado is not null &&
+        FechaSeleccionada is not null &&
+        !string.IsNullOrWhiteSpace(HoraSeleccionada);
+
+    private IEnumerable<SelectOption<int?>> OpcionesMascotas =>
+        MascotasCliente.Select(m => new SelectOption<int?>(m.Id, m.Nombre));
+
+    private IEnumerable<SelectOption<int?>> OpcionesVeterinarios =>
+        VeterinariosDisponibles.Select(v =>
+            new SelectOption<int?>(v.Id, v.Nombre));
+
+    private IEnumerable<SelectOption<string>> OpcionesHorarios =>
+        HorariosDisponibles.Select(h => new SelectOption<string>(h, h));
+
+    private readonly List<SelectOption<string>> TiposAtencion =
+    [
+        new("Consulta general", "Consulta general"),
+        new("Control", "Control"),
+        new("Cirugía", "Cirugía"),
+        new("Vacunación", "Vacunación")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesEspecies =
+    [
+        new("No especificado", "No especificado"),
+        new("Perro", "Perro"),
+        new("Gato", "Gato"),
+        new("Otro", "Otro")
+    ];
+
+    private readonly List<SelectOption<string>> OpcionesSexo =
+    [
+        new("No especificado", "No especificado"),
+        new("Macho", "Macho"),
+        new("Hembra", "Hembra")
+    ];
+
+    private void BuscarCliente()
+    {
+        ErrorBusqueda = null;
+
+        if (string.IsNullOrWhiteSpace(BusquedaCliente))
+        {
+            ErrorBusqueda = "Ingresa un DNI o nombre para realizar la búsqueda.";
+            return;
+        }
+
+        ClienteSeleccionado = null;
+        MascotasCliente.Clear();
+        ReiniciarReserva();
+
+        BusquedaRealizada = true;
+    }
+
+    private void SeleccionarCliente(ClienteResultado cliente)
+    {
+        ClienteSeleccionado = cliente;
+        BusquedaRealizada = false;
+        ErrorBusqueda = null;
+
+        MascotasCliente = [];
+        ReiniciarReserva();
+    }
+
+    private void CambiarCliente()
+    {
+        ClienteSeleccionado = null;
+        MascotasCliente.Clear();
+        BusquedaCliente = string.Empty;
+        BusquedaRealizada = false;
+
+        ReiniciarReserva();
+    }
+
+    private void CambiarMascota()
+    {
+        ReiniciarReserva();
+    }
+
+    private void CambiarTipoAtencion()
+    {
+        VeterinarioSeleccionado = null;
+        VeterinariosDisponibles.Clear();
+        FechaSeleccionada = null;
+        HoraSeleccionada = string.Empty;
+        HorariosDisponibles.Clear();
+    }
+
+    private void CambiarVeterinario()
+    {
+        FechaSeleccionada = null;
+        HoraSeleccionada = string.Empty;
+        HorariosDisponibles.Clear();
+    }
+
+    private void CambiarFecha()
+    {
+        HoraSeleccionada = string.Empty;
+        HorariosDisponibles.Clear();
+    }
+
+    private void AbrirModalMascota()
+    {
+        LimpiarFormularioMascota();
+        ModalMascotaVisible = true;
+    }
+
+    private void CerrarModalMascota()
+    {
+        ModalMascotaVisible = false;
+        LimpiarFormularioMascota();
+    }
+
+    private void AgregarMascota()
+    {
+        ErrorNuevaMascota = null;
+
+        if (string.IsNullOrWhiteSpace(NombreNuevaMascota) ||
+            string.IsNullOrWhiteSpace(EspecieNuevaMascota))
+        {
+            ErrorNuevaMascota = "Ingresa el nombre y la especie de la mascota.";
+            return;
+        }
+
+        var mascota = new MascotaCliente(
+            siguienteIdMascota--,
+            NombreNuevaMascota.Trim(),
+            EspecieNuevaMascota,
+            string.IsNullOrWhiteSpace(RazaNuevaMascota) ? null : RazaNuevaMascota.Trim(),
+            string.IsNullOrWhiteSpace(SexoNuevaMascota) ? null : SexoNuevaMascota
+        );
+
+        MascotasCliente.Add(mascota);
+        MascotaSeleccionada = mascota.Id;
+
+        ReiniciarReserva();
+        ModalMascotaVisible = false;
+        LimpiarFormularioMascota();
+    }
+
+    private void LimpiarFormularioMascota()
+    {
+        NombreNuevaMascota = string.Empty;
+        EspecieNuevaMascota = string.Empty;
+        RazaNuevaMascota = string.Empty;
+        SexoNuevaMascota = string.Empty;
+        FechaNacimientoNuevaMascota = null;
+        ErrorNuevaMascota = null;
+    }
+
+    private void ReiniciarReserva()
+    {
+        MascotaSeleccionada = null;
+        TipoAtencionInicial = string.Empty;
+        VeterinarioSeleccionado = null;
+        FechaSeleccionada = null;
+        HoraSeleccionada = string.Empty;
+
+        VeterinariosDisponibles.Clear();
+        HorariosDisponibles.Clear();
+    }
+
+    private void RegistrarCita()
+    {
+        if (!PuedeRegistrar)
+            return;
+    }
+
+    private sealed record ClienteResultado(
+        int Id,
+        string NombreCompleto,
+        string Dni,
+        string? Telefono,
+        string? Correo
+    );
+
+    private sealed record MascotaCliente(
+        int Id,
+        string Nombre,
+        string Especie,
+        string? Raza,
+        string? Sexo
+    );
+
+    private sealed record VeterinarioDisponible(
+        int Id,
+        string Nombre
+    );
+}
