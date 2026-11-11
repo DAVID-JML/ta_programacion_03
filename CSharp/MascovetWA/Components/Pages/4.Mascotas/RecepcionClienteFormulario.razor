@@ -77,12 +77,19 @@
     }
     private sealed class ClienteModel
     {
-        [Required] public string Nombres { get; set; } = "";
-        [Required] public string Paterno { get; set; } = "";
-        [Required] public string Materno { get; set; } = "";
-        [Required] public string Dni { get; set; } = "";
-        [Required] public string Telefono { get; set; } = "";
-        [Required, EmailAddress] public string Correo { get; set; } = "";
+        [Required(ErrorMessage = "Ingrese los nombres.")]
+        public string Nombres { get; set; } = "";
+        [Required(ErrorMessage = "Ingrese Apellido Paterno.")]
+        public string Paterno { get; set; } = "";
+        [Required(ErrorMessage = "Ingrese Apellido Materno.")]
+        public string Materno { get; set; } = "";
+        [Required(ErrorMessage = "Ingrese DNI.")]
+        public string Dni { get; set; } = "";
+        [Required(ErrorMessage = "Ingrese Telefono.")]
+        public string Telefono { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa el correo electrónico.")]
+        [EmailAddress]
+        public string Correo { get; set; } = "";
         public string Usuario { get; set; } = "";
         public string Contrasena { get; set; } = "";
     }
