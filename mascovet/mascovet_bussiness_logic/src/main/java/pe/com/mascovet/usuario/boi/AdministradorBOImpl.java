@@ -4,6 +4,7 @@ import pe.com.mascovet.usuario.bo.IAdministradorBO;
 import pe.com.mascovet.usuario.dao.AdministradorDAO;
 import pe.com.mascovet.usuario.impl.AdministradorImpl;
 import pe.com.mascovet.usuario.model.Administrador;
+import pe.com.mascovet.usuario.seguridad.ContrasenaHash;
 
 import java.util.List;
 
@@ -52,7 +53,15 @@ public class AdministradorBOImpl implements IAdministradorBO {
     public int insertar(Administrador administrador) {
         validarAdministrador(administrador);
         administrador.setActivo(true);
-        return daoAdministrador.insertar(administrador);
+
+        String contrasenaOriginal = administrador.getContrasena();
+        administrador.setContrasena(ContrasenaHash.generar(contrasenaOriginal));
+
+        try {
+            return daoAdministrador.insertar(administrador);
+        } finally {
+            administrador.setContrasena(contrasenaOriginal);
+        }
     }
 
     @Override

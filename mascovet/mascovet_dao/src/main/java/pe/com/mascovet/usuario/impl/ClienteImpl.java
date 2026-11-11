@@ -10,6 +10,7 @@ import java.sql.Types;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.PreparedStatement;
 
 public class ClienteImpl implements ClienteDAO {
 
@@ -50,7 +51,8 @@ public class ClienteImpl implements ClienteDAO {
                 cs.setString("_apellido_paterno", cliente.getApellidoPaterno());
                 cs.setString("_apellido_materno", cliente.getApellidoMaterno());
                 cs.setString("_nombre_usuario", cliente.getNombreUsuario());
-                cs.setString("_contrasena", cliente.getContrasena());
+                //cs.setString("_contrasena", cliente.getContrasena());
+                cs.setNull("_contrasena", Types.VARCHAR);
                 cs.setBoolean("_activo", cliente.isActivo());
                 cs.setInt("_id_usuario", cliente.getIdUsuario());
                 cs.setString("_correo", cliente.getCorreo());

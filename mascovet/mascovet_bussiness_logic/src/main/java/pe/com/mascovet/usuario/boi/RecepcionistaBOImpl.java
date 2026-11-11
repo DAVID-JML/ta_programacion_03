@@ -4,6 +4,7 @@ import pe.com.mascovet.usuario.bo.IRecepcionistaBO;
 import pe.com.mascovet.usuario.dao.RecepcionistaDAO;
 import pe.com.mascovet.usuario.impl.RecepcionistaImpl;
 import pe.com.mascovet.usuario.model.Recepcionista;
+import pe.com.mascovet.usuario.seguridad.ContrasenaHash;
 
 import java.util.List;
 
@@ -60,7 +61,15 @@ public class RecepcionistaBOImpl implements IRecepcionistaBO {
     public int insertar(Recepcionista recepcionista) {
         validarRecepcionista(recepcionista);
         recepcionista.setActivo(true);
-        return daoRecepcionista.insertar(recepcionista);
+
+        String contrasenaOriginal = recepcionista.getContrasena();
+        recepcionista.setContrasena(ContrasenaHash.generar(contrasenaOriginal));
+
+        try {
+            return daoRecepcionista.insertar(recepcionista);
+        } finally {
+            recepcionista.setContrasena(contrasenaOriginal);
+        }
     }
 
     @Override

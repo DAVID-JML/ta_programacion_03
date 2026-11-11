@@ -8,6 +8,7 @@ import pe.com.mascovet.usuario.bo.IVeterinarioBO;
 import pe.com.mascovet.usuario.dao.VeterinarioDAO;
 import pe.com.mascovet.usuario.impl.VeterinarioImpl;
 import pe.com.mascovet.usuario.model.Veterinario;
+import pe.com.mascovet.usuario.seguridad.ContrasenaHash;
 
 import java.util.List;
 
@@ -79,7 +80,15 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
     public int insertar(Veterinario veterinario) {
         validarVeterinario(veterinario);
         veterinario.setActivo(true);
-        return daoVeterinario.insertar(veterinario);
+
+        String contrasenaOriginal = veterinario.getContrasena();
+        veterinario.setContrasena(ContrasenaHash.generar(contrasenaOriginal));
+
+        try {
+            return daoVeterinario.insertar(veterinario);
+        } finally {
+            veterinario.setContrasena(contrasenaOriginal);
+        }
     }
 
     @Override
