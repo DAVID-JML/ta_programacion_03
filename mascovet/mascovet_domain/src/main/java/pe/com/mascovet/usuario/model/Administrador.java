@@ -8,10 +8,11 @@ public class Administrador extends Usuario{
     }
 
     public Administrador(int idUsuario, String dni, String nombre,
-                         String apellido, String nombreUsuario,
+                         String apellidoPaterno, String apellidoMaterno,
+                         String nombreUsuario,
                          String contrasena, boolean activo, String cargo) {
 
-        super(idUsuario, dni, nombre, apellido,
+        super(idUsuario, dni, nombre, apellidoPaterno, apellidoMaterno,
                 nombreUsuario, contrasena, activo);
 
         this.cargo = cargo;

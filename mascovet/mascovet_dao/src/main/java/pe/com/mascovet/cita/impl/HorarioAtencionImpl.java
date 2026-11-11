@@ -8,9 +8,9 @@ import pe.com.mascovet.enums.model.Dia;
 import pe.com.mascovet.usuario.model.Veterinario;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,22 +18,23 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
 
     @Override
     public int insertar(HorarioAtencion horario) {
-        String sql = "INSERT INTO HORARIO_ATENCION (id_veterinario, dia, hora_inicio, hora_fin) VALUES (?, ?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, horario.getVeterinario().getIdUsuario());
-                ps.setString(2, horario.getDia().name());
-                ps.setTime(3, java.sql.Time.valueOf(horario.getHoraInicio()));
-                ps.setTime(4, java.sql.Time.valueOf(horario.getHoraFin()));
-                ps.executeUpdate();
+        String sql = "{call INSERTAR_HORARIOATENCION(?, ?, ?, ?, ?)}";
+        Connection conexion = TransactionContext.getCurrentConnection();
+        if (conexion == null)
+            conexion = DBManager.getInstance().getConnection();
+        try (Connection con = conexion) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_horario_atencion", Types.INTEGER);
+                cs.setInt("_id_veterinario", horario.getVeterinario().getIdUsuario());
+                cs.setString("_dia", horario.getDia().name());
+                cs.setTime("_hora_inicio", java.sql.Time.valueOf(horario.getHoraInicio()));
+                cs.setTime("_hora_fin", java.sql.Time.valueOf(horario.getHoraFin()));
+                cs.executeUpdate();
 
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        horario.setIdHorario(rs.getInt(1));
+                if (cs.getInt("_id_horario_atencion") > 0) {
+                        horario.setIdHorario(cs.getInt("_id_horario_atencion"));
                         return horario.getIdHorario();
                     }
-                }
                 return 0;
             } catch (Exception ex) {
                 System.out.println("ERROR AL INSERTAR HORARIO DE ATENCION: " + ex.getMessage());
@@ -47,15 +48,17 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
 
     @Override
     public int modificar(HorarioAtencion horario) {
-        String sql = "UPDATE HORARIO_ATENCION SET id_veterinario=?, dia=?, hora_inicio=?, hora_fin=? WHERE id_horario=?";
+        String sql = "{call MODIFICAR_HORARIOATENCION(?, ?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, horario.getVeterinario().getIdUsuario());
-            ps.setString(2, horario.getDia().name());
-            ps.setTime(3, java.sql.Time.valueOf(horario.getHoraInicio()));
-            ps.setTime(4, java.sql.Time.valueOf(horario.getHoraFin()));
-            ps.setInt(5, horario.getIdHorario());
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_veterinario", horario.getVeterinario().getIdUsuario());
+            cs.setString("_dia", horario.getDia().name());
+            cs.setTime("_hora_inicio", java.sql.Time.valueOf(horario.getHoraInicio()));
+            cs.setTime("_hora_fin", java.sql.Time.valueOf(horario.getHoraFin()));
+            cs.setInt("_id_horario", horario.getIdHorario());
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR HORARIO DE ATENCION: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -64,11 +67,13 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
 
     @Override
     public int eliminar(int idHorario) {
-        String sql = "DELETE FROM HORARIO_ATENCION WHERE id_horario=?";
+        String sql = "{call ELIMINAR_HORARIOATENCION(?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idHorario);
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_horario", idHorario);
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR HORARIO DE ATENCION: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -78,11 +83,11 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
     @Override
     public HorarioAtencion obtenerPorId(int idHorario) {
         HorarioAtencion horario = null;
-        String sql = "SELECT id_horario, id_veterinario, dia, hora_inicio, hora_fin FROM HORARIO_ATENCION WHERE id_horario=?";
+        String sql = "{call LISTAR_HORARIOATENCION_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idHorario);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_horario", idHorario);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     horario = new HorarioAtencion();
                     horario.setIdHorario(rs.getInt("id_horario"));
@@ -104,10 +109,10 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
     @Override
     public List<HorarioAtencion> listarTodos() {
         List<HorarioAtencion> horarios = new ArrayList<>();
-        String sql = "SELECT id_horario, id_veterinario, dia, hora_inicio, hora_fin FROM HORARIO_ATENCION";
+        String sql = "{call LISTAR_HORARIOATENCION_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 HorarioAtencion horario = new HorarioAtencion();
                 horario.setIdHorario(rs.getInt("id_horario"));
@@ -122,24 +127,6 @@ public class HorarioAtencionImpl implements HorarioAtencionDAO {
             return horarios;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR HORARIOS DE ATENCION: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void asignarHorarioVeterinarioSP(String dni, String dia, java.sql.Time horaInicio, java.sql.Time horaFin) {
-        String sql = "{CALL asignar_horario_veterinario(?, ?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dni);
-                cs.setString(2, dia);
-                cs.setTime(3, horaInicio);
-                cs.setTime(4, horaFin);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR asignar_horario_veterinario: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

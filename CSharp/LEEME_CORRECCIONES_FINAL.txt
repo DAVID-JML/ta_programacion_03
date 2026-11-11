@@ -1,0 +1,78 @@
+MASCOVET - PAQUETE CONSOLIDADO (10/11/2026)
+===========================================================
+Carpetas principales: CSharp/  Java/  SQL/
+
+Este paquete parte de MascoVet_Java_CSharp_SQL_Consolidado_20261110.zip.
+Se modificaron exclusivamente archivos de CSharp (MascovetWA).
+Los 125 archivos de Java y SQL comparados con el ZIP anterior siguen
+IDENTICOS byte a byte. No se debe volver a ejecutar el script SQL
+sobre una base con datos si contiene DROP DATABASE.
+
+CORRECCIONES IMPLEMENTADAS EN C#
+--------------------------------
+01. Administrador > Atenciones medicas: boton Inactivar (eliminacion logica)
+    con confirmacion. Llama a los REST EliminarAsync existentes.
+02. Horarios: modal con boton Aceptar ante una superposicion, tanto
+    al registrar como al editar. Comprueba dia/veterinario/intervalos.
+03. Mascotas: indicacion explicita de registrar la raza como "Desconocida".
+04. Ordenacion de citas por CONFIRMADA, RESERVADA, ATENDIDA y CANCELADA;
+    dentro de cada grupo por fecha/hora. Historias y recetas recientes
+    primero, vacunaciones recientes primero y horarios por dia/hora.
+05. Reservar cita (cliente/recepcion): tipos filtrados segun especialidad
+    del veterinario; recepcion tambien filtra veterinarios por especialidad.
+    REGLA ACORDADA: MEDICINA_GENERAL = Consulta/Control/Vacunacion;
+    CIRUGIA = Consulta/Control/Cirugia; DERMATOLOGIA/CARDIOLOGIA/
+    ODONTOLOGIA = Consulta/Control.
+06. Disponibilidad: columna Dia, especialidad mas legible, dias ordenados.
+07. Confirmar/cancelar citas: normaliza fecha al mediodia en C# para
+    reducir diferencias de conversion DATE/DateTime. El servidor Java
+    conserva las reglas de transicion. Debe probarse en GlassFish.
+08. Historial clinico y reporte: filtros reales de propietario, mascotas
+    del propietario y rango Desde/Hasta; el reporte ya no usa registros
+    ficticios. Exportar PDF sigue pendiente (fuera del alcance).
+09. Registro medico veterinario y administrador: protege de repetir la
+    atencion por cita en la UI; intenta actualizar a ATENDIDA tras guardar,
+    informa explicitamente cuando guardar atencion y actualizar cita
+    son operaciones que no se completaron juntas.
+10. Agenda veterinaria: para citas ATENDIDA con atencion real, botones
+    Ver atencion y Editar atencion. Las confirmadas ofrecen registrar.
+11. Gestion de vacunaciones: permite elegir citas atendidas con registros
+    para consultar, editar y anular; no permite nuevas vacunaciones con
+    citas ya atendidas. Enlace directo desde cartilla de la mascota.
+12. Detalle clinico completo de veterinario: nueva pagina
+    /veterinario/atenciones/ver/{Id}?tipo=TIPO con datos generales,
+    diagnostico/indicaciones/procedimiento/vacuna, horarios, peso,
+    alergias, observaciones y recetas asociadas si estan disponibles.
+    Acceso tambien desde Historias clinicas.
+
+LIMITACIONES IMPORTANTES
+------------------------
+- RF012: el registro de raza "Desconocida" funciona sin cambios de base;
+  SEXO DESCONOCIDO y FECHA DE NACIMIENTO DESCONOCIDA NO estan
+  implementados: el enum de Java y la columna SQL actual exigen valores.
+  Hacerlos realmente opcionales requiere cambios coordinados en Java y SQL.
+  No hemos falsificado una fecha ni un sexo.
+- La compatibilidad veterinario/tipo se valida en la interfaz de C#;
+  para hacerla inviolable por consumidores REST externos hay que aplicar
+  la misma validacion en Java. Se mantuvo Java intacto por solicitud.
+- Prevenir DOS registros simultaneos de atencion para una cita y que
+  la actualizacion de estado ATENDIDA sea atomica requiere Java/SQL.
+  Desde C# se deshabilita Guardar y se comprueba duplicidad cuando
+  los servicios responden, pero son operaciones separadas.
+- No se implemento el inicio de sesion real ni la exportacion PDF.
+- No se pudo ejecutar compilacion .NET 10 ni probar contra GlassFish
+  en este entorno. Se revisaron rutas, firmas REST, llaves de codigo,
+  estructura de archivos, y que Java/SQL permanecen identicos.
+
+PRUEBAS RECOMENDADAS EN VISUAL STUDIO + GLASSFISH
+------------------------------------------------
+A. Compilar solucion MascovetSolution.slnx con .NET 10.
+B. Confirmar y cancelar una cita historica y una nueva.
+C. Intentar un horario superpuesto y aceptar el pop-up.
+D. Registrar consulta en cita CONFIRMADA: verificar ATENDIDA y que
+   desaparece del selector, luego abrir Ver/Editar desde Mi agenda.
+E. Registrar vacunacion y volver a verla, editarla y anularla cuando
+   la cita ya esta ATENDIDA.
+F. Inactivar una consulta desde Administrador > Atenciones.
+G. Buscar historial por propietario y una de sus mascotas, entre fechas.
+H. Verificar la tabla de especialidad y servicio al reservar.

@@ -1,0 +1,242 @@
+@page "/veterinario"
+@layout MainLayout
+@inject CitaRestService CitasREST
+@inject MascotaRestService MascotasREST
+@inject VeterinarioRestService VeterinariosREST
+@inject UserContext User
+@inject ToastService Toast
+
+@using MascovetWA.Components.Layout
+@using MascovetWA.Components.DesignSystem
+@using MascovetWA.Components.DesignSystem.Buttons
+@using MascovetWA.Components.DesignSystem.DataDisplay
+@using MascovetWA.Components.DesignSystem.Icons
+
+<PageTitle>Inicio del veterinario | Mascovet</PageTitle>
+
+<div class="vet-dashboard">
+
+    <header class="vet-header">
+        <div class="vet-header__heading">
+            <span class="vet-eyebrow">ATENCIÓN VETERINARIA</span>
+
+            <h1>Panel del veterinario</h1>
+
+            <p>
+                Consulta tu agenda, registra las atenciones clínicas
+                y mantén actualizada la información de tus pacientes.
+            </p>
+        </div>
+
+        <AppButton Href="/veterinario/agenda"
+                   Icon="calendar">
+            Consultar mi agenda
+        </AppButton>
+    </header>
+
+    <section class="vet-agenda-section"
+             aria-labelledby="vet-agenda-heading">
+
+        <div class="vet-section-heading">
+            <div>
+                <h2 id="vet-agenda-heading">Mis citas programadas</h2>
+
+                <p>
+                    Consulta las citas asignadas y accede a sus atenciones.
+                </p>
+            </div>
+
+            <AppButton Href="/veterinario/agenda"
+                       Variant="ButtonVariant.Tertiary"
+                       Size="ButtonSize.Small">
+                Ver agenda completa
+            </AppButton>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(errorCarga))
+        {
+            <p role="alert" class="ms-small-note">@errorCarga</p>
+        }
+        <AppCard class="vet-agenda-card"
+                 Title="Citas programadas"
+                 Subtitle="Agenda de atención veterinaria">
+
+            <ChildContent>
+                <AppTable Items="citasInicio" ColumnCount="5" Caption="Próximas atenciones">
+                    <HeaderContent><th>Fecha</th><th>Hora</th><th>Mascota</th><th>Tipo</th><th>Acciones</th></HeaderContent>
+                    <RowTemplate Context="c">
+                        <td>@c.Fecha</td><td>@c.Hora</td><td>@c.Mascota</td><td>@c.Tipo</td>
+                        <td>
+                            @if (c.Tipo == "VACUNACION")
+                            {
+                                <AppButton Href="@($"/veterinario/vacunas?cita={c.Id}")" Size="ButtonSize.Small">Registrar vacunación</AppButton>
+                            }
+                            else
+                            {
+                                <AppButton Href="@($"/veterinario/atencion?cita={c.Id}")" Size="ButtonSize.Small">Registrar atención</AppButton>
+                            }
+                        </td>
+                    </RowTemplate>
+                </AppTable>
+            </ChildContent>
+
+            <Footer>
+                <div class="vet-agenda-card__footer">
+                    <span>
+                        La gestión de las citas disponible
+                        desde el módulo de agenda.
+                    </span>
+
+                    <AppButton Href="/veterinario/agenda"
+                               Variant="ButtonVariant.Secondary"
+                               Size="ButtonSize.Small">
+                        Ir a mi agenda
+                    </AppButton>
+                </div>
+            </Footer>
+
+        </AppCard>
+    </section>
+
+    <section class="vet-modules-section"
+             aria-labelledby="vet-modules-heading">
+
+        <div class="vet-section-heading">
+            <div>
+                <h2 id="vet-modules-heading">Gestión clínica</h2>
+
+                <p>
+                    Accede a las herramientas necesarias para
+                    documentar y dar seguimiento a cada paciente.
+                </p>
+            </div>
+        </div>
+
+        <div class="vet-modules-grid">
+
+            <article class="vet-module">
+                <AppCard Title="Historias clínicas"
+                         Subtitle="Registro de atenciones">
+
+                    <ChildContent>
+                        <span class="vet-module__icon">
+                            <AppIcon Name="file-text" Size="25" />
+                        </span>
+
+                        <p>
+                            Consulta cronológicamente las atenciones
+                            anteriores y registra diagnósticos,
+                            observaciones, tratamientos, peso y alergias.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/veterinario/historias"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="file-text">
+                            Consultar historias
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="vet-module">
+                <AppCard Title="Vacunación"
+                         Subtitle="Seguimiento de vacunas">
+
+                    <ChildContent>
+                        <span class="vet-module__icon">
+                            <AppIcon Name="check-circle" Size="25" />
+                        </span>
+
+                        <p>
+                            Registra y consulta las vacunas aplicadas,
+                            las próximas dosis y las observaciones
+                            correspondientes.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/veterinario/vacunas"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="check-circle">
+                            Gestionar vacunación
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+            <article class="vet-module">
+                <AppCard Title="Recetas"
+                         Subtitle="Prescripciones veterinarias">
+
+                    <ChildContent>
+                        <span class="vet-module__icon">
+                            <AppIcon Name="file-text" Size="25" />
+                        </span>
+
+                        <p>
+                            Elabora recetas asociadas a una atención
+                            médica, especificando medicamentos,
+                            dosis, frecuencia, duración e indicaciones.
+                        </p>
+                    </ChildContent>
+
+                    <Footer>
+                        <AppButton Href="/veterinario/recetas"
+                                   Variant="ButtonVariant.Secondary"
+                                   Icon="file-text">
+                            Gestionar recetas
+                        </AppButton>
+                    </Footer>
+                </AppCard>
+            </article>
+
+        </div>
+    </section>
+
+</div>
+
+@code {
+    private sealed record CitaResumen(int Id, string Fecha, string Hora, string Mascota, string Tipo);
+    private List<CitaResumen> citasInicio = new();
+    private string? errorCarga;
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var propios = (await VeterinariosREST.ListarTodosAsync()).Where(v => v.Activo &&
+                !string.IsNullOrWhiteSpace(User.UsuarioVinculado) &&
+                string.Equals(v.NombreUsuario, User.UsuarioVinculado, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (propios.Count != 1)
+            {
+                errorCarga = "La cuenta de prueba no está asociada a un veterinario único en MySQL.";
+                citasInicio.Clear();
+                return;
+            }
+            int idVeterinario = propios[0].IdUsuario;
+            var citas = await CitasREST.ListarTodosAsync();
+            List<MascovetDomain.Mascotas.Mascota> mascotas = new();
+            try { mascotas = await MascotasREST.ListarTodosAsync(); }
+            catch (Exception ex) { Toast.Warning($"No se pudieron cargar los nombres de mascotas: {ex.Message}"); }
+            citasInicio = citas.Where(c => c.Activo && c.Veterinario?.IdUsuario == idVeterinario &&
+                c.Estado == MascovetDomain.Enums.EstadoCita.CONFIRMADA && c.Fecha.HasValue &&
+                c.Fecha.Value.Date >= DateTime.Today)
+                .OrderBy(c => c.Fecha).ThenBy(c => c.Hora).Take(5)
+                .Select(c =>
+                {
+                    int idMascota = c.Mascota?.IdMascota ?? 0;
+                    var mascota = mascotas.FirstOrDefault(m => m.IdMascota == idMascota);
+                    string nombre = mascota?.Nombre ?? (idMascota > 0 ? $"Mascota #{idMascota}" : "Sin mascota");
+                    return new CitaResumen(c.IdCita, c.Fecha?.ToString("dd/MM/yyyy") ?? "",
+                        c.Hora?.ToString("HH:mm") ?? "", nombre,
+                        c.TipoAtencion?.ToString() ?? "");
+                }).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorCarga = $"No se pudo consultar la agenda desde GlassFish: {ex.Message}";
+            Toast.Error(errorCarga);
+        }
+    }
+}

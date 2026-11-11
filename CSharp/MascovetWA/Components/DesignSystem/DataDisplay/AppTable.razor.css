@@ -1,0 +1,43 @@
+.ms-table-wrap {
+    overflow-x: auto;
+    border: var(--ms-border-width) solid var(--ms-color-border);
+    border-radius: var(--ms-radius-control);
+}
+
+.ms-table { width: 100%; border-collapse: collapse; background: var(--ms-color-surface); }
+
+.ms-table ::deep th {
+    padding: var(--ms-space-3) var(--ms-space-4);
+    text-align: left;
+    white-space: nowrap;
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-small);
+    font-weight: var(--ms-font-weight-semibold);
+    border-bottom: var(--ms-border-width) solid var(--ms-color-border);
+}
+
+.ms-table ::deep td {
+    padding: var(--ms-space-3) var(--ms-space-4);
+    border-bottom: var(--ms-border-width) solid var(--ms-color-border);
+    vertical-align: middle;
+}
+
+.ms-table tbody tr:last-child ::deep td { border-bottom: 0; }
+.ms-table tbody tr:hover { background: #F8FBFC; }
+
+.ms-table__message { text-align: center; color: var(--ms-color-text-muted); padding: var(--ms-space-8) var(--ms-space-4); }
+
+.ms-table__spinner {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-right: var(--ms-space-2);
+    vertical-align: -2px;
+    border: 2px solid var(--ms-color-primary);
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: ms-table-spin 0.7s linear infinite;
+}
+
+@keyframes ms-table-spin { to { transform: rotate(360deg); } }

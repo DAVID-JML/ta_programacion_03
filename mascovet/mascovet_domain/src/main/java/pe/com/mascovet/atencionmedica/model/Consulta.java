@@ -1,7 +1,6 @@
 package pe.com.mascovet.atencionmedica.model;
 
 import pe.com.mascovet.cita.model.Cita;
-import pe.com.mascovet.mascota.model.Mascota;
 import pe.com.mascovet.receta.model.Receta;
 
 import java.time.LocalTime;
@@ -16,9 +15,9 @@ public class Consulta extends AtencionMedica {
 
     public Consulta(int idAtencion, String observaciones,
                     LocalTime horaInicio, LocalTime horaFin,
-                    Mascota mascota, Cita cita, Receta receta, double pesoActual, String alergias,
+                    Cita cita, Receta receta, double pesoActual, String alergias,
                     String motivoConsulta, String diagnostico, String tratamiento) {
-        super(idAtencion, observaciones, horaInicio, horaFin, mascota, cita, receta, pesoActual, alergias);
+        super(idAtencion, observaciones, horaInicio, horaFin, cita, receta, pesoActual, alergias);
         this.motivoConsulta = motivoConsulta;
         this.diagnostico = diagnostico;
         this.tratamiento = tratamiento;

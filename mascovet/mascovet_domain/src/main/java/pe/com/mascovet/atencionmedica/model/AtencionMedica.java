@@ -11,23 +11,22 @@ public abstract class AtencionMedica {
     private String observaciones;
     private LocalTime horaInicio;
     private LocalTime horaFin;
-    private Mascota mascota;
     private Cita cita;
     private Receta receta;
     private double pesoActual;
     private String alergias;
+    private boolean activo = true;
 
     public AtencionMedica() {
     }
 
     public AtencionMedica(int idAtencion, String observaciones,
                           LocalTime horaInicio, LocalTime horaFin,
-                          Mascota mascota, Cita cita, Receta receta, double pesoActual, String alergias) {
+                          Cita cita, Receta receta, double pesoActual, String alergias) {
         this.idAtencion = idAtencion;
         this.observaciones = observaciones;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
-        this.mascota = mascota;
         this.cita = cita;
         this.receta = receta;
         this.pesoActual = pesoActual;
@@ -67,11 +66,15 @@ public abstract class AtencionMedica {
     }
 
     public Mascota getMascota() {
-        return mascota;
+        return cita == null ? null : cita.getMascota();
     }
 
-    public void setMascota(Mascota mascota) {
-        this.mascota = mascota;
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public Cita getCita() {

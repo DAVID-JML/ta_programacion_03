@@ -4,53 +4,27 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class TransactionContext {
-    private static final ThreadLocal<Connection> connectionHolder = new ThreadLocal<>();
-
     private TransactionContext() {
     }
 
     public static Connection getConnection() throws SQLException {
-        Connection conn = connectionHolder.get();
-        if (conn == null) {
-            conn = DBManager.getInstance().getConnection();
-            conn.setAutoCommit(false);
-            connectionHolder.set(conn);
-        }
-        return conn;
+        return DBManager.getInstance().iniciarTransaccion();
     }
 
     public static Connection getCurrentConnection() {
-        return connectionHolder.get();
+        if (DBManager.getInstance().conexionTransaccionalActual() == null) return null;
+        return DBManager.getInstance().getConnection();
     }
 
     public static void commit() throws SQLException {
-        Connection conn = connectionHolder.get();
-        if (conn != null) {
-            conn.commit();
-        }
+        DBManager.getInstance().confirmarTransaccion();
     }
 
     public static void rollback() {
-        Connection conn = connectionHolder.get();
-        if (conn != null) {
-            try {
-                conn.rollback();
-            } catch (SQLException ex) {
-                System.out.println(ex.getMessage());
-            }
-        }
+        DBManager.getInstance().revertirTransaccion();
     }
 
     public static void close() {
-        Connection conn = connectionHolder.get();
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException ex) {
-                System.out.println(ex.getMessage());
-            } finally {
-                connectionHolder.remove();
-            }
-        }
+        DBManager.getInstance().cerrarTransaccion();
     }
 }

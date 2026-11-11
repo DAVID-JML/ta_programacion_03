@@ -8,9 +8,8 @@ import pe.com.mascovet.receta.model.Medicamento;
 import pe.com.mascovet.receta.model.Receta;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,28 +18,29 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
 
     @Override
     public int insertar(DetalleReceta detalle) {
-        String sql = "INSERT INTO DETALLE_RECETA (id_receta, id_medicamento, dosis, frecuencia, duracion, montoTotal) VALUES (?, ?, ?, ?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, detalle.getReceta().getIdReceta());
-                ps.setInt(2, detalle.getMedicamento().getIdMedicamento());
-                ps.setString(3, detalle.getDosis());
-                ps.setString(4, detalle.getFrecuencia());
-                ps.setString(5, detalle.getDuracion());
+        String sql = "{call INSERTAR_DETALLERECETA(?, ?, ?, ?, ?, ?, ?)}";
+        Connection conexion = TransactionContext.getCurrentConnection();
+        if (conexion == null)
+            conexion = DBManager.getInstance().getConnection();
+        try (Connection con = conexion) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_detalle_receta", Types.INTEGER);
+                cs.setInt("_id_receta", detalle.getReceta().getIdReceta());
+                cs.setInt("_id_medicamento", detalle.getMedicamento().getIdMedicamento());
+                cs.setString("_dosis", detalle.getDosis());
+                cs.setString("_frecuencia", detalle.getFrecuencia());
+                cs.setString("_duracion", detalle.getDuracion());
                 if (detalle.getMontoTotal() == null) {
-                    ps.setNull(6, Types.DOUBLE);
+                    cs.setNull("_montototal", Types.DOUBLE);
                 } else {
-                    ps.setDouble(6, detalle.getMontoTotal());
+                    cs.setDouble("_montototal", detalle.getMontoTotal());
                 }
-                ps.executeUpdate();
+                cs.executeUpdate();
 
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        detalle.setIdDetalleReceta(rs.getInt(1));
+                if (cs.getInt("_id_detalle_receta") > 0) {
+                        detalle.setIdDetalleReceta(cs.getInt("_id_detalle_receta"));
                         return detalle.getIdDetalleReceta();
                     }
-                }
                 return 0;
             } catch (Exception ex) {
                 System.out.println("ERROR AL INSERTAR DETALLE DE RECETA: " + ex.getMessage());
@@ -54,21 +54,23 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
 
     @Override
     public int modificar(DetalleReceta detalle) {
-        String sql = "UPDATE DETALLE_RECETA SET id_receta=?, id_medicamento=?, dosis=?, frecuencia=?, duracion=?, montoTotal=? WHERE id_detalle_receta=?";
+        String sql = "{call MODIFICAR_DETALLERECETA(?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, detalle.getReceta().getIdReceta());
-            ps.setInt(2, detalle.getMedicamento().getIdMedicamento());
-            ps.setString(3, detalle.getDosis());
-            ps.setString(4, detalle.getFrecuencia());
-            ps.setString(5, detalle.getDuracion());
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_receta", detalle.getReceta().getIdReceta());
+            cs.setInt("_id_medicamento", detalle.getMedicamento().getIdMedicamento());
+            cs.setString("_dosis", detalle.getDosis());
+            cs.setString("_frecuencia", detalle.getFrecuencia());
+            cs.setString("_duracion", detalle.getDuracion());
             if (detalle.getMontoTotal() == null) {
-                ps.setNull(6, Types.DOUBLE);
+                cs.setNull("_montototal", Types.DOUBLE);
             } else {
-                ps.setDouble(6, detalle.getMontoTotal());
+                cs.setDouble("_montototal", detalle.getMontoTotal());
             }
-            ps.setInt(7, detalle.getIdDetalleReceta());
-            return ps.executeUpdate();
+            cs.setInt("_id_detalle_receta", detalle.getIdDetalleReceta());
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR DETALLE DE RECETA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -77,11 +79,13 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
 
     @Override
     public int eliminar(int idDetalle) {
-        String sql = "DELETE FROM DETALLE_RECETA WHERE id_detalle_receta=?";
+        String sql = "{call ELIMINAR_DETALLERECETA(?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idDetalle);
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_detalle_receta", idDetalle);
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR DETALLE DE RECETA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -91,13 +95,11 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
     @Override
     public DetalleReceta obtenerPorId(int idDetalle) {
         DetalleReceta detalle = null;
-        String sql = "SELECT d.id_detalle_receta, d.id_receta, d.id_medicamento, d.dosis, d.frecuencia, d.duracion, d.montoTotal, " +
-                "m.nombre, m.descripcion, m.monto FROM DETALLE_RECETA d " +
-                "INNER JOIN MEDICAMENTO m ON d.id_medicamento=m.id_medicamento WHERE d.id_detalle_receta=?";
+        String sql = "{call LISTAR_DETALLERECETA_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idDetalle);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_detalle_receta", idDetalle);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     detalle = new DetalleReceta();
                     detalle.setIdDetalleReceta(rs.getInt("id_detalle_receta"));
@@ -108,6 +110,7 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
                     medicamento.setIdMedicamento(rs.getInt("id_medicamento"));
                     medicamento.setNombre(rs.getString("nombre"));
                     medicamento.setDescripcion(rs.getString("descripcion"));
+                    medicamento.setFechaVencimiento(rs.getDate("fecha_vencimiento"));
                     medicamento.setMonto(rs.getDouble("monto"));
                     detalle.setMedicamento(medicamento);
                     detalle.setDosis(rs.getString("dosis"));
@@ -127,12 +130,10 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
     @Override
     public List<DetalleReceta> listarTodos() {
         List<DetalleReceta> detalles = new ArrayList<>();
-        String sql = "SELECT d.id_detalle_receta, d.id_receta, d.id_medicamento, d.dosis, d.frecuencia, d.duracion, d.montoTotal, " +
-                "m.nombre, m.descripcion, m.monto FROM DETALLE_RECETA d " +
-                "INNER JOIN MEDICAMENTO m ON d.id_medicamento=m.id_medicamento";
+        String sql = "{call LISTAR_DETALLERECETA_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 DetalleReceta detalle = new DetalleReceta();
                 detalle.setIdDetalleReceta(rs.getInt("id_detalle_receta"));
@@ -143,6 +144,7 @@ public class DetalleRecetaImpl implements DetalleRecetaDAO {
                 medicamento.setIdMedicamento(rs.getInt("id_medicamento"));
                 medicamento.setNombre(rs.getString("nombre"));
                 medicamento.setDescripcion(rs.getString("descripcion"));
+                    medicamento.setFechaVencimiento(rs.getDate("fecha_vencimiento"));
                 medicamento.setMonto(rs.getDouble("monto"));
                 detalle.setMedicamento(medicamento);
                 detalle.setDosis(rs.getString("dosis"));

@@ -10,6 +10,8 @@ import java.util.List;
 public class Veterinario extends Usuario {
     private String numeroColegiatura;
     private Especialidad especialidad;
+    private String correo;
+    private String telefono;
     private final List<Cita> citas;
     private final List<HorarioAtencion> horariosAtencion;
 
@@ -18,10 +20,11 @@ public class Veterinario extends Usuario {
         horariosAtencion = new ArrayList<>();
     }
 
-    public Veterinario(int idUsuario, String dni, String nombre, String apellido,
+    public Veterinario(int idUsuario, String dni, String nombre, String apellidoPaterno, String apellidoMaterno,
                        String nombreUsuario, String contrasena, boolean activo,
                        String numeroColegiatura, Especialidad especialidad) {
-        super(idUsuario, dni, nombre, apellido, nombreUsuario, contrasena, activo);
+        super(idUsuario, dni, nombre, apellidoPaterno, apellidoMaterno,
+                nombreUsuario, contrasena, activo);
         this.numeroColegiatura = numeroColegiatura;
         this.especialidad = especialidad;
         citas = new ArrayList<>();
@@ -42,6 +45,22 @@ public class Veterinario extends Usuario {
 
     public void setEspecialidad(Especialidad especialidad) {
         this.especialidad = especialidad;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     public List<Cita> getCitas() {

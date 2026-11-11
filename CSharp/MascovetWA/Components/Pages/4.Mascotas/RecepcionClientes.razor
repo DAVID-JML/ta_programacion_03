@@ -1,0 +1,45 @@
+@page "/recepcion/clientes"
+@inject ClienteRestService ClientesREST
+@layout MainLayout
+
+<PageTitle>Clientes | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div><h1>Clientes</h1><p>Consulta los datos de los clientes y accede a sus mascotas y citas.</p></div>
+        <AppButton Href="/recepcion/clientes/nuevo" Icon="plus">Registrar cliente</AppButton>
+    </header>
+    <AppCard Title="Directorio de clientes" Subtitle="Selecciona un cliente para consultar su información y sus mascotas.">
+        <AppSearchInput Label="Buscar clientes" Placeholder="Nombre, DNI o correo" @bind-Value="Busqueda" />
+        @if (Error is not null) { <p class="ms-small-note">@Error</p> }
+        <AppTable Items="ClientesFiltrados" Caption="Clientes de la clínica" ColumnCount="6">
+            <HeaderContent><th>Cliente</th><th>DNI</th><th>Teléfono</th><th>Correo electrónico</th><th>Estado</th><th>Acciones</th></HeaderContent>
+            <RowTemplate Context="c">
+                <td>@c.Nombre</td><td>@c.Dni</td><td>@c.Telefono</td><td>@c.Correo</td>
+                <td><AppBadge Variant="@(c.Activo ? SemanticVariant.Success : SemanticVariant.Warning)" ShowIcon="false">@(c.Activo ? "Activo" : "Inactivo")</AppBadge></td>
+                <td><div class="ms-inline-actions">
+                    <AppButton Href="@($"/recepcion/clientes/{c.Id}")" Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Ver ficha</AppButton>
+                    <AppButton Href="@($"/recepcion/clientes/editar/{c.Id}")" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Editar</AppButton>
+                    <AppButton Href="@($"/recepcion/mascotas?cliente={c.Id}")" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Mascotas</AppButton>
+                </div></td>
+            </RowTemplate>
+            <EmptyContent><AppEmptyState Icon="search" Title="Sin resultados" Description="Prueba con otro nombre o documento." /></EmptyContent>
+        </AppTable>
+    </AppCard>
+</div>
+@code {
+    private string? Busqueda;
+    private string? Error;
+    private sealed record ClienteFila(int Id, string Nombre, string Dni, string Telefono, string Correo, bool Activo);
+    private List<ClienteFila> clientes = new();
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            clientes = (await ClientesREST.ListarTodosAsync()).Select(c => new ClienteFila(c.IdUsuario,
+                $"{c.Nombre} {c.ApellidoPaterno} {c.ApellidoMaterno}".Trim(), c.Dni ?? "", c.Telefono ?? "", c.Correo ?? "", c.Activo)).ToList();
+        }
+        catch (Exception ex) { Error = $"No se pudieron cargar los clientes: {ex.Message}"; }
+    }
+    private IEnumerable<ClienteFila> ClientesFiltrados => clientes.Where(c => string.IsNullOrWhiteSpace(Busqueda) ||
+        $"{c.Nombre} {c.Dni} {c.Telefono} {c.Correo}".Contains(Busqueda.Trim(), StringComparison.OrdinalIgnoreCase));
+}

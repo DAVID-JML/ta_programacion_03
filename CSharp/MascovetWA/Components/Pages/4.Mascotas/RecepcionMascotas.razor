@@ -1,0 +1,71 @@
+@page "/recepcion/mascotas"
+@inject MascotaRestService MascotasREST
+@inject ClienteRestService ClientesREST
+@layout MainLayout
+
+<PageTitle>Mascotas | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div><h1>Mascotas</h1><p>Consulta las mascotas de los clientes, sus fichas y cartillas de vacunación.</p></div>
+        <AppButton Href="/recepcion/mascotas/nueva" Icon="plus">Registrar mascota</AppButton>
+    </header>
+    <AppCard Title="Mascotas registradas">
+        <AppSearchInput Label="Buscar mascota" Placeholder="Mascota, especie o propietario" @bind-Value="Busqueda" />
+        @if (Cliente.HasValue) { <p class="ms-small-note">Mostrando mascotas del cliente seleccionado. <a href="/recepcion/mascotas">Ver todas</a></p> }
+        @if (Error is not null) { <p class="ms-small-note">No se pudieron cargar las mascotas: @Error</p> }
+        <AppTable Items="MascotasFiltradas" Caption="Mascotas de clientes" ColumnCount="5">
+            <HeaderContent><th>Mascota</th><th>Especie</th><th>Propietario</th><th>Estado</th><th>Acciones</th></HeaderContent>
+            <RowTemplate Context="m">
+                <td>@m.Nombre</td><td>@m.Especie</td>
+                <td>
+                    @if (m.IdCliente > 0) { <a href="@($"/recepcion/clientes/{m.IdCliente}")">@m.Propietario</a> }
+                    else { @m.Propietario }
+                </td>
+                <td><AppBadge Variant="@(m.Activo ? SemanticVariant.Success : SemanticVariant.Warning)" ShowIcon="false">@(m.Activo ? "Activa" : "Inactiva")</AppBadge></td>
+                <td><div class="ms-inline-actions">
+                    <AppButton Href="@($"/recepcion/mascotas/{m.Id}")" Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Ficha</AppButton>
+                    <AppButton Href="@($"/recepcion/mascotas/{m.Id}/cartilla")" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Cartilla</AppButton>
+                    <AppButton Href="@($"/recepcion/mascotas/{m.Id}/editar")" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Editar / inactivar</AppButton>
+                </div></td>
+            </RowTemplate>
+            <EmptyContent><AppEmptyState Icon="search" Title="Sin mascotas" Description="No se encontraron mascotas con esos criterios." /></EmptyContent>
+        </AppTable>
+    </AppCard>
+</div>
+@code {
+    [SupplyParameterFromQuery(Name = "cliente")] private int? Cliente { get; set; }
+    private string? Busqueda;
+    private string? Error;
+    private sealed record MascotaFila(int Id, int IdCliente, string Nombre, string Especie, string Propietario, bool Activo);
+    private List<MascotaFila> mascotas = new();
+    protected override async Task OnInitializedAsync()
+    {
+        // El REST de Mascota incluye el ID del cliente, pero no sus nombres.
+        // Consultamos ClienteRS y relacionamos ambos objetos por su ID.
+        List<MascovetDomain.Usuarios.Cliente> clientes = new();
+        try { clientes = await ClientesREST.ListarTodosAsync(); }
+        catch (Exception ex) { Error = $"No se pudieron consultar los propietarios: {ex.Message}"; }
+        try
+        {
+            mascotas = (await MascotasREST.ListarTodosAsync()).Select(m =>
+            {
+                int idCliente = m.Cliente?.IdUsuario ?? 0;
+                var cliente = clientes.FirstOrDefault(c => c.IdUsuario == idCliente);
+                var nombre = cliente is not null
+                    ? $"{cliente.Nombre} {cliente.ApellidoPaterno} {cliente.ApellidoMaterno}".Trim()
+                    : $"{m.Cliente?.Nombre} {m.Cliente?.ApellidoPaterno} {m.Cliente?.ApellidoMaterno}".Trim();
+                if (string.IsNullOrWhiteSpace(nombre))
+                    nombre = idCliente > 0 ? $"Cliente #{idCliente}" : "Propietario no asociado";
+                return new MascotaFila(m.IdMascota, idCliente, m.Nombre ?? "",
+                    m.Especie?.ToString() ?? "", nombre, m.Activo);
+            }).ToList();
+        }
+        catch (Exception ex)
+        {
+            Error = $"No se pudieron consultar las mascotas: {ex.Message}";
+        }
+    }
+    private IEnumerable<MascotaFila> MascotasFiltradas => mascotas.Where(m =>
+        m.Activo && (!Cliente.HasValue || m.IdCliente == Cliente) &&
+        (string.IsNullOrWhiteSpace(Busqueda) || $"{m.Nombre} {m.Especie} {m.Propietario}".Contains(Busqueda.Trim(), StringComparison.OrdinalIgnoreCase)));
+}

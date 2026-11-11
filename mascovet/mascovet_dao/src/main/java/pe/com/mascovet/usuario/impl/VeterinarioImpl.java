@@ -7,34 +7,38 @@ import pe.com.mascovet.usuario.dao.VeterinarioDAO;
 import pe.com.mascovet.usuario.model.Veterinario;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VeterinarioImpl implements VeterinarioDAO {
 
-    private final UsuarioImpl usuarioDao = new UsuarioImpl();
-
     @Override
     public int insertar(Veterinario veterinario) {
-        String sql = "INSERT INTO VETERINARIO (id_usuario, num_colegiatura, especialidad) VALUES (?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                int idUsuario = usuarioDao.insertarUsuarioBase(veterinario, con);
-                if (idUsuario <= 0) {
-                    throw new RuntimeException("No se pudo generar el identificador del usuario");
-                }
-                ps.setInt(1, idUsuario);
-                ps.setString(2, veterinario.getNumeroColegiatura());
-                ps.setString(3, veterinario.getEspecialidad().name());
-                ps.executeUpdate();
-                veterinario.setIdUsuario(idUsuario);
-                return veterinario.getIdUsuario();
-            } catch (Exception ex) {
-                System.out.println("ERROR AL INSERTAR VETERINARIO: " + ex.getMessage());
-                throw new RuntimeException(ex);
+        String sql = "{call INSERTAR_VETERINARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        Connection conexion = TransactionContext.getCurrentConnection();
+        if (conexion == null)
+            conexion = DBManager.getInstance().getConnection();
+        try (Connection con = conexion) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_usuario", Types.INTEGER);
+                cs.setString("_dni", veterinario.getDni());
+                cs.setString("_nombre", veterinario.getNombre());
+                cs.setString("_apellido_paterno", veterinario.getApellidoPaterno());
+                cs.setString("_apellido_materno", veterinario.getApellidoMaterno());
+                cs.setString("_nombre_usuario", veterinario.getNombreUsuario());
+                cs.setString("_contrasena", veterinario.getContrasena());
+                cs.setBoolean("_activo", veterinario.isActivo());
+                cs.setString("_num_colegiatura", veterinario.getNumeroColegiatura());
+                cs.setString("_especialidad", veterinario.getEspecialidad().name());
+                cs.setString("_correo", veterinario.getCorreo());
+                cs.setString("_telefono", veterinario.getTelefono());
+                cs.executeUpdate();
+                int idGenerado = cs.getInt("_id_usuario");
+                veterinario.setIdUsuario(idGenerado);
+                return idGenerado;
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR VETERINARIO: " + ex.getMessage());
@@ -44,19 +48,24 @@ public class VeterinarioImpl implements VeterinarioDAO {
 
     @Override
     public int modificar(Veterinario veterinario) {
-        String sql = "UPDATE VETERINARIO SET num_colegiatura=?, especialidad=? WHERE id_usuario=?";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                int filasUsuario = usuarioDao.modificarUsuarioBase(veterinario, con);
-                ps.setString(1, veterinario.getNumeroColegiatura());
-                ps.setString(2, veterinario.getEspecialidad().name());
-                ps.setInt(3, veterinario.getIdUsuario());
-                int filasVeterinario = ps.executeUpdate();
-                return (filasUsuario > 0 && filasVeterinario > 0) ? 1 : 0;
-            } catch (Exception ex) {
-                System.out.println("ERROR AL MODIFICAR VETERINARIO: " + ex.getMessage());
-                throw new RuntimeException(ex);
+        String sql = "{call MODIFICAR_VETERINARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setString("_dni", veterinario.getDni());
+                cs.setString("_nombre", veterinario.getNombre());
+                cs.setString("_apellido_paterno", veterinario.getApellidoPaterno());
+                cs.setString("_apellido_materno", veterinario.getApellidoMaterno());
+                cs.setString("_nombre_usuario", veterinario.getNombreUsuario());
+                cs.setString("_contrasena", veterinario.getContrasena());
+                cs.setBoolean("_activo", veterinario.isActivo());
+                cs.setInt("_id_usuario", veterinario.getIdUsuario());
+                cs.setString("_num_colegiatura", veterinario.getNumeroColegiatura());
+                cs.setString("_especialidad", veterinario.getEspecialidad().name());
+                cs.setString("_correo", veterinario.getCorreo());
+                cs.setString("_telefono", veterinario.getTelefono());
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR VETERINARIO: " + ex.getMessage());
@@ -66,11 +75,14 @@ public class VeterinarioImpl implements VeterinarioDAO {
 
     @Override
     public int eliminar(int idVeterinario) {
-        String sql = "UPDATE USUARIO SET activo=0 WHERE id_usuario=?";
-        try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idVeterinario);
-            return ps.executeUpdate();
+        String sql = "{call ELIMINAR_VETERINARIO(?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setInt("_id_usuario", idVeterinario);
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
+            }
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR VETERINARIO: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -80,22 +92,23 @@ public class VeterinarioImpl implements VeterinarioDAO {
     @Override
     public Veterinario obtenerPorId(int idVeterinario) {
         Veterinario veterinario = null;
-        String sql = "SELECT u.id_usuario, u.dni, u.nombre, u.apellido, u.nombre_usuario, u.contrasena, u.activo, " +
-                "v.num_colegiatura, v.especialidad FROM USUARIO u INNER JOIN VETERINARIO v ON u.id_usuario=v.id_usuario " +
-                "WHERE u.id_usuario=?";
+        String sql = "{call LISTAR_VETERINARIO_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idVeterinario);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_usuario", idVeterinario);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     veterinario = new Veterinario();
                     veterinario.setIdUsuario(rs.getInt("id_usuario"));
                     veterinario.setDni(rs.getString("dni"));
                     veterinario.setNombre(rs.getString("nombre"));
-                    veterinario.setApellido(rs.getString("apellido"));
+                    veterinario.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    veterinario.setApellidoMaterno(rs.getString("apellido_materno"));
                     veterinario.setNombreUsuario(rs.getString("nombre_usuario"));
                     veterinario.setContrasena(rs.getString("contrasena"));
                     veterinario.setActivo(rs.getBoolean("activo"));
+                    veterinario.setCorreo(rs.getString("correo"));
+                    veterinario.setTelefono(rs.getString("telefono"));
                     veterinario.setNumeroColegiatura(rs.getString("num_colegiatura"));
                     veterinario.setEspecialidad(Especialidad.valueOf(rs.getString("especialidad")));
                 }
@@ -110,45 +123,29 @@ public class VeterinarioImpl implements VeterinarioDAO {
     @Override
     public List<Veterinario> listarTodos() {
         List<Veterinario> veterinarios = new ArrayList<>();
-        String sql = "SELECT u.id_usuario, u.dni, u.nombre, u.apellido, u.nombre_usuario, u.contrasena, u.activo, " +
-                "v.num_colegiatura, v.especialidad FROM USUARIO u INNER JOIN VETERINARIO v ON u.id_usuario=v.id_usuario " +
-                "WHERE u.activo=1";
+        String sql = "{call LISTAR_VETERINARIO_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Veterinario veterinario = new Veterinario();
                 veterinario.setIdUsuario(rs.getInt("id_usuario"));
                 veterinario.setDni(rs.getString("dni"));
                 veterinario.setNombre(rs.getString("nombre"));
-                veterinario.setApellido(rs.getString("apellido"));
+                veterinario.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    veterinario.setApellidoMaterno(rs.getString("apellido_materno"));
                 veterinario.setNombreUsuario(rs.getString("nombre_usuario"));
                 veterinario.setContrasena(rs.getString("contrasena"));
                 veterinario.setActivo(rs.getBoolean("activo"));
-                veterinario.setNumeroColegiatura(rs.getString("num_colegiatura"));
+                veterinario.setCorreo(rs.getString("correo"));
+                    veterinario.setTelefono(rs.getString("telefono"));
+                    veterinario.setNumeroColegiatura(rs.getString("num_colegiatura"));
                 veterinario.setEspecialidad(Especialidad.valueOf(rs.getString("especialidad")));
                 veterinarios.add(veterinario);
             }
             return veterinarios;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR VETERINARIOS: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void asignarVeterinarioSP(String dni, String numColegiatura, String especialidad) {
-        String sql = "{CALL asignar_veterinario(?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dni);
-                cs.setString(2, numColegiatura);
-                cs.setString(3, especialidad);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR asignar_veterinario: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

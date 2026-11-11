@@ -21,20 +21,20 @@ public class Mascota {
     private Sexo sexo;
     private final List<Cita> citas;
     private final List<AtencionMedica> atencionesMedicas;
-    private boolean isActivo;
+    private boolean activo = true;
 
     public Mascota() {
-        this.isActivo = true;
+        this.activo = true;
         this.citas = new ArrayList<>();
         this.atencionesMedicas = new ArrayList<>();
     }
 
     public boolean isActivo() {
-        return isActivo;
+        return activo;
     }
 
     public void setActivo(boolean activo) {
-        isActivo = activo;
+        this.activo = activo;
     }
 
     public int getIdMascota() {

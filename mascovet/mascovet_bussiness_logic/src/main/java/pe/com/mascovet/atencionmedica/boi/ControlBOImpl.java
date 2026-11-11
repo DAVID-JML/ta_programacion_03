@@ -4,27 +4,21 @@ import pe.com.mascovet.atencionmedica.bo.IControlBO;
 import pe.com.mascovet.atencionmedica.dao.ControlDAO;
 import pe.com.mascovet.atencionmedica.impl.ControlImpl;
 import pe.com.mascovet.atencionmedica.model.Control;
-import pe.com.mascovet.config.TransactionContext;
-import pe.com.mascovet.cita.dao.CitaDAO;
-import pe.com.mascovet.cita.impl.CitaImpl;
 
 import java.util.List;
 
 public class ControlBOImpl implements IControlBO {
 
     private ControlDAO daoControl;
-    private CitaDAO daoCita;
 
     public ControlBOImpl() {
         daoControl = new ControlImpl();
-        daoCita = new CitaImpl();
     }
 
     private void validarControl(Control control) {
         if (control == null)
             throw new RuntimeException("El control que se quiere registrar es null");
-        if (control.getMascota() == null || control.getMascota().getIdMascota() <= 0)
-            throw new RuntimeException("La mascota asociada al control no es válida");
+
         if (control.getCita() == null || control.getCita().getIdCita() <= 0)
             throw new RuntimeException("La cita asociada al control no es válida");
         if (control.getHoraInicio() == null || control.getHoraFin() == null)
@@ -35,48 +29,27 @@ public class ControlBOImpl implements IControlBO {
             throw new RuntimeException("El peso actual no puede ser negativo");
         if (control.getObservaciones() != null && control.getObservaciones().length() > 255)
             throw new RuntimeException("Las observaciones no deben exceder los 255 caracteres");
-        if (control.getAlergias() != null && control.getAlergias().length() > 255)
+        if (control.getAlergias() != null && control.getAlergias().length() > 500)
             throw new RuntimeException("Las alergias no deben exceder los 500 caracteres");
         if (control.getEvolucion() == null || control.getEvolucion().trim().isEmpty())
             throw new RuntimeException("La evolución es obligatoria");
-        if (control.getEvolucion().length() > 150)
+        if (control.getEvolucion().length() > 500)
             throw new RuntimeException("La evolución no debe exceder los 500 caracteres");
         if (control.getIndicaciones() == null || control.getIndicaciones().trim().isEmpty())
             throw new RuntimeException("Las indicaciones son obligatorias");
-        if (control.getIndicaciones().length() > 255)
+        if (control.getIndicaciones().length() > 500)
             throw new RuntimeException("Las indicaciones no deben exceder los 500 caracteres");
     }
 
     @Override
     public int insertar(Control control) {
         validarControl(control);
-
-        try {
-            daoCita.marcarAtendida(
-                    control.getCita().getIdCita(),
-                    control.getMascota().getIdMascota()
-            );
-
-            int resultado = daoControl.insertar(control);
-
-            if (resultado <= 0) {
-                throw new RuntimeException(
-                        "No se pudo registrar el control"
-                );
-            }
-
-            TransactionContext.commit();
-            return resultado;
-
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException(
-                    "Error al registrar el control", ex
-            );
-
-        } finally {
-            TransactionContext.close();
-        }
+        pe.com.mascovet.cita.model.Cita citaActual = new pe.com.mascovet.cita.boi.CitaBOImpl().obtenerPorId(control.getCita().getIdCita());
+        if (citaActual == null)
+            throw new RuntimeException("La cita está eliminada o no existe");
+        if (citaActual.getEstado() != pe.com.mascovet.enums.model.EstadoCita.CONFIRMADA)
+            throw new RuntimeException("La cita debe estar confirmada para registrar una atención médica");
+        return daoControl.insertar(control);
     }
 
     @Override
@@ -84,17 +57,7 @@ public class ControlBOImpl implements IControlBO {
         validarControl(control);
         if (control.getIdAtencion() <= 0)
             throw new RuntimeException("El identificador del control no es válido");
-
-        try {
-            int resultado = daoControl.modificar(control);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoControl.modificar(control);
     }
 
     @Override
@@ -114,18 +77,5 @@ public class ControlBOImpl implements IControlBO {
         if (idControl <= 0)
             throw new RuntimeException("El identificador del control no es válido");
         return daoControl.obtenerPorId(idControl);
-    }
-
-    @Override
-    public void registrarControlSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String evolucion, String indicaciones) {
-        try {
-            daoControl.registrarControlSP(dniCliente, nombreMascota, fecha, hora, evolucion, indicaciones);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en registrarControlSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

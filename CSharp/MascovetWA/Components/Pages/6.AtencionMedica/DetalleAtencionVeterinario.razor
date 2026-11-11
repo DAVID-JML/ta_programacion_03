@@ -1,0 +1,129 @@
+@page "/veterinario/atenciones/ver/{Id:int}"
+@inject ConsultaRestService ConsultasREST
+@inject ControlRestService ControlesREST
+@inject CirugiaRestService CirugiasREST
+@inject VacunacionRestService VacunacionesREST
+@inject VacunaRestService VacunasREST
+@inject CitaRestService CitasREST
+@inject MascotaRestService MascotasREST
+@inject VeterinarioRestService VeterinariosREST
+@inject RecetaRestService RecetasREST
+@inject ToastService Toast
+@layout MainLayout
+
+<PageTitle>Detalle de atención médica | MascoVet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Detalle de atención médica</h1><p>Información completa del registro y de la cita asociada.</p></div></header>
+    @if (cargando) { <p>Cargando atención...</p> }
+    else if (registro is null)
+    { <AppCard Title="Atención no encontrada"><p>No se encontró una atención de ese tipo y código.</p></AppCard> }
+    else
+    {
+        <AppCard Title="Datos generales">
+            <div class="ms-detail-grid">
+                <div><span>Código</span><strong>AT-@Id</strong></div>
+                <div><span>Tipo</span><strong>@TipoTexto</strong></div>
+                <div><span>Mascota</span><strong>@mascota</strong></div>
+                <div><span>Propietario</span><strong>@propietario</strong></div>
+                <div><span>Veterinario</span><strong>@veterinario</strong></div>
+                <div><span>Fecha de la cita</span><strong>@(cita?.Fecha?.ToString("dd/MM/yyyy")??"Sin fecha")</strong></div>
+                <div><span>Hora de la cita</span><strong>@(cita?.Hora?.ToString("HH:mm")??"—")</strong></div>
+                <div><span>Estado</span><strong>@(registro.Activo?"Activa":"Inactiva")</strong></div>
+                <div><span>Inicio de atención</span><strong>@(registro.HoraInicio?.ToString("HH:mm")??"—")</strong></div>
+                <div><span>Fin de atención</span><strong>@(registro.HoraFin?.ToString("HH:mm")??"—")</strong></div>
+                <div><span>Peso actual (kg)</span><strong>@registro.PesoActual</strong></div>
+                <div><span>Alergias</span><strong>@(registro.Alergias??"Sin registrar")</strong></div>
+                <div><span>Observaciones</span><strong>@(registro.Observaciones??"Sin registrar")</strong></div>
+            </div>
+        </AppCard>
+        <AppCard Title="Detalle clínico">
+            <div class="ms-detail-grid">
+                @if (registro is MascovetDomain.AtencionesMedicas.Consulta consulta)
+                {
+                    <div><span>Motivo de consulta</span><strong>@consulta.MotivoConsulta</strong></div>
+                    <div><span>Diagnóstico</span><strong>@consulta.Diagnostico</strong></div>
+                    <div><span>Tratamiento</span><strong>@consulta.Tratamiento</strong></div>
+                }
+                else if (registro is MascovetDomain.AtencionesMedicas.Control control)
+                {
+                    <div><span>Evolución</span><strong>@control.Evolucion</strong></div>
+                    <div><span>Indicaciones</span><strong>@control.Indicaciones</strong></div>
+                }
+                else if (registro is MascovetDomain.AtencionesMedicas.Cirugia cirugia)
+                {
+                    <div><span>Procedimiento</span><strong>@cirugia.Procedimiento</strong></div>
+                    <div><span>Indicaciones postoperatorias</span><strong>@cirugia.IndicacionesPostOperatorias</strong></div>
+                }
+                else if (registro is MascovetDomain.AtencionesMedicas.Vacunacion vacunacion)
+                {
+                    <div><span>Vacuna aplicada</span><strong>@nombresVacunas</strong></div>
+                    <div><span>Dosis</span><strong>@vacunacion.Dosis</strong></div>
+                    <div><span>Fecha de aplicación</span><strong>@(vacunacion.FechaAplicacion?.ToString("dd/MM/yyyy")??"—")</strong></div>
+                    <div><span>Próxima dosis</span><strong>@(vacunacion.FechaProximaDosis?.ToString("dd/MM/yyyy")??"—")</strong></div>
+                }
+            </div>
+        </AppCard>
+        @if (recetas.Count>0)
+        {
+            <AppCard Title="Recetas asociadas">
+                <AppTable Items="recetas" Caption="Recetas de la atención" ColumnCount="2">
+                    <HeaderContent><th>Fecha</th><th>Indicaciones</th></HeaderContent>
+                    <RowTemplate Context="r"><td>@(r.Fecha?.ToString("dd/MM/yyyy")??"—")</td><td>@r.Indicaciones</td></RowTemplate>
+                </AppTable>
+            </AppCard>
+        }
+        <div class="acciones">
+            @if (registro.Activo)
+            {
+                @if (registro is MascovetDomain.AtencionesMedicas.Vacunacion)
+                { <AppButton Href="@($"/veterinario/vacunas?cita={cita?.IdCita}")">Editar / Anular vacunación</AppButton> }
+                else
+                { <AppButton Href="@($"/veterinario/atencion/{Id}?tipo={tipo}")">Editar atención</AppButton> }
+            }
+            <AppButton Href="/veterinario/agenda" Variant="ButtonVariant.Secondary">Volver a mi agenda</AppButton>
+            <AppButton Href="/veterinario/historias" Variant="ButtonVariant.Tertiary">Historias clínicas</AppButton>
+        </div>
+    }
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+    [SupplyParameterFromQuery(Name="tipo")] private string? TipoSolicitado { get; set; }
+    private string tipo="", mascota="", propietario="", veterinario="", nombresVacunas="";
+    private bool cargando=true;
+    private MascovetDomain.AtencionesMedicas.AtencionMedica? registro;
+    private MascovetDomain.Citas.Cita? cita;
+    private List<MascovetDomain.Recetas.Receta> recetas=new();
+    private string TipoTexto => tipo switch {"CONSULTA"=>"Consulta","CONTROL"=>"Control","CIRUGIA"=>"Cirugía","VACUNACION"=>"Vacunación",_=>tipo};
+
+    protected override async Task OnParametersSetAsync()
+    {
+        cargando=true; registro=null; cita=null; recetas.Clear();
+        try
+        {
+            tipo=(TipoSolicitado??"").Trim().ToUpperInvariant();
+            if(tipo=="CONSULTA") registro=(await ConsultasREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdAtencion==Id && x.Activo);
+            else if(tipo=="CONTROL") registro=(await ControlesREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdAtencion==Id && x.Activo);
+            else if(tipo=="CIRUGIA" || tipo=="CIRUGÍA") registro=(await CirugiasREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdAtencion==Id && x.Activo);
+            else if(tipo=="VACUNACION" || tipo=="VACUNACIÓN") registro=(await VacunacionesREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdAtencion==Id && x.Activo);
+            if(registro is null) return;
+            cita=(await CitasREST.ListarTodosAsync()).FirstOrDefault(c=>c.IdCita==registro.Cita?.IdCita) ?? registro.Cita;
+            int idMascota=cita?.Mascota?.IdMascota??0;
+            var m=(await MascotasREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdMascota==idMascota) ?? cita?.Mascota;
+            mascota=m?.Nombre??$"Mascota #{idMascota}";
+            propietario=$"{m?.Cliente?.Nombre} {m?.Cliente?.ApellidoPaterno}".Trim();
+            var v=(await VeterinariosREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdUsuario==cita?.Veterinario?.IdUsuario) ?? cita?.Veterinario;
+            veterinario=$"{v?.Nombre} {v?.ApellidoPaterno}".Trim();
+            if(registro is MascovetDomain.AtencionesMedicas.Vacunacion vac)
+            {
+                var catalogo=await VacunasREST.ListarTodosAsync();
+                nombresVacunas=string.Join(", ",vac.Vacunas.Select(x=>
+                    catalogo.FirstOrDefault(y=>y.IdVacuna==x.IdVacuna)?.Nombre ?? x.Nombre ?? $"Vacuna #{x.IdVacuna}"));
+                if(string.IsNullOrWhiteSpace(nombresVacunas)) nombresVacunas="Vacuna no asociada";
+            }
+            try { recetas=(await RecetasREST.ListarTodosAsync()).Where(r=>r.Activo && r.AtencionMedica?.IdAtencion==Id).ToList(); }
+            catch { /* La ficha clínica se consulta incluso si el servicio de recetas falla. */ }
+        }
+        catch(Exception ex) {Toast.Error($"No se pudo consultar el detalle: {ex.Message}");}
+        finally {cargando=false;}
+    }
+}

@@ -4,27 +4,21 @@ import pe.com.mascovet.atencionmedica.bo.ICirugiaBO;
 import pe.com.mascovet.atencionmedica.dao.CirugiaDAO;
 import pe.com.mascovet.atencionmedica.impl.CirugiaImpl;
 import pe.com.mascovet.atencionmedica.model.Cirugia;
-import pe.com.mascovet.config.TransactionContext;
-import pe.com.mascovet.cita.dao.CitaDAO;
-import pe.com.mascovet.cita.impl.CitaImpl;
 
 import java.util.List;
 
 public class CirugiaBOImpl implements ICirugiaBO {
 
     private CirugiaDAO daoCirugia;
-    private CitaDAO daoCita;
 
     public CirugiaBOImpl() {
         daoCirugia = new CirugiaImpl();
-        daoCita = new CitaImpl();
     }
 
     private void validarCirugia(Cirugia cirugia) {
         if (cirugia == null)
             throw new RuntimeException("La cirugía que se quiere registrar es null");
-        if (cirugia.getMascota() == null || cirugia.getMascota().getIdMascota() <= 0)
-            throw new RuntimeException("La mascota asociada a la cirugía no es válida");
+
         if (cirugia.getCita() == null || cirugia.getCita().getIdCita() <= 0)
             throw new RuntimeException("La cita asociada a la cirugía no es válida");
         if (cirugia.getHoraInicio() == null || cirugia.getHoraFin() == null)
@@ -35,48 +29,27 @@ public class CirugiaBOImpl implements ICirugiaBO {
             throw new RuntimeException("El peso actual no puede ser negativo");
         if (cirugia.getObservaciones() != null && cirugia.getObservaciones().length() > 255)
             throw new RuntimeException("Las observaciones no deben exceder los 255 caracteres");
-        if (cirugia.getAlergias() != null && cirugia.getAlergias().length() > 255)
+        if (cirugia.getAlergias() != null && cirugia.getAlergias().length() > 500)
             throw new RuntimeException("Las alergias no deben exceder los 500 caracteres");
         if (cirugia.getProcedimiento() == null || cirugia.getProcedimiento().trim().isEmpty())
             throw new RuntimeException("El procedimiento es obligatorio");
-        if (cirugia.getProcedimiento().length() > 150)
+        if (cirugia.getProcedimiento().length() > 500)
             throw new RuntimeException("El procedimiento no debe exceder los 500 caracteres");
         if (cirugia.getIndicacionesPostOperatorias() == null || cirugia.getIndicacionesPostOperatorias().trim().isEmpty())
             throw new RuntimeException("Las indicaciones postoperatorias son obligatorias");
-        if (cirugia.getIndicacionesPostOperatorias().length() > 255)
+        if (cirugia.getIndicacionesPostOperatorias().length() > 500)
             throw new RuntimeException("Las indicaciones postoperatorias no deben exceder los 500 caracteres");
     }
 
     @Override
     public int insertar(Cirugia cirugia) {
         validarCirugia(cirugia);
-
-        try {
-            daoCita.marcarAtendida(
-                    cirugia.getCita().getIdCita(),
-                    cirugia.getMascota().getIdMascota()
-            );
-
-            int resultado = daoCirugia.insertar(cirugia);
-
-            if (resultado <= 0) {
-                throw new RuntimeException(
-                        "No se pudo registrar la cirugía"
-                );
-            }
-
-            TransactionContext.commit();
-            return resultado;
-
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException(
-                    "Error al registrar la cirugía", ex
-            );
-
-        } finally {
-            TransactionContext.close();
-        }
+        pe.com.mascovet.cita.model.Cita citaActual = new pe.com.mascovet.cita.boi.CitaBOImpl().obtenerPorId(cirugia.getCita().getIdCita());
+        if (citaActual == null)
+            throw new RuntimeException("La cita está eliminada o no existe");
+        if (citaActual.getEstado() != pe.com.mascovet.enums.model.EstadoCita.CONFIRMADA)
+            throw new RuntimeException("La cita debe estar confirmada para registrar una atención médica");
+        return daoCirugia.insertar(cirugia);
     }
 
     @Override
@@ -84,17 +57,7 @@ public class CirugiaBOImpl implements ICirugiaBO {
         validarCirugia(cirugia);
         if (cirugia.getIdAtencion() <= 0)
             throw new RuntimeException("El identificador de la cirugía no es válido");
-
-        try {
-            int resultado = daoCirugia.modificar(cirugia);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoCirugia.modificar(cirugia);
     }
 
     @Override
@@ -114,18 +77,5 @@ public class CirugiaBOImpl implements ICirugiaBO {
         if (idCirugia <= 0)
             throw new RuntimeException("El identificador de la cirugía no es válido");
         return daoCirugia.obtenerPorId(idCirugia);
-    }
-
-    @Override
-    public void registrarCirugiaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String procedimiento, String indicacionesPostOperatorias) {
-        try {
-            daoCirugia.registrarCirugiaSP(dniCliente, nombreMascota, fecha, hora, procedimiento, indicacionesPostOperatorias);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en registrarCirugiaSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

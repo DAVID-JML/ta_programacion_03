@@ -1,14 +1,13 @@
 package pe.com.mascovet.receta.impl;
 
 import pe.com.mascovet.config.DBManager;
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.receta.dao.MedicamentoDAO;
 import pe.com.mascovet.receta.model.Medicamento;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,20 +15,20 @@ public class MedicamentoImpl implements MedicamentoDAO {
 
     @Override
     public int insertar(Medicamento medicamento) {
-        String sql = "INSERT INTO MEDICAMENTO (nombre, descripcion, monto) VALUES (?, ?, ?)";
+        String sql = "{call INSERTAR_MEDICAMENTO(?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, medicamento.getNombre());
-            ps.setString(2, medicamento.getDescripcion());
-            ps.setDouble(3, medicamento.getMonto());
-            ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_id_medicamento", Types.INTEGER);
+            cs.setString("_nombre", medicamento.getNombre());
+            cs.setString("_descripcion", medicamento.getDescripcion());
+            cs.setDate("_fecha_vencimiento", new java.sql.Date(medicamento.getFechaVencimiento().getTime()));
+            cs.setDouble("_monto", medicamento.getMonto());
+            cs.executeUpdate();
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    medicamento.setIdMedicamento(rs.getInt(1));
+            if (cs.getInt("_id_medicamento") > 0) {
+                    medicamento.setIdMedicamento(cs.getInt("_id_medicamento"));
                     return medicamento.getIdMedicamento();
                 }
-            }
             return 0;
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR MEDICAMENTO: " + ex.getMessage());
@@ -39,14 +38,17 @@ public class MedicamentoImpl implements MedicamentoDAO {
 
     @Override
     public int modificar(Medicamento medicamento) {
-        String sql = "UPDATE MEDICAMENTO SET nombre=?, descripcion=?, monto=? WHERE id_medicamento=?";
+        String sql = "{call MODIFICAR_MEDICAMENTO(?, ?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, medicamento.getNombre());
-            ps.setString(2, medicamento.getDescripcion());
-            ps.setDouble(3, medicamento.getMonto());
-            ps.setInt(4, medicamento.getIdMedicamento());
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setString("_nombre", medicamento.getNombre());
+            cs.setString("_descripcion", medicamento.getDescripcion());
+            cs.setDate("_fecha_vencimiento", new java.sql.Date(medicamento.getFechaVencimiento().getTime()));
+            cs.setDouble("_monto", medicamento.getMonto());
+            cs.setInt("_id_medicamento", medicamento.getIdMedicamento());
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR MEDICAMENTO: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -55,11 +57,13 @@ public class MedicamentoImpl implements MedicamentoDAO {
 
     @Override
     public int eliminar(int idMedicamento) {
-        String sql = "DELETE FROM MEDICAMENTO WHERE id_medicamento=?";
+        String sql = "{call ELIMINAR_MEDICAMENTO(?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idMedicamento);
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_medicamento", idMedicamento);
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR MEDICAMENTO: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -69,16 +73,18 @@ public class MedicamentoImpl implements MedicamentoDAO {
     @Override
     public Medicamento obtenerPorId(int idMedicamento) {
         Medicamento medicamento = null;
-        String sql = "SELECT id_medicamento, nombre, descripcion, monto FROM MEDICAMENTO WHERE id_medicamento=?";
+        String sql = "{call LISTAR_MEDICAMENTO_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idMedicamento);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_medicamento", idMedicamento);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     medicamento = new Medicamento();
                     medicamento.setIdMedicamento(rs.getInt("id_medicamento"));
                     medicamento.setNombre(rs.getString("nombre"));
                     medicamento.setDescripcion(rs.getString("descripcion"));
+                    medicamento.setFechaVencimiento(rs.getDate("fecha_vencimiento"));
+                    medicamento.setActivo(rs.getBoolean("activo"));
                     medicamento.setMonto(rs.getDouble("monto"));
                 }
             }
@@ -92,40 +98,23 @@ public class MedicamentoImpl implements MedicamentoDAO {
     @Override
     public List<Medicamento> listarTodos() {
         List<Medicamento> medicamentos = new ArrayList<>();
-        String sql = "SELECT id_medicamento, nombre, descripcion, monto FROM MEDICAMENTO";
+        String sql = "{call LISTAR_MEDICAMENTO_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Medicamento medicamento = new Medicamento();
                 medicamento.setIdMedicamento(rs.getInt("id_medicamento"));
                 medicamento.setNombre(rs.getString("nombre"));
                 medicamento.setDescripcion(rs.getString("descripcion"));
+                    medicamento.setFechaVencimiento(rs.getDate("fecha_vencimiento"));
+                    medicamento.setActivo(rs.getBoolean("activo"));
                 medicamento.setMonto(rs.getDouble("monto"));
                 medicamentos.add(medicamento);
             }
             return medicamentos;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR MEDICAMENTOS: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-
-    public void registrarMedicamentoSP(String nombre, String descripcion, double monto, java.sql.Date fechaVencimiento) {
-        String sql = "{CALL registrar_medicamento(?, ?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, nombre);
-                cs.setString(2, descripcion);
-                cs.setDouble(3, monto);
-                cs.setDate(4, fechaVencimiento);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR registrar_medicamento: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

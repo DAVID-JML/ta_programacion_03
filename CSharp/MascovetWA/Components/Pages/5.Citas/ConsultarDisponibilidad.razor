@@ -1,0 +1,66 @@
+@page "/cliente/disponibilidad"
+@page "/recepcion/disponibilidad"
+@layout MainLayout
+@inject ReservaCitaRestService ReservaREST
+@inject VeterinarioRestService VeterinariosREST
+@inject UserContext User
+@inject ToastService Toast
+<PageTitle>Consultar disponibilidad | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Consultar disponibilidad</h1><p>Encuentra turnos libres según fecha, especialidad o veterinario.</p></div></header>
+    <AppCard Title="Buscar turnos">
+        <div class="form-grid">
+            <div class="span-4"><AppDatePicker Label="Fecha" Required="true" Min="@Hoy" @bind-Value="fecha" /></div>
+            <div class="span-4"><AppSelect TValue="string" Label="Especialidad" Options="especialidades" @bind-Value="especialidad" /></div>
+            <div class="span-4"><AppSelect TValue="string" Label="Veterinario" Options="veterinarios" @bind-Value="veterinario" /></div>
+        </div>
+        <div class="acciones"><AppButton OnClick="Buscar">Buscar disponibilidad</AppButton></div>
+    </AppCard>
+    <AppCard Title="Turnos libres">
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <p role="alert" class="ms-small-note">@Error</p>
+        }
+        <AppTable Items="turnos" Caption="Turnos libres" ColumnCount="5">
+            <HeaderContent><th>Veterinario</th><th>Especialidad</th><th>Fecha</th><th>Hora</th><th>Acción</th></HeaderContent>
+            <RowTemplate Context="s"><td>@s.Veterinario?.NombreCompleto</td><td>@(s.Veterinario?.Especialidad?.ToString().Replace("_", " "))</td><td>@fechaConsultada?.ToString("dd/MM/yyyy")</td><td>@s.HoraInicio?.ToString("HH:mm")</td><td><AppButton Href="@(User.Role == UserRole.Recepcionista ? "/recepcion/citas/nueva" : "/cliente/reservar")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Reservar cita</AppButton></td></RowTemplate>
+            <EmptyContent><AppEmptyState Title="Sin turnos" Description="No hay turnos libres para los filtros seleccionados." Icon="clock" /></EmptyContent>
+        </AppTable>
+    </AppCard>
+</div>
+@code {
+    private DateOnly? fecha = DateOnly.FromDateTime(DateTime.Today.AddDays(1));
+    private DateOnly Hoy => DateOnly.FromDateTime(DateTime.Today);
+    private string especialidad = "", veterinario = "";
+    private List<SelectOption<string>> especialidades = new() { new("", "Todas") };
+    private List<SelectOption<string>> veterinarios = new() { new("", "Todos") };
+    private List<MascovetDomain.Citas.HorarioAtencion> turnos = new();
+    private DateOnly? fechaConsultada;
+    private string? Error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var vets = (await VeterinariosREST.ListarTodosAsync()).Where(v => v.Activo).ToList();
+            veterinarios.AddRange(vets.Select(v => new SelectOption<string>(v.IdUsuario.ToString(), $"{v.Nombre} {v.ApellidoPaterno}".Trim())));
+            especialidades.AddRange(vets.Where(v => v.Especialidad.HasValue).Select(v => v.Especialidad!.Value.ToString())
+                .Distinct().Select(x => new SelectOption<string>(x, x.Replace('_', ' '))));
+        }
+        catch (Exception ex) { Error = $"No se pudieron cargar los filtros: {ex.Message}"; }
+        await Buscar();
+    }
+
+    private async Task Buscar()
+    {
+        Error = null;
+        if (!fecha.HasValue || fecha.Value < Hoy) { Toast.Warning("Selecciona una fecha desde hoy."); return; }
+        try
+        {
+            int.TryParse(veterinario, out int idVet); 
+            turnos = await ReservaREST.ListarDisponiblesAsync(fecha.Value, idVet, especialidad);
+            fechaConsultada = fecha;
+        }
+        catch (Exception ex) { turnos = new(); Error = $"No se pudo consultar la disponibilidad: {ex.Message}"; }
+    }
+}

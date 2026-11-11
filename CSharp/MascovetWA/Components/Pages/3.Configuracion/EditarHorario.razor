@@ -1,0 +1,112 @@
+@page "/administrador/horarios/editar/{Id:int}"
+@inject HorarioAtencionRestService HorariosREST
+@inject VeterinarioRestService VeterinariosREST
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@layout MainLayout
+<PageTitle>Editar horario | Mascovet</PageTitle>
+
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div>
+            <h1>Editar horario</h1>
+            <p>Modifica el horario seleccionado sin alterar el formulario de registro.</p>
+        </div>
+        <AppButton Href="/administrador/horarios" Variant="ButtonVariant.Secondary">Volver a horarios</AppButton>
+    </header>
+    @if (cargando)
+    {
+        <AppCard Title="Cargando horario"><p>Consultando horario...</p></AppCard>
+    }
+    else if (horario is null)
+    {
+        <AppCard Title="Horario no disponible"><p>No se pudo recuperar el horario solicitado. Vuelve a la lista e inténtalo nuevamente.</p></AppCard>
+    }
+    else
+    {
+        <AppCard Title="Datos del horario">
+            <div class="form-grid">
+                <div class="span-6"><AppSelect TValue="string" Label="Veterinario" Options="veterinarios" @bind-Value="veterinario" /></div>
+                <div class="span-6"><AppSelect TValue="string" Label="Día de la semana" Options="dias" @bind-Value="dia" /></div>
+                <div class="span-6"><AppInput TValue="string" Type="time" Label="Hora de inicio" Required="true" @bind-Value="inicio" /></div>
+                <div class="span-6"><AppInput TValue="string" Type="time" Label="Hora de fin" Required="true" @bind-Value="fin" /></div>
+            </div>
+            <div class="acciones">
+                <AppButton OnClick="GuardarCambios" Disabled="@guardando" Loading="@guardando">Guardar cambios</AppButton>
+                <AppButton Href="/administrador/horarios" Variant="ButtonVariant.Secondary">Cancelar</AppButton>
+            </div>
+        </AppCard>
+    }
+</div>
+<AppModal @bind-Visible="mostrarSuperposicion" Title="No se puede guardar el horario">
+    <ChildContent><p>El veterinario ya tiene otro horario registrado que coincide con el día y las horas seleccionadas.</p></ChildContent>
+    <Actions><AppButton OnClick="() => mostrarSuperposicion = false">Aceptar</AppButton></Actions>
+</AppModal>
+@code {
+    [Parameter] public int Id { get; set; }
+    private MascovetDomain.Citas.HorarioAtencion? horario;
+    private bool cargando = true, guardando, mostrarSuperposicion;
+    private List<SelectOption<string>> veterinarios = new();
+    private readonly List<SelectOption<string>> dias = [new("LUNES", "Lunes"), new("MARTES", "Martes"), new("MIERCOLES", "Miércoles"), new("JUEVES", "Jueves"), new("VIERNES", "Viernes"), new("SABADO", "Sábado"), new("DOMINGO", "Domingo")];
+    private string veterinario = "", dia = "LUNES", inicio = "08:00", fin = "12:00";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        cargando = true;
+        horario = null;
+        try
+        {
+            var datos = await HorariosREST.BuscarPorIdAsync(Id);
+            if (datos is null) { Toast.Warning("No se encontró el horario solicitado."); return; }
+            horario = datos;
+            veterinario = datos.Veterinario?.IdUsuario.ToString() ?? "";
+            dia = datos.Dia?.ToString() ?? "LUNES";
+            inicio = datos.HoraInicio?.ToString("HH:mm") ?? "08:00";
+            fin = datos.HoraFin?.ToString("HH:mm") ?? "12:00";
+            var lista = await VeterinariosREST.ListarTodosAsync();
+            veterinarios = lista.Where(v => v.Activo || v.IdUsuario.ToString() == veterinario)
+                .Select(v => new SelectOption<string>(v.IdUsuario.ToString(),
+                    $"{v.Nombre} {v.ApellidoPaterno}".Trim())).ToList();
+            if (!string.IsNullOrWhiteSpace(veterinario) && !veterinarios.Any(v => v.Value == veterinario))
+                veterinarios.Insert(0, new SelectOption<string>(veterinario, $"Veterinario #{veterinario}"));
+        }
+        catch (Exception ex) { Toast.Error($"No se pudo cargar el horario: {ex.Message}"); }
+        finally { cargando = false; }
+    }
+
+    private async Task GuardarCambios()
+    {
+        if (guardando || horario is null) return;
+        if (!int.TryParse(veterinario, out int idVet) ||
+            !TimeOnly.TryParse(inicio, out var desde) ||
+            !TimeOnly.TryParse(fin, out var hasta) || desde >= hasta ||
+            !Enum.TryParse<MascovetDomain.Enums.Dia>(dia, out var diaSeleccionado))
+        {
+            Toast.Warning("Revisa el veterinario, día y las horas del horario."); return;
+        }
+        try
+        {
+            if ((await HorariosREST.ListarTodosAsync()).Any(h => h.IdHorario != Id && h.Activo &&
+                h.Veterinario?.IdUsuario == idVet && h.Dia == diaSeleccionado &&
+                h.HoraInicio.HasValue && h.HoraFin.HasValue && desde < h.HoraFin.Value && hasta > h.HoraInicio.Value))
+            { mostrarSuperposicion=true; return; }
+        }
+        catch (Exception ex) { Toast.Error($"No se pudieron validar los horarios: {ex.Message}"); return; }
+        guardando = true;
+        try
+        {
+            // Se conserva el ID original. La validación del horario se realiza en el BO de Java.
+            horario.IdHorario = Id;
+            horario.Veterinario = new MascovetDomain.Usuarios.Veterinario { IdUsuario = idVet };
+            horario.Dia = diaSeleccionado;
+            horario.HoraInicio = desde;
+            horario.HoraFin = hasta;
+            int resultado = await HorariosREST.ModificarAsync(horario);
+            if (resultado <= 0) { mostrarSuperposicion=true; return; }
+            Toast.Success("Horario actualizado correctamente.");
+            Navigation.NavigateTo("/administrador/horarios");
+        }
+        catch (Exception ex) { Toast.Error($"El servidor rechazó el horario: {ex.Message}"); }
+        finally { guardando = false; }
+    }
+}

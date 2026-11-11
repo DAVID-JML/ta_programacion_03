@@ -1,13 +1,33 @@
 package pe.com.mascovet.receta.model;
 
+import java.util.Date;
+
 public class Medicamento {
     private int idMedicamento;
-    //private DetalleReceta detalleReceta;
+
     private String nombre;
     private String descripcion;
+    private Date fechaVencimiento;
+    private boolean activo = true;
     private double monto;
 
     public Medicamento() {
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
+    public Date getFechaVencimiento() {
+        return fechaVencimiento;
+    }
+
+    public void setFechaVencimiento(Date fechaVencimiento) {
+        this.fechaVencimiento = fechaVencimiento;
     }
 
     public int getIdMedicamento() {
@@ -17,14 +37,6 @@ public class Medicamento {
     public void setIdMedicamento(int idMedicamento) {
         this.idMedicamento = idMedicamento;
     }
-
-//    public DetalleReceta getDetalleReceta() {
-//        return detalleReceta;
-//    }
-//
-//    public void setDetalleReceta(DetalleReceta detalleReceta) {
-//        this.detalleReceta = detalleReceta;
-//    }
 
     public String getNombre() {
         return nombre;

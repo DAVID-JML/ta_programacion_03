@@ -9,6 +9,12 @@ import pe.com.mascovet.receta.impl.RecetaImpl;
 import pe.com.mascovet.receta.model.DetalleReceta;
 import pe.com.mascovet.receta.model.Receta;
 
+import pe.com.mascovet.atencionmedica.model.AtencionMedica;
+import pe.com.mascovet.atencionmedica.model.Consulta;
+import pe.com.mascovet.atencionmedica.model.Control;
+import pe.com.mascovet.atencionmedica.model.Cirugia;
+import pe.com.mascovet.atencionmedica.model.Vacunacion;
+
 import java.util.List;
 
 public class RecetaBOImpl implements IRecetaBO {
@@ -58,16 +64,7 @@ public class RecetaBOImpl implements IRecetaBO {
     @Override
     public int insertar(Receta receta) {
         validarReceta(receta);
-        try {
-            int resultado = daoReceta.insertar(receta);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoReceta.insertar(receta);
     }
 
     @Override
@@ -109,6 +106,7 @@ public class RecetaBOImpl implements IRecetaBO {
         }
 
         try {
+            TransactionContext.getConnection();
             daoReceta.insertar(receta);
 
             for (DetalleReceta detalle : receta.getDetallesReceta()) {
@@ -127,15 +125,65 @@ public class RecetaBOImpl implements IRecetaBO {
     }
 
     @Override
-    public void registrarRecetaSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaReceta, String indicaciones) {
-        try {
-            daoReceta.registrarRecetaSP(dniCliente, nombreMascota, fechaCita, horaCita, fechaReceta, indicaciones);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en registrarRecetaSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
+    public int insertarConDetalles(
+            int idAtencion,
+            String tipoAtencion,
+            String fecha,
+            String indicaciones,
+            List<DetalleReceta> detalles) {
+
+        if (idAtencion <= 0)
+            throw new RuntimeException(
+                    "El identificador de atención no es válido");
+
+        if (tipoAtencion == null)
+            throw new RuntimeException(
+                    "El tipo de atención es obligatorio");
+
+        if (fecha == null || fecha.isBlank())
+            throw new RuntimeException(
+                    "La fecha de la receta es obligatoria");
+
+        AtencionMedica atencion;
+
+        switch (tipoAtencion.toUpperCase(java.util.Locale.ROOT)) {
+            case "CONSULTA":
+                atencion = new Consulta();
+                break;
+            case "CONTROL":
+                atencion = new Control();
+                break;
+            case "CIRUGIA":
+                atencion = new Cirugia();
+                break;
+            case "VACUNACION":
+                atencion = new Vacunacion();
+                break;
+            default:
+                throw new RuntimeException(
+                        "Tipo de atención no válido");
         }
+
+        atencion.setIdAtencion(idAtencion);
+
+        Receta receta = new Receta();
+        receta.setAtencionMedica(atencion);
+
+        try {
+            receta.setFecha(java.sql.Date.valueOf(fecha));
+        } catch (IllegalArgumentException ex) {
+            throw new RuntimeException(
+                    "La fecha debe tener formato yyyy-MM-dd");
+        }
+
+        receta.setIndicaciones(indicaciones);
+
+        if (detalles != null) {
+            for (DetalleReceta detalle : detalles) {
+                receta.agregarDetalleReceta(detalle);
+            }
+        }
+
+        return insertarConDetalles(receta);
     }
 }

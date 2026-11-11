@@ -1,6 +1,5 @@
 package pe.com.mascovet.receta.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.receta.bo.IDetalleRecetaBO;
 import pe.com.mascovet.receta.dao.DetalleRecetaDAO;
 import pe.com.mascovet.receta.impl.DetalleRecetaImpl;
@@ -42,16 +41,7 @@ public class DetalleRecetaBOImpl implements IDetalleRecetaBO {
     @Override
     public int insertar(DetalleReceta detalleReceta) {
         validarDetalleReceta(detalleReceta);
-        try {
-            int resultado = daoDetalleReceta.insertar(detalleReceta);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoDetalleReceta.insertar(detalleReceta);
     }
 
     @Override

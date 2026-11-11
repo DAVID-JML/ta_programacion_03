@@ -1,6 +1,5 @@
 package pe.com.mascovet.usuario.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.usuario.bo.IAdministradorBO;
 import pe.com.mascovet.usuario.dao.AdministradorDAO;
 import pe.com.mascovet.usuario.impl.AdministradorImpl;
@@ -25,12 +24,16 @@ public class AdministradorBOImpl implements IAdministradorBO {
             throw new RuntimeException("El DNI no debe exceder los 9 caracteres");
         if (administrador.getNombre() == null || administrador.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre del administrador es obligatorio");
-        if (administrador.getNombre().length() > 150)
-            throw new RuntimeException("El nombre no debe exceder los 150 caracteres");
-        if (administrador.getApellido() == null || administrador.getApellido().trim().isEmpty())
+        if (administrador.getNombre().length() > 50)
+            throw new RuntimeException("El nombre no debe exceder los 50 caracteres");
+        if (administrador.getApellidoPaterno() == null || administrador.getApellidoPaterno().trim().isEmpty())
             throw new RuntimeException("El apellido del administrador es obligatorio");
-        if (administrador.getApellido().length() > 150)
-            throw new RuntimeException("El apellido no debe exceder los 150 caracteres");
+        if (administrador.getApellidoPaterno().length() > 50)
+            throw new RuntimeException("El apellido no debe exceder los 50 caracteres");
+        if (administrador.getApellidoMaterno() == null || administrador.getApellidoMaterno().trim().isEmpty())
+            throw new RuntimeException("El apellido materno es obligatorio");
+        if (administrador.getApellidoMaterno().length() > 50)
+            throw new RuntimeException("El apellido materno no debe exceder los 50 caracteres");
         if (administrador.getNombreUsuario() == null || administrador.getNombreUsuario().trim().isEmpty())
             throw new RuntimeException("El nombre de usuario es obligatorio");
         if (administrador.getNombreUsuario().length() > 100)
@@ -49,16 +52,7 @@ public class AdministradorBOImpl implements IAdministradorBO {
     public int insertar(Administrador administrador) {
         validarAdministrador(administrador);
         administrador.setActivo(true);
-        try {
-            int resultado = daoAdministrador.insertar(administrador);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoAdministrador.insertar(administrador);
     }
 
     @Override
@@ -66,16 +60,7 @@ public class AdministradorBOImpl implements IAdministradorBO {
         validarAdministrador(administrador);
         if (administrador.getIdUsuario() <= 0)
             throw new RuntimeException("El identificador del administrador no es válido");
-        try {
-            int resultado = daoAdministrador.modificar(administrador);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoAdministrador.modificar(administrador);
     }
 
     @Override
@@ -95,18 +80,5 @@ public class AdministradorBOImpl implements IAdministradorBO {
         if (idAdministrador <= 0)
             throw new RuntimeException("El identificador del administrador no es válido");
         return daoAdministrador.obtenerPorId(idAdministrador);
-    }
-
-    @Override
-    public void asignarAdministradorSP(String dni, String cargo) {
-        try {
-            daoAdministrador.asignarAdministradorSP(dni, cargo);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en asignarAdministradorSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

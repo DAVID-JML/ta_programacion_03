@@ -1,0 +1,106 @@
+
+.perfil-cliente {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.perfil-cliente__header h1 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.perfil-cliente__header p {
+    max-width: 680px;
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+}
+
+.perfil-cliente__section {
+    min-width: 0;
+}
+
+    .perfil-cliente__section ::deep .ms-card__body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--ms-space-5);
+    }
+
+.perfil-cliente__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--ms-space-8);
+    row-gap: var(--ms-space-6);
+}
+
+.perfil-cliente__password-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--ms-space-8);
+    row-gap: var(--ms-space-6);
+}
+
+.perfil-cliente__field {
+    min-width: 0;
+}
+
+    .perfil-cliente__field ::deep .ms-field {
+        width: 100%;
+    }
+
+.perfil-cliente__field--full {
+    grid-column: 1 / -1;
+}
+
+.perfil-cliente__field ::deep input[readonly] {
+    color: var(--ms-color-text-muted);
+    background: var(--ms-color-background-page);
+    cursor: default;
+}
+
+.perfil-cliente__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--ms-space-3);
+}
+
+.perfil-cliente__back {
+    display: flex;
+    justify-content: flex-start;
+}
+
+@media (max-width: 700px) {
+    .perfil-cliente {
+        gap: var(--ms-space-4);
+    }
+
+    .perfil-cliente__grid,
+    .perfil-cliente__password-fields {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--ms-space-4);
+    }
+
+    .perfil-cliente__field--full {
+        grid-column: auto;
+    }
+
+    .perfil-cliente__actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+        .perfil-cliente__actions ::deep .ms-btn {
+            width: 100%;
+            justify-content: center;
+        }
+}

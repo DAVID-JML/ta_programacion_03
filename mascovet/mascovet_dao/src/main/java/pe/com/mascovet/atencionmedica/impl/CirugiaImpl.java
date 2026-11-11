@@ -4,14 +4,12 @@ import pe.com.mascovet.atencionmedica.dao.CirugiaDAO;
 import pe.com.mascovet.atencionmedica.model.Cirugia;
 import pe.com.mascovet.cita.model.Cita;
 import pe.com.mascovet.config.DBManager;
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.mascota.model.Mascota;
 import pe.com.mascovet.receta.model.Receta;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.Types;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -21,48 +19,30 @@ public class CirugiaImpl implements CirugiaDAO {
 
     @Override
     public int insertar(Cirugia cirugia) {
-        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_cita, peso_actual, alergias) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-        String sql = "INSERT INTO CIRUGIA (id_atencion, procedimiento, indicaciones_post_operatorias) VALUES (?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement psAtencion = con.prepareStatement(sqlAtencion, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement ps = con.prepareStatement(sql)) {
-                psAtencion.setString(1, cirugia.getObservaciones());
+        String sql = "{call INSERTAR_CIRUGIA(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_atencion", Types.INTEGER);
+                cs.setString("_observaciones", cirugia.getObservaciones());
                 if (cirugia.getHoraInicio() == null) {
-                    psAtencion.setNull(2, Types.TIME);
+                    cs.setNull("_hora_inicio", Types.TIME);
                 } else {
-                    psAtencion.setTime(2, Time.valueOf(cirugia.getHoraInicio()));
+                    cs.setTime("_hora_inicio", Time.valueOf(cirugia.getHoraInicio()));
                 }
                 if (cirugia.getHoraFin() == null) {
-                    psAtencion.setNull(3, Types.TIME);
+                    cs.setNull("_hora_fin", Types.TIME);
                 } else {
-                    psAtencion.setTime(3, Time.valueOf(cirugia.getHoraFin()));
+                    cs.setTime("_hora_fin", Time.valueOf(cirugia.getHoraFin()));
                 }
-                psAtencion.setInt(4, cirugia.getCita().getIdCita());
-                psAtencion.setDouble(5, cirugia.getPesoActual());
-                psAtencion.setString(6, cirugia.getAlergias());
-                psAtencion.executeUpdate();
-
-                int idAtencion = 0;
-                try (ResultSet rs = psAtencion.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        idAtencion = rs.getInt(1);
-                    }
-                }
-                if (idAtencion <= 0) {
-                    throw new RuntimeException("No se pudo generar el identificador de la atencion medica");
-                }
-                cirugia.setIdAtencion(idAtencion);
-
-                ps.setInt(1, idAtencion);
-                ps.setString(2, cirugia.getProcedimiento());
-                ps.setString(3, cirugia.getIndicacionesPostOperatorias());
-                ps.executeUpdate();
-                return cirugia.getIdAtencion();
-            } catch (Exception ex) {
-                System.out.println("ERROR AL INSERTAR CIRUGIA: " + ex.getMessage());
-                throw new RuntimeException(ex);
+                cs.setInt("_id_cita", cirugia.getCita().getIdCita());
+                cs.setDouble("_peso_actual", cirugia.getPesoActual());
+                cs.setString("_alergias", cirugia.getAlergias());
+                cs.setString("_procedimiento", cirugia.getProcedimiento());
+                cs.setString("_indicaciones_post_operatorias", cirugia.getIndicacionesPostOperatorias());
+                cs.executeUpdate();
+                int idGenerado = cs.getInt("_id_atencion");
+                cirugia.setIdAtencion(idGenerado);
+                return idGenerado;
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR CIRUGIA: " + ex.getMessage());
@@ -72,38 +52,29 @@ public class CirugiaImpl implements CirugiaDAO {
 
     @Override
     public int modificar(Cirugia cirugia) {
-        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_cita=?, peso_actual=?, alergias=? " +
-                "WHERE id_atencion=?";
-        String sql = "UPDATE CIRUGIA SET procedimiento=?, indicaciones_post_operatorias=? WHERE id_atencion=?";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement psAtencion = con.prepareStatement(sqlAtencion);
-                 PreparedStatement ps = con.prepareStatement(sql)) {
-                psAtencion.setString(1, cirugia.getObservaciones());
+        String sql = "{call MODIFICAR_CIRUGIA(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setString("_observaciones", cirugia.getObservaciones());
                 if (cirugia.getHoraInicio() == null) {
-                    psAtencion.setNull(2, Types.TIME);
+                    cs.setNull("_hora_inicio", Types.TIME);
                 } else {
-                    psAtencion.setTime(2, Time.valueOf(cirugia.getHoraInicio()));
+                    cs.setTime("_hora_inicio", Time.valueOf(cirugia.getHoraInicio()));
                 }
                 if (cirugia.getHoraFin() == null) {
-                    psAtencion.setNull(3, Types.TIME);
+                    cs.setNull("_hora_fin", Types.TIME);
                 } else {
-                    psAtencion.setTime(3, Time.valueOf(cirugia.getHoraFin()));
+                    cs.setTime("_hora_fin", Time.valueOf(cirugia.getHoraFin()));
                 }
-                psAtencion.setInt(4, cirugia.getCita().getIdCita());
-                psAtencion.setDouble(5, cirugia.getPesoActual());
-                psAtencion.setString(6, cirugia.getAlergias());
-                psAtencion.setInt(7, cirugia.getIdAtencion());
-                int filasBase = psAtencion.executeUpdate();
-
-                ps.setString(1, cirugia.getProcedimiento());
-                ps.setString(2, cirugia.getIndicacionesPostOperatorias());
-                ps.setInt(3, cirugia.getIdAtencion());
-                int filasHija = ps.executeUpdate();
-                return (filasBase > 0 && filasHija > 0) ? 1 : 0;
-            } catch (Exception ex) {
-                System.out.println("ERROR AL MODIFICAR CIRUGIA: " + ex.getMessage());
-                throw new RuntimeException(ex);
+                cs.setInt("_id_cita", cirugia.getCita().getIdCita());
+                cs.setDouble("_peso_actual", cirugia.getPesoActual());
+                cs.setString("_alergias", cirugia.getAlergias());
+                cs.setInt("_id_atencion", cirugia.getIdAtencion());
+                cs.setString("_procedimiento", cirugia.getProcedimiento());
+                cs.setString("_indicaciones_post_operatorias", cirugia.getIndicacionesPostOperatorias());
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR CIRUGIA: " + ex.getMessage());
@@ -113,11 +84,14 @@ public class CirugiaImpl implements CirugiaDAO {
 
     @Override
     public int eliminar(int idCirugia) {
-        String sql = "DELETE FROM ATENCION_MEDICA WHERE id_atencion=?";
-        try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idCirugia);
-            return ps.executeUpdate();
+        String sql = "{call ELIMINAR_CIRUGIA(?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setInt("_id_atencion", idCirugia);
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
+            }
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR CIRUGIA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -127,15 +101,11 @@ public class CirugiaImpl implements CirugiaDAO {
     @Override
     public Cirugia obtenerPorId(int idCirugia) {
         Cirugia cirugia = null;
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
-                "c.procedimiento, c.indicaciones_post_operatorias, r.id_receta " +
-                "FROM ATENCION_MEDICA a INNER JOIN CIRUGIA c ON a.id_atencion=c.id_atencion " +
-                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
-                "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion WHERE a.id_atencion=?";
+        String sql = "{call LISTAR_CIRUGIA_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idCirugia);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_atencion", idCirugia);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     cirugia = new Cirugia();
                     cirugia.setIdAtencion(rs.getInt("id_atencion"));
@@ -144,9 +114,7 @@ public class CirugiaImpl implements CirugiaDAO {
                     if (horaInicio != null) cirugia.setHoraInicio(horaInicio.toLocalTime());
                     Time horaFin = rs.getTime("hora_fin");
                     if (horaFin != null) cirugia.setHoraFin(horaFin.toLocalTime());
-                    Mascota mascota = new Mascota();
-                    mascota.setIdMascota(rs.getInt("id_mascota"));
-                    cirugia.setMascota(mascota);
+
                     Cita cita = new Cita();
                     cita.setIdCita(rs.getInt("id_cita"));
                     cirugia.setCita(cita);
@@ -172,14 +140,10 @@ public class CirugiaImpl implements CirugiaDAO {
     @Override
     public List<Cirugia> listarTodos() {
         List<Cirugia> cirugias = new ArrayList<>();
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
-                "c.procedimiento, c.indicaciones_post_operatorias, r.id_receta " +
-                "FROM ATENCION_MEDICA a INNER JOIN CIRUGIA c ON a.id_atencion=c.id_atencion " +
-                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
-                "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion";
+        String sql = "{call LISTAR_CIRUGIA_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Cirugia cirugia = new Cirugia();
                 cirugia.setIdAtencion(rs.getInt("id_atencion"));
@@ -188,9 +152,7 @@ public class CirugiaImpl implements CirugiaDAO {
                 if (horaInicio != null) cirugia.setHoraInicio(horaInicio.toLocalTime());
                 Time horaFin = rs.getTime("hora_fin");
                 if (horaFin != null) cirugia.setHoraFin(horaFin.toLocalTime());
-                Mascota mascota = new Mascota();
-                mascota.setIdMascota(rs.getInt("id_mascota"));
-                cirugia.setMascota(mascota);
+
                 Cita cita = new Cita();
                 cita.setIdCita(rs.getInt("id_cita"));
                 cirugia.setCita(cita);
@@ -209,26 +171,6 @@ public class CirugiaImpl implements CirugiaDAO {
             return cirugias;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR CIRUGIAS: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void registrarCirugiaSP(String dniCliente, String nombreMascota, java.sql.Date fecha, java.sql.Time hora, String procedimiento, String indicacionesPostOperatorias) {
-        String sql = "{CALL registrar_cirugia(?, ?, ?, ?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dniCliente);
-                cs.setString(2, nombreMascota);
-                cs.setDate(3, fecha);
-                cs.setTime(4, hora);
-                cs.setString(5, procedimiento);
-                cs.setString(6, indicacionesPostOperatorias);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR registrar_cirugia: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

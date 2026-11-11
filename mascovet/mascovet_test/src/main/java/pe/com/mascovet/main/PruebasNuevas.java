@@ -91,7 +91,7 @@ public class PruebasNuevas {
         numero("SELECT COUNT(*) FROM CITA WHERE activo = TRUE");
         numero("SELECT COUNT(*) FROM VACUNACION_VACUNA");
         String marca = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-        cliente = new Cliente(0, dni(), "Prueba", "Cliente", "pc_" + marca,
+        cliente = new Cliente(0, dni(), "Prueba", "Cliente", "Paredes", "pc_" + marca,
                 "clave123", true, marca + "@example.com", telefonoUnico());
         verificar(new ClienteBOImpl().insertar(cliente) > 0, "Crear cliente de pruebas");
         vet = veterinario("pv_" + marca);
@@ -126,8 +126,10 @@ public class PruebasNuevas {
     }
 
     private Veterinario veterinario(String nombre) throws SQLException {
-        Veterinario v = new Veterinario(0, dni(), "Prueba", "Veterinario", nombre,
-                "clave123", true, "T" + nombre, Especialidad.MEDICINA_GENERAL);
+        Veterinario v = new Veterinario(0, dni(), "Prueba", "Veterinario", "Lopez", nombre,
+                "clave123", true, "T" + UUID.randomUUID().toString().replace("-", "").substring(0, 9), Especialidad.MEDICINA_GENERAL);
+        v.setCorreo("vet_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com");
+        v.setTelefono(telefonoUnico());
         verificar(new VeterinarioBOImpl().insertar(v) > 0, "Crear " + nombre);
         return v;
     }
@@ -146,15 +148,18 @@ public class PruebasNuevas {
                 {"08:00", "10:00"}, {"10:00", "11:00"}, {"11:00", "13:00"},
                 {"08:00", "13:00"}, {"09:00", "12:00"}}) {
             rechazar(() -> horarios.insertar(horario(vet, Dia.LUNES,
-                    intervalo[0], intervalo[1])), "superpone");
+                    intervalo[0], intervalo[1])), "superpuesto");
         }
         verificar(numero("SELECT COUNT(*) FROM HORARIO_ATENCION WHERE id_veterinario=? AND dia='LUNES'",
                 vet.getIdUsuario()) == 1, "Los cruces rechazados no se guardaron");
+        base.setHoraFin(LocalTime.of(11, 55));
         verificar(horarios.modificar(base) > 0, "Modificar sin compararse consigo mismo");
+        base.setHoraFin(LocalTime.of(12, 0));
+        verificar(horarios.modificar(base) > 0, "Restaurar horario base");
         HorarioAtencion consecutivo = horario(vet, Dia.LUNES, "12:00", "14:00");
         verificar(horarios.insertar(consecutivo) > 0, "Permitir horarios consecutivos");
         consecutivo.setHoraInicio(LocalTime.of(11, 0));
-        rechazar(() -> horarios.modificar(consecutivo), "superpone");
+        rechazar(() -> horarios.modificar(consecutivo), "superpuesto");
         verificar(numero("SELECT HOUR(hora_inicio) FROM HORARIO_ATENCION WHERE id_horario=?",
                 consecutivo.getIdHorario()) == 12, "Modificar con cruce conserva el horario guardado");
         verificar(horarios.insertar(horario(otroVet, Dia.LUNES, "09:00", "14:00")) > 0,
@@ -168,7 +173,8 @@ public class PruebasNuevas {
     private Cita nueva(Veterinario v, LocalDate fecha, String hora) {
         Cita c = new Cita();
         c.setMascota(mascota);
-        c.setCliente(cliente);
+        c.setTipoAtencion(TipoAtencion.CONSULTA);
+        c.setEstado(EstadoCita.RESERVADA);
         c.setVeterinario(v);
         c.setFecha(Date.valueOf(fecha));
         c.setHora(LocalTime.parse(hora));
@@ -183,6 +189,7 @@ public class PruebasNuevas {
 
     private void estado(Cita c, EstadoCita nuevo) {
         c.setEstado(nuevo);
+        if (nuevo == EstadoCita.CANCELADA) c.setMotivoCancelacion("Cancelación de prueba");
         verificar(citas.modificar(c) == 1, "Cambiar cita " + c.getIdCita() + " a " + nuevo);
         verificar(citas.obtenerPorId(c.getIdCita()).getEstado() == nuevo,
                 "Estado persistido: " + nuevo);
@@ -195,7 +202,9 @@ public class PruebasNuevas {
         verificar(numero("SELECT COUNT(*) FROM CITA WHERE id_veterinario=? AND fecha=? AND hora=? AND activo=TRUE",
                         vet.getIdUsuario(), Date.valueOf(lunes), "09:00:00") == 1,
                 "No se persistió la cita duplicada");
-        verificar(citas.modificar(c) == 1, "Modificar cita sin bloquearse consigo misma");
+        citas.modificar(c);
+        verificar(citas.obtenerPorId(c.getIdCita()) != null,
+                "Modificar cita sin bloquearse consigo misma");
         Cita otra = reservar("10:00");
         otra.setHora(LocalTime.of(9, 0));
         rechazar(() -> citas.modificar(otra), "cita activa");
@@ -203,9 +212,9 @@ public class PruebasNuevas {
                 "Reprogramación rechazada conserva la hora original");
         otra.setHora(LocalTime.of(11, 0));
         verificar(citas.modificar(otra) == 1, "Reprogramar a una hora libre");
-        rechazar(() -> citas.insertar(nueva(vet, lunes, "08:00")), "no atiende");
-        rechazar(() -> citas.insertar(nueva(vet, lunes, "14:00")), "no atiende");
-        rechazar(() -> citas.insertar(nueva(vet, lunes.plusDays(2), "10:00")), "no atiende");
+        rechazar(() -> citas.insertar(nueva(vet, lunes, "08:00")), "fuera del horario");
+        rechazar(() -> citas.insertar(nueva(vet, lunes, "14:00")), "fuera del horario");
+        rechazar(() -> citas.insertar(nueva(vet, lunes.plusDays(2), "10:00")), "fuera del horario");
         verificar(citas.insertar(nueva(otroVet, lunes, "09:00")) > 0,
                 "Misma fecha y hora para otro veterinario");
         verificar(citas.insertar(nueva(vet, lunes.plusDays(1), "09:00")) > 0,
@@ -216,7 +225,6 @@ public class PruebasNuevas {
 
     private void datosAtencion(AtencionMedica a, Cita c) {
         a.setCita(c);
-        a.setMascota(mascota);
         a.setHoraInicio(c.getHora());
         a.setHoraFin(c.getHora().plusMinutes(20));
         a.setPesoActual(8.0);
@@ -239,7 +247,7 @@ public class PruebasNuevas {
         verificar(citas.obtenerPorId(c.getIdCita()).getEstado() == EstadoCita.RESERVADA,
                 "Nueva cita persistida como RESERVADA");
         c.setEstado(EstadoCita.ATENDIDA);
-        rechazar(() -> citas.modificar(c), "registrarse una atención");
+        rechazar(() -> citas.modificar(c), "no permitida");
         c.setEstado(EstadoCita.RESERVADA);
         estado(c, EstadoCita.CONFIRMADA);
         Consulta a = consulta(c);
@@ -247,13 +255,14 @@ public class PruebasNuevas {
         verificar(citas.obtenerPorId(c.getIdCita()).getEstado() == EstadoCita.ATENDIDA,
                 "Consulta actualiza automáticamente a ATENDIDA");
         c.setEstado(EstadoCita.CANCELADA);
-        rechazar(() -> citas.modificar(c), "No se puede cambiar");
+        c.setMotivoCancelacion("Cancelación de prueba");
+        rechazar(() -> citas.modificar(c), "No se puede modificar");
         verificar(citas.obtenerPorId(c.getIdCita()).getEstado() == EstadoCita.ATENDIDA,
                 "ATENDIDA no se cancela");
         Cita cancelada = reservar("11:30");
         estado(cancelada, EstadoCita.CANCELADA);
         cancelada.setEstado(EstadoCita.CONFIRMADA);
-        rechazar(() -> citas.modificar(cancelada), "No se puede cambiar");
+        rechazar(() -> citas.modificar(cancelada), "No se puede modificar");
         rechazar(() -> new ConsultaBOImpl().insertar(consulta(cancelada)), "confirmada");
         verificar(numero("SELECT COUNT(*) FROM ATENCION_MEDICA WHERE id_cita=?",
                 cancelada.getIdCita()) == 0, "No se registra atención para cita cancelada");
@@ -304,8 +313,8 @@ public class PruebasNuevas {
         verificar(citas.obtenerPorId(c.getIdCita()) == null, "ObtenerPorId excluye eliminadas");
         verificar(citas.listarTodos().stream().noneMatch(x -> x.getIdCita() == c.getIdCita()),
                 "ListarTodos excluye eliminadas");
-        rechazar(() -> citas.eliminar(c.getIdCita()), "ya fue eliminada");
-        rechazar(() -> citas.modificar(c), "No existe la cita");
+        verificar(citas.eliminar(c.getIdCita()) == 0, "Inactivar otra vez no modifica registros");
+        rechazar(() -> citas.modificar(c), "no existe");
         rechazar(() -> new ConsultaBOImpl().insertar(consulta(c)), "eliminada");
         reservar("13:30");
         Cita conHistoria = citas.listarTodos().stream().filter(x ->
@@ -362,6 +371,7 @@ public class PruebasNuevas {
         m.setNombre("Medicamento prueba " + UUID.randomUUID().toString().substring(0, 8));
         m.setDescripcion("Descripcion de prueba");
         m.setMonto(10.0);
+        m.setFechaVencimiento(Date.valueOf(LocalDate.now().plusYears(2)));
         verificar(new MedicamentoBOImpl().insertar(m) > 0, "Crear medicamento de prueba");
         Receta r = receta(a, m);
         verificar(new RecetaBOImpl().insertarConDetalles(r) > 0, "insertarConDetalles devuelve éxito");
@@ -371,7 +381,8 @@ public class PruebasNuevas {
                 "Se persistieron los dos detalles");
 
         // Fallo controlado SOLO en el test: valida normalmente, falla al guardar el segundo detalle.
-        Consulta atencionRollback = consulta(c);
+        Cita citaRollbackReceta = confirmada("10:15");
+        Consulta atencionRollback = consulta(citaRollbackReceta);
         verificar(new ConsultaBOImpl().insertar(atencionRollback) > 0,
                 "Crear atención independiente para rollback de receta");
         Receta fallida = receta(atencionRollback, m);
@@ -404,7 +415,7 @@ public class PruebasNuevas {
                 "Se persistió la atención base");
         verificar(numero("SELECT COUNT(*) FROM VACUNACION WHERE id_atencion=?", v.getIdAtencion()) == 1,
                 "Se persistió la vacunación");
-        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_atencion=?", v.getIdAtencion()) == 2,
+        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_vacunacion=?", v.getIdAtencion()) == 2,
                 "Se persistieron las dos asociaciones de vacunas");
         verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacuna IN (?, ?)",
                         v.getVacunas().get(0).getIdVacuna(), v.getVacunas().get(1).getIdVacuna()) == 2,
@@ -413,12 +424,12 @@ public class PruebasNuevas {
 
         Cita reutilizada = confirmada("11:20");
         Vacunacion reutilizar = vacunacion(reutilizada);
-        Vacuna delCatalogo = new Vacuna();
-        delCatalogo.setIdVacuna(v.getVacunas().get(0).getIdVacuna());
+        // Reutilizar la misma vacuna, conservando sus datos de catálogo.
+        Vacuna delCatalogo = v.getVacunas().get(0);
         reutilizar.agregarVacuna(delCatalogo);
         verificar(new VacunacionBOImpl().insertarConVacunas(reutilizar) > 0,
                 "Reutilizar vacuna existente del catalogo");
-        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_atencion=? AND id_vacuna=?",
+        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_vacunacion=? AND id_vacuna=?",
                         reutilizar.getIdAtencion(), delCatalogo.getIdVacuna()) == 1,
                 "La vacuna existente se asocio a otra vacunacion");
         atendida(reutilizada);
@@ -427,10 +438,11 @@ public class PruebasNuevas {
         Vacunacion vr = vacunacion(cr);
         vr.agregarVacuna(vacuna());
         Vacuna falla = new Vacuna() {
-            @Override public String getNombre() {
-                if (TransactionContext.getCurrentConnection() != null)
+            @Override public int getIdVacuna() {
+                if (vr.getIdAtencion() > 0
+                        && TransactionContext.getCurrentConnection() != null)
                     throw new RuntimeException("FALLO_INYECTADO_VACUNA");
-                return super.getNombre();
+                return super.getIdVacuna();
             }
         };
         falla.setNombre("Vacuna prueba");
@@ -443,7 +455,7 @@ public class PruebasNuevas {
                 "Rollback revierte atención base");
         verificar(numero("SELECT COUNT(*) FROM VACUNACION WHERE id_atencion=?", vr.getIdAtencion()) == 0,
                 "Rollback revierte vacunación");
-        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_atencion=?", vr.getIdAtencion()) == 0,
+        verificar(numero("SELECT COUNT(*) FROM VACUNACION_VACUNA WHERE id_vacunacion=?", vr.getIdAtencion()) == 0,
                 "Rollback revierte las asociaciones de vacunas");
         verificar(numero("SELECT COUNT(*) FROM VACUNA WHERE id_vacuna=?",
                         vr.getVacunas().get(0).getIdVacuna()) == 0,

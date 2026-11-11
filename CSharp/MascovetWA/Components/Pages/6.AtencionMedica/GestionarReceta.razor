@@ -1,0 +1,499 @@
+@page "/veterinario/recetas"
+@inject ConsultaRestService ConsultasREST
+@inject CitaRestService CitasREST
+@inject MascotaRestService MascotasREST
+@inject ClienteRestService ClientesREST
+@inject ControlRestService ControlesREST
+@inject CirugiaRestService CirugiasREST
+@inject VacunacionRestService VacunacionesREST
+@inject MedicamentoRestService MedicamentosREST
+@inject RecetaRestService RecetasREST
+@inject DetalleRecetaRestService DetallesREST
+@using System.ComponentModel.DataAnnotations
+@inject ToastService Toast
+
+<PageTitle>Generar receta | Mascovet</PageTitle>
+
+<div class="page-header">
+    <h1>Generar receta</h1>
+    <p class="page-subtitle">Asocia una receta a una atención médica e indica los medicamentos recetados.</p>
+</div>
+
+<EditForm Model="modelo" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="seccion">
+        <AppCard Title="Información de la atención médica">
+            <div class="form-grid form-grid--end">
+                <div class="span-4">
+                    <AppInput TValue="string"
+                              Label="ID de la atención"
+                              Placeholder="Seleccione una atención"
+                              Required="true"
+                              Disabled="true"
+                              @bind-Value="modelo.IdAtencion" />
+                </div>
+                <div class="span-auto">
+                    <AppButton Variant="ButtonVariant.Secondary"
+                               Icon="search"
+                               OnClick="AbrirModalAtencion">
+                        Buscar atención
+                    </AppButton>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="span-4">
+                    <AppInput TValue="string" Label="Mascota" Disabled="true" @bind-Value="modelo.Mascota" />
+                </div>
+                <div class="span-4">
+                    <AppInput TValue="string" Label="Dueño" Disabled="true" @bind-Value="modelo.Dueno" />
+                </div>
+                <div class="span-4">
+                    <AppDatePicker Label="Fecha de la receta" Required="true" @bind-Value="modelo.Fecha" />
+                </div>
+            </div>
+        </AppCard>
+    </div>
+
+    <div class="seccion">
+        <AppCard Title="Detalle de la receta">
+            <div class="form-grid form-grid--end">
+                <div class="span-3">
+                    <AppInput TValue="string"
+                              Label="ID del medicamento"
+                              Placeholder="Seleccione"
+                              Disabled="true"
+                              @bind-Value="linea.IdMedicamento" />
+                </div>
+                <div class="span-auto">
+                    <AppButton Variant="ButtonVariant.Secondary"
+                               Icon="search"
+                               OnClick="AbrirModalMedicamento">
+                        Buscar medicamento
+                    </AppButton>
+                </div>
+                <div class="span-5">
+                    <AppInput TValue="string" Label="Nombre del medicamento" Disabled="true" @bind-Value="linea.Nombre" />
+                </div>
+            </div>
+
+            <div class="form-grid form-grid--end">
+                <div class="span-3">
+                    <AppInput TValue="string" Label="Dosis" Placeholder="Ej. 1 tableta" maxlength="200"
+                              @bind-Value="linea.Dosis" />
+                </div>
+                <div class="span-3">
+                    <AppInput TValue="string" Label="Frecuencia" Placeholder="Ej. Cada 8 horas" maxlength="200"
+                              @bind-Value="linea.Frecuencia" />
+                </div>
+                <div class="span-3">
+                    <AppInput TValue="string" Label="Duración del tratamiento" Placeholder="Ej. 7 días" maxlength="200"
+                              @bind-Value="linea.Duracion" />
+                </div>
+                <div class="span-auto">
+                    <AppButton Variant="ButtonVariant.Secondary" Icon="plus" OnClick="AgregarMedicamento">
+                        Agregar
+                    </AppButton>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorLinea))
+            {
+                <div class="bloque">
+                    <AppAlert Variant="SemanticVariant.Error">@errorLinea</AppAlert>
+                </div>
+            }
+
+            <div class="bloque-grande">
+                <AppTable Items="Pagina(detalles, paginaDetalles)"
+                          ColumnCount="5"
+                          Caption="Medicamentos de la receta">
+                    <HeaderContent>
+                        <th scope="col">Medicamento</th>
+                        <th scope="col">Dosis</th>
+                        <th scope="col">Frecuencia</th>
+                        <th scope="col">Duración</th>
+                        <th scope="col">Acciones</th>
+                    </HeaderContent>
+                    <RowTemplate Context="d">
+                        <td>@d.Medicamento</td>
+                        <td>@d.Dosis</td>
+                        <td>@d.Frecuencia</td>
+                        <td>@d.Duracion</td>
+                        <td>
+                            <AppButton Size="ButtonSize.Small"
+                                       Variant="ButtonVariant.Danger"
+                                       Icon="trash"
+                                       OnClick="() => QuitarMedicamento(d)">
+                                Quitar
+                            </AppButton>
+                        </td>
+                    </RowTemplate>
+                    <EmptyContent>
+                        <AppEmptyState Icon="file-text"
+                                       Title="Aún no agregaste medicamentos"
+                                       Description="Selecciona un medicamento, completa la dosis, frecuencia y duración, y presiona Agregar." />
+                    </EmptyContent>
+                </AppTable>
+
+                <AppPagination @bind-CurrentPage="paginaDetalles"
+                               TotalItems="detalles.Count"
+                               PageSize="TamPagina"
+                               AriaLabel="Paginación de medicamentos de la receta" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(errorDetalle))
+            {
+                <div class="bloque">
+                    <AppAlert Variant="SemanticVariant.Error">@errorDetalle</AppAlert>
+                </div>
+            }
+
+            <div class="bloque-grande">
+                <AppTextArea TValue="string"
+                             Label="Indicaciones"
+                             Rows="3"
+                             maxlength="600"
+                             HelpText="Indicaciones generales de la receta. Máximo 600 caracteres."
+                             @bind-Value="modelo.Indicaciones" />
+            </div>
+        </AppCard>
+    </div>
+
+    <div class="acciones acciones--entre">
+        <AppButton Href="/veterinario/atencion" Variant="ButtonVariant.Secondary">Regresar</AppButton>
+        <AppButton Type="submit" Variant="ButtonVariant.Primary">Guardar receta</AppButton>
+    </div>
+</EditForm>
+
+<div class="seccion">
+    <AppCard Title="Recetas registradas" Subtitle="Consulta las recetas y sus medicamentos prescritos.">
+        @if (!string.IsNullOrWhiteSpace(errorListado))
+        {
+            <p role="alert" class="ms-small-note">@errorListado</p>
+        }
+        <div class="acciones"><AppButton Variant="ButtonVariant.Secondary" OnClick="CargarRecetas">Actualizar recetas</AppButton></div>
+        <AppTable Items="recetasRegistradas.OrderByDescending(r=>r.Fecha)" ColumnCount="4" Caption="Recetas médicas">
+            <HeaderContent><th>Código</th><th>Fecha</th><th>Indicaciones</th><th>Medicamentos</th></HeaderContent>
+            <RowTemplate Context="r">
+                <td>@r.IdReceta</td><td>@r.Fecha?.ToString("dd/MM/yyyy")</td>
+                <td>@r.Indicaciones</td>
+                <td>@MostrarMedicamentos(r.IdReceta)</td>
+            </RowTemplate>
+            <EmptyContent><AppEmptyState Icon="file-text" Title="Sin recetas" Description="No hay recetas registradas para mostrar." /></EmptyContent>
+        </AppTable>
+    </AppCard>
+</div>
+
+<AppModal @bind-Visible="mostrarModalAtencion" Title="Búsqueda de atención médica">
+    <ChildContent>
+        <AppFilterBar SearchText="@textoBusquedaAtencion"
+                      SearchTextChanged="BuscarAtencion"
+                      SearchLabel="ID de atención o nombre de mascota"
+                      SearchPlaceholder="Buscar atención o mascota…" />
+
+        <AppTable Items="Pagina(AtencionesFiltradas, paginaAtenciones)"
+                  ColumnCount="5"
+                  Caption="Atenciones médicas registradas">
+            <HeaderContent>
+                <th scope="col">ID</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Mascota</th>
+                <th scope="col">Tipo de atención</th>
+                <th scope="col">Acciones</th>
+            </HeaderContent>
+            <RowTemplate Context="a">
+                <td>@a.Id</td>
+                <td>@a.Fecha.ToString("dd/MM/yyyy")</td>
+                <td>@a.Mascota</td>
+                <td>@a.Tipo</td>
+                <td>
+                    <AppButton Size="ButtonSize.Small"
+                               Variant="ButtonVariant.Secondary"
+                               OnClick="() => SeleccionarAtencion(a)">
+                        Seleccionar
+                    </AppButton>
+                </td>
+            </RowTemplate>
+            <EmptyContent>
+                <AppEmptyState Icon="file-text"
+                               Title="No se encontraron atenciones"
+                               Description="Prueba con otro ID de atención o con el nombre de la mascota." />
+            </EmptyContent>
+        </AppTable>
+
+        <AppPagination @bind-CurrentPage="paginaAtenciones"
+                       TotalItems="AtencionesFiltradas.Count()"
+                       PageSize="TamPagina"
+                       AriaLabel="Paginación de atenciones" />
+
+    </ChildContent>
+
+    <Actions>
+        <AppButton Variant="ButtonVariant.Tertiary" OnClick="CerrarModalAtencion">Cerrar</AppButton>
+    </Actions>
+</AppModal>
+
+<AppModal @bind-Visible="mostrarModalMedicamento" Title="Búsqueda de medicamento">
+    <ChildContent>
+        <AppFilterBar SearchText="@textoBusquedaMedicamento"
+                      SearchTextChanged="BuscarMedicamento"
+                      SearchLabel="Nombre del medicamento"
+                      SearchPlaceholder="Buscar medicamento…" />
+
+        <AppTable Items="Pagina(MedicamentosFiltrados, paginaMedicamentos)"
+                  ColumnCount="5"
+                  Caption="Catálogo de medicamentos">
+            <HeaderContent>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Fecha de vencimiento</th>
+                <th scope="col">Acciones</th>
+            </HeaderContent>
+            <RowTemplate Context="m">
+                <td>@m.Id</td>
+                <td>@m.Nombre</td>
+                <td>@m.Descripcion</td>
+                <td>@m.FechaVencimiento.ToString("dd/MM/yyyy")</td>
+                <td>
+                    <AppButton Size="ButtonSize.Small"
+                               Variant="ButtonVariant.Secondary"
+                               OnClick="() => SeleccionarMedicamento(m)">
+                        Seleccionar
+                    </AppButton>
+                </td>
+            </RowTemplate>
+            <EmptyContent>
+                <AppEmptyState Icon="search"
+                               Title="No se encontraron medicamentos"
+                               Description="Prueba con otro nombre." />
+            </EmptyContent>
+        </AppTable>
+
+        <AppPagination @bind-CurrentPage="paginaMedicamentos"
+                       TotalItems="MedicamentosFiltrados.Count()"
+                       PageSize="TamPagina"
+                       AriaLabel="Paginación de medicamentos" />
+
+    </ChildContent>
+
+    <Actions>
+        <AppButton Variant="ButtonVariant.Tertiary" OnClick="CerrarModalMedicamento">Cerrar</AppButton>
+    </Actions>
+</AppModal>
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "atencion")] private int? IdAtencionSeleccionada { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var med=await MedicamentosREST.ListarTodosAsync();
+            medicamentos=med.Where(m=>m.Activo).Select(m=>new MedicamentoBusqueda(m.IdMedicamento,m.Nombre??"",m.Descripcion??"",
+                DateOnly.FromDateTime(m.FechaVencimiento??DateTime.Today))).ToList();
+            citasRegistradas = await CitasREST.ListarTodosAsync();
+            mascotasRegistradas = await MascotasREST.ListarTodosAsync();
+            clientesRegistrados = await ClientesREST.ListarTodosAsync();
+            atenciones.Clear();
+            foreach(var a in await ConsultasREST.ListarTodosAsync())AgregarAtencion(a,"Consulta");
+            foreach(var a in await ControlesREST.ListarTodosAsync())AgregarAtencion(a,"Control");
+            foreach(var a in await CirugiasREST.ListarTodosAsync())AgregarAtencion(a,"Cirugía");
+            foreach(var a in await VacunacionesREST.ListarTodosAsync())AgregarAtencion(a,"Vacunación");
+            await CargarRecetas();
+            if(IdAtencionSeleccionada.HasValue)
+            {
+                var atencion=atenciones.FirstOrDefault(a=>a.Id==IdAtencionSeleccionada.Value);
+                if(atencion is not null)SeleccionarAtencion(atencion);
+            }
+        }
+        catch(Exception ex){Toast.Error($"No se pudieron cargar los datos de receta: {ex.Message}");}
+    }
+    private string MostrarMedicamentos(int idReceta) => string.Join(", ",
+        detallesRegistrados.Where(d => d.Receta?.IdReceta == idReceta)
+            .Select(d => d.Medicamento?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)));
+
+    private async Task CargarRecetas()
+    {
+        try
+        {
+            errorListado = null;
+            var recetasTask = RecetasREST.ListarTodosAsync();
+            var detallesTask = DetallesREST.ListarTodosAsync();
+            await Task.WhenAll(recetasTask, detallesTask);
+            recetasRegistradas = await recetasTask;
+            detallesRegistrados = await detallesTask;
+        }
+        catch (Exception ex) { errorListado = $"No se pudieron cargar las recetas: {ex.Message}"; }
+    }
+
+    private void AgregarAtencion(MascovetDomain.AtencionesMedicas.AtencionMedica a,string tipo)
+    {
+        if(a.Cita is null)return;
+        var cita = citasRegistradas.FirstOrDefault(c => c.IdCita == a.Cita.IdCita);
+        var mascota = mascotasRegistradas.FirstOrDefault(m => m.IdMascota == (cita?.Mascota?.IdMascota ?? a.Cita.Mascota?.IdMascota));
+        var cliente = clientesRegistrados.FirstOrDefault(c => c.IdUsuario == mascota?.Cliente?.IdUsuario);
+        atenciones.Add(new AtencionBusqueda(a.IdAtencion,
+            DateOnly.FromDateTime(cita?.Fecha ?? a.Cita.Fecha ?? DateTime.Today),
+            mascota?.Nombre ?? "Mascota sin nombre", cliente?.NombreCompleto ?? "Propietario no identificado", tipo));
+    }
+    private const int TamPagina = 5;
+
+    private RecetaModel modelo = new();
+    private LineaModel linea = new();
+
+    private string errorLinea = string.Empty;
+    private string errorDetalle = string.Empty;
+
+    private readonly List<DetalleFila> detalles=new();
+    private List<AtencionBusqueda> atenciones=new();
+    private List<MascovetDomain.Citas.Cita> citasRegistradas=new();
+    private List<MascovetDomain.Mascotas.Mascota> mascotasRegistradas=new();
+    private List<MascovetDomain.Usuarios.Cliente> clientesRegistrados=new();
+    private List<MedicamentoBusqueda> medicamentos=new();
+    private List<MascovetDomain.Recetas.Receta> recetasRegistradas=new();
+    private List<MascovetDomain.Recetas.DetalleReceta> detallesRegistrados=new();
+    private string? errorListado;
+
+    private bool mostrarModalAtencion;
+    private bool mostrarModalMedicamento;
+
+    private string? textoBusquedaAtencion;
+    private string? textoBusquedaMedicamento;
+    private int paginaDetalles = 1;
+    private int paginaAtenciones = 1;
+    private int paginaMedicamentos = 1;
+
+    private IEnumerable<AtencionBusqueda> AtencionesFiltradas =>
+        atenciones.Where(a => Coincide(textoBusquedaAtencion, a.Id.ToString(), a.Mascota));
+
+    private IEnumerable<MedicamentoBusqueda> MedicamentosFiltrados =>
+        medicamentos.Where(m => Coincide(textoBusquedaMedicamento, m.Nombre));
+
+    private static IEnumerable<T> Pagina<T>(IEnumerable<T> fuente, int pagina) =>
+        fuente.Skip((Math.Max(1, pagina) - 1) * TamPagina).Take(TamPagina);
+
+    private static bool Coincide(string? texto, params string[] campos) =>
+        string.IsNullOrWhiteSpace(texto) ||
+        campos.Any(c => c.Contains(texto.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    private void AbrirModalAtencion() => mostrarModalAtencion = true;
+    private void CerrarModalAtencion() => mostrarModalAtencion = false;
+    private void AbrirModalMedicamento() => mostrarModalMedicamento = true;
+    private void CerrarModalMedicamento() => mostrarModalMedicamento = false;
+
+    private void BuscarAtencion(string? texto)
+    {
+        textoBusquedaAtencion = texto;
+        paginaAtenciones = 1;
+    }
+
+    private void LimpiarBusquedaAtencion() => BuscarAtencion(string.Empty);
+
+    private void BuscarMedicamento(string? texto)
+    {
+        textoBusquedaMedicamento = texto;
+        paginaMedicamentos = 1;
+    }
+
+    private void LimpiarBusquedaMedicamento() => BuscarMedicamento(string.Empty);
+
+    private void SeleccionarAtencion(AtencionBusqueda a)
+    {
+        modelo.IdAtencion = a.Id.ToString();
+        modelo.Mascota = a.Mascota;
+        modelo.Dueno = a.Dueno;
+        mostrarModalAtencion = false;
+    }
+
+    private void SeleccionarMedicamento(MedicamentoBusqueda m)
+    {
+        linea.IdMedicamento = m.Id.ToString();
+        linea.Nombre = m.Nombre;
+        mostrarModalMedicamento = false;
+    }
+
+    private void AgregarMedicamento()
+    {
+        if (string.IsNullOrWhiteSpace(linea.IdMedicamento) ||
+            string.IsNullOrWhiteSpace(linea.Dosis) ||
+            string.IsNullOrWhiteSpace(linea.Frecuencia) ||
+            string.IsNullOrWhiteSpace(linea.Duracion))
+        {
+            errorLinea = "Seleccione un medicamento e ingrese la dosis, la frecuencia y la duración.";
+            return;
+        }
+
+        errorLinea = string.Empty;
+        errorDetalle = string.Empty;
+        detalles.Add(new DetalleFila(int.Parse(linea.IdMedicamento), linea.Nombre, linea.Dosis.Trim(),
+                                     linea.Frecuencia.Trim(), linea.Duracion.Trim()));
+        linea = new LineaModel();
+    }
+
+    private void QuitarMedicamento(DetalleFila d)
+    {
+        detalles.Remove(d);
+        if (paginaDetalles > 1 && !Pagina(detalles, paginaDetalles).Any())
+            paginaDetalles--;
+    }
+
+    private async Task Guardar()
+    {
+        if(detalles.Count==0){errorDetalle="Agregue al menos un medicamento a la receta.";return;}
+        if(string.IsNullOrWhiteSpace(modelo.Indicaciones))
+        {Toast.Warning("Es obligatorio registrar las indicaciones generales de la receta.");return;}
+        if(!modelo.Fecha.HasValue){Toast.Warning("Selecciona la fecha de la receta.");return;}
+        if(!int.TryParse(modelo.IdAtencion,out int id)){Toast.Warning("Selecciona una atención.");return;}
+        errorDetalle="";
+        try
+        {
+            var tipoAtencion = atenciones.FirstOrDefault(a => a.Id == id)?.Tipo;
+            MascovetDomain.AtencionesMedicas.AtencionMedica atencion = tipoAtencion switch
+            {
+                "Control" => new MascovetDomain.AtencionesMedicas.Control { IdAtencion = id },
+                "Cirugía" => new MascovetDomain.AtencionesMedicas.Cirugia { IdAtencion = id },
+                "Vacunación" => new MascovetDomain.AtencionesMedicas.Vacunacion { IdAtencion = id },
+                _ => new MascovetDomain.AtencionesMedicas.Consulta { IdAtencion = id }
+            };
+            var receta=new MascovetDomain.Recetas.Receta{Fecha=modelo.Fecha.Value.ToDateTime(TimeOnly.MinValue),
+                Indicaciones=modelo.Indicaciones.Trim(),AtencionMedica=atencion};
+            foreach(var d in detalles)receta.AgregarDetalleReceta(new MascovetDomain.Recetas.DetalleReceta{
+                Medicamento=new MascovetDomain.Recetas.Medicamento{IdMedicamento=d.IdMedicamento},
+                Dosis=d.Dosis,Frecuencia=d.Frecuencia,Duracion=d.Duracion});
+            int result=await RecetasREST.InsertarConDetallesAsync(receta);
+            if(result<=0){Toast.Warning("El servidor no confirmó la receta.");return;}
+            Toast.Success("Receta registrada.");detalles.Clear();modelo=new();await CargarRecetas();
+        }
+        catch(Exception ex){Toast.Error($"No se pudo registrar la receta: {ex.Message}");}
+    }
+
+    private sealed record DetalleFila(int IdMedicamento, string Medicamento, string Dosis, string Frecuencia, string Duracion);
+    private sealed record AtencionBusqueda(int Id, DateOnly Fecha, string Mascota, string Dueno, string Tipo);
+    private sealed record MedicamentoBusqueda(int Id, string Nombre, string Descripcion, DateOnly FechaVencimiento);
+
+    private sealed class RecetaModel
+    {
+        [Required(ErrorMessage = "Seleccione una atención médica.")]
+        public string IdAtencion { get; set; } = string.Empty;
+        public string Mascota { get; set; } = string.Empty;
+        public string Dueno { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Ingrese la fecha de la receta.")]
+        public DateOnly? Fecha { get; set; }
+
+        [StringLength(600, ErrorMessage = "Las indicaciones no deben exceder los 600 caracteres.")]
+        public string Indicaciones { get; set; } = string.Empty;
+    }
+
+    private sealed class LineaModel
+    {
+        public string IdMedicamento { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public string Dosis { get; set; } = string.Empty;
+        public string Frecuencia { get; set; } = string.Empty;
+        public string Duracion { get; set; } = string.Empty;
+    }
+}

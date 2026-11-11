@@ -17,10 +17,11 @@ public class Cliente extends Usuario{
         citas = new ArrayList<>();
     }
 
-    public Cliente(int idUsuario, String dni, String nombre, String apellido,
+    public Cliente(int idUsuario, String dni, String nombre, String apellidoPaterno, String apellidoMaterno,
                    String nombreUsuario, String contrasena, boolean activo,
                    String correo, String telefono) {
-        super(idUsuario, dni, nombre, apellido, nombreUsuario, contrasena, activo);
+        super(idUsuario, dni, nombre, apellidoPaterno, apellidoMaterno,
+                nombreUsuario, contrasena, activo);
         this.correo = correo;
         this.telefono = telefono;
         mascotas = new ArrayList<>();

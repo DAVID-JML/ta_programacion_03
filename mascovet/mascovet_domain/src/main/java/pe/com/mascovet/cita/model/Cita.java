@@ -2,6 +2,7 @@ package pe.com.mascovet.cita.model;
 
 import pe.com.mascovet.atencionmedica.model.AtencionMedica;
 import pe.com.mascovet.enums.model.EstadoCita;
+import pe.com.mascovet.enums.model.TipoAtencion;
 import pe.com.mascovet.mascota.model.Mascota;
 import pe.com.mascovet.usuario.model.Cliente;
 import pe.com.mascovet.usuario.model.Recepcionista;
@@ -18,7 +19,9 @@ public class Cita {
     private Date fecha;
     private LocalTime hora;
     private EstadoCita estado;
-    private Cliente cliente;
+    private TipoAtencion tipoAtencion;
+    private String motivoCancelacion;
+    private boolean activo = true;
     private Recepcionista recepcionista;
     private Veterinario veterinario;
     private final List<AtencionMedica> atencionesMedicas;
@@ -69,11 +72,31 @@ public class Cita {
     }
 
     public Cliente getCliente() {
-        return cliente;
+        return mascota == null ? null : mascota.getCliente();
     }
 
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
+    public TipoAtencion getTipoAtencion() {
+        return tipoAtencion;
+    }
+
+    public void setTipoAtencion(TipoAtencion tipoAtencion) {
+        this.tipoAtencion = tipoAtencion;
+    }
+
+    public String getMotivoCancelacion() {
+        return motivoCancelacion;
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+        this.motivoCancelacion = motivoCancelacion;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public Recepcionista getRecepcionista() {

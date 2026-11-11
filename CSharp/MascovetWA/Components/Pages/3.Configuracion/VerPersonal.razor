@@ -1,0 +1,41 @@
+@page "/administrador/personal/ver/{Id:int}"
+@inject VeterinarioRestService VeterinariosREST
+@inject RecepcionistaRestService RecepcionistasREST
+@layout MainLayout
+<PageTitle>Ficha de personal | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Ficha de personal</h1><p>Información del trabajador seleccionado.</p></div></header>
+    @if(Persona is null) { <AppCard Title="Registro no encontrado"><p>No se encontró al trabajador.</p></AppCard> }
+    else
+    {
+        <AppCard Title="@Persona.Nombre" Subtitle="@Persona.Rol">
+            <div class="ms-detail-grid">
+                <div><span>DNI</span><strong>@Persona.Dni</strong></div><div><span>Teléfono</span><strong>@Persona.Telefono</strong></div>
+                <div><span>Correo</span><strong>@Persona.Correo</strong></div><div><span>Especialidad / Turno</span><strong>@Persona.Detalle</strong></div>
+                <div><span>Estado</span><AppBadge Variant="@(Persona.Activo ? SemanticVariant.Success : SemanticVariant.Warning)" ShowIcon="false">@(Persona.Activo ? "Activo" : "Inactivo")</AppBadge></div>
+            </div>
+            <div class="acciones"><AppButton Href="@($"/administrador/personal/editar/{Id}")">Editar personal</AppButton><AppButton Href="/administrador/personal" Variant="ButtonVariant.Secondary">Volver</AppButton></div>
+        </AppCard>
+    }
+</div>
+@code {
+    [Parameter] public int Id { get; set; }
+    private sealed record PersonaFila(string Nombre,string Rol,string Dni,string Telefono,string Correo,string Detalle,bool Activo);
+    private PersonaFila? Persona;
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            var v=(await VeterinariosREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdUsuario==Id);
+            if(v is not null)
+                Persona=new($"{v.Nombre} {v.ApellidoPaterno} {v.ApellidoMaterno}".Trim(), "Veterinario", v.Dni??"",v.Telefono??"",v.Correo??"",
+                    $"{v.Especialidad} · {v.NumeroColegiatura}",v.Activo);
+            else
+            {
+                var r=(await RecepcionistasREST.ListarTodosAsync()).FirstOrDefault(x=>x.IdUsuario==Id);
+                Persona=r is null ? null : new($"{r.Nombre} {r.ApellidoPaterno} {r.ApellidoMaterno}".Trim(), "Recepcionista",r.Dni??"",r.Telefono??"",r.Correo??"",r.Turno??"",r.Activo);
+            }
+        }
+        catch { Persona=null; }
+    }
+}

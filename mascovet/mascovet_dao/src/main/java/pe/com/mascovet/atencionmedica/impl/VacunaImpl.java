@@ -6,9 +6,10 @@ import pe.com.mascovet.config.DBManager;
 import pe.com.mascovet.config.TransactionContext;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,24 +17,23 @@ public class VacunaImpl implements VacunaDAO {
 
     @Override
     public int insertar(Vacuna vacuna) {
-        String sql = "INSERT INTO VACUNA (nombre, descripcion) VALUES (?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setString(1, vacuna.getNombre());
-                ps.setString(2, vacuna.getDescripcion());
-                ps.executeUpdate();
+        String sql = "{call INSERTAR_VACUNA(?, ?, ?, ?)}";
+        Connection conexion = TransactionContext.getCurrentConnection();
+        if (conexion == null)
+            conexion = DBManager.getInstance().getConnection();
+        try (Connection con = conexion) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_vacuna", Types.INTEGER);
+                cs.setString("_nombre", vacuna.getNombre());
+                cs.setString("_descripcion", vacuna.getDescripcion());
+                cs.setBoolean("_activo", vacuna.isActivo());
+                cs.executeUpdate();
 
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        vacuna.setIdVacuna(rs.getInt(1));
+                if (cs.getInt("_id_vacuna") > 0) {
+                        vacuna.setIdVacuna(cs.getInt("_id_vacuna"));
                         return vacuna.getIdVacuna();
                     }
-                }
                 return 0;
-            } catch (Exception ex) {
-                System.out.println("ERROR AL INSERTAR VACUNA: " + ex.getMessage());
-                throw new RuntimeException(ex);
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR VACUNA: " + ex.getMessage());
@@ -43,13 +43,15 @@ public class VacunaImpl implements VacunaDAO {
 
     @Override
     public int modificar(Vacuna vacuna) {
-        String sql = "UPDATE VACUNA SET nombre=?, descripcion=? WHERE id_vacuna=?";
+        String sql = "{call MODIFICAR_VACUNA(?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, vacuna.getNombre());
-            ps.setString(2, vacuna.getDescripcion());
-            ps.setInt(3, vacuna.getIdVacuna());
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setString("_nombre", vacuna.getNombre());
+            cs.setString("_descripcion", vacuna.getDescripcion());
+            cs.setInt("_id_vacuna", vacuna.getIdVacuna());
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR VACUNA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -58,11 +60,13 @@ public class VacunaImpl implements VacunaDAO {
 
     @Override
     public int eliminar(int idVacuna) {
-        String sql = "DELETE FROM VACUNA WHERE id_vacuna=?";
+        String sql = "{call ELIMINAR_VACUNA(?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idVacuna);
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_vacuna", idVacuna);
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR VACUNA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -71,17 +75,18 @@ public class VacunaImpl implements VacunaDAO {
 
     @Override
     public Vacuna obtenerPorId(int idVacuna) {
-        Vacuna vacuna = null;
-        String sql = "SELECT id_vacuna, nombre, descripcion FROM VACUNA WHERE id_vacuna=?";
-        try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idVacuna);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    vacuna = new Vacuna();
-                    vacuna.setIdVacuna(rs.getInt("id_vacuna"));
-                    vacuna.setNombre(rs.getString("nombre"));
-                    vacuna.setDescripcion(rs.getString("descripcion"));
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            Vacuna vacuna = null;
+            try (CallableStatement cs = con.prepareCall("{call LISTAR_VACUNA_X_ID(?)}")) {
+                cs.setInt("_id_vacuna", idVacuna);
+                try (ResultSet rs = cs.executeQuery()) {
+                    if (rs.next()) {
+                        vacuna = new Vacuna();
+                        vacuna.setIdVacuna(rs.getInt("id_vacuna"));
+                        vacuna.setNombre(rs.getString("nombre"));
+                        vacuna.setDescripcion(rs.getString("descripcion"));
+                        vacuna.setActivo(rs.getBoolean("activo"));
+                    }
                 }
             }
             return vacuna;
@@ -94,36 +99,21 @@ public class VacunaImpl implements VacunaDAO {
     @Override
     public List<Vacuna> listarTodos() {
         List<Vacuna> vacunas = new ArrayList<>();
-        String sql = "SELECT id_vacuna, nombre, descripcion FROM VACUNA";
+        String sql = "{call LISTAR_VACUNA_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Vacuna vacuna = new Vacuna();
                 vacuna.setIdVacuna(rs.getInt("id_vacuna"));
                 vacuna.setNombre(rs.getString("nombre"));
                 vacuna.setDescripcion(rs.getString("descripcion"));
+                vacuna.setActivo(rs.getBoolean("activo"));
                 vacunas.add(vacuna);
             }
             return vacunas;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR VACUNAS: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void registrarVacunaSP(String nombre, String descripcion) {
-        String sql = "{CALL registrar_vacuna(?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, nombre);
-                cs.setString(2, descripcion);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR registrar_vacuna: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

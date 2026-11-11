@@ -1,7 +1,6 @@
 package pe.com.mascovet.mascota.impl;
 
 import pe.com.mascovet.config.DBManager;
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.enums.model.Especie;
 import pe.com.mascovet.enums.model.Sexo;
 import pe.com.mascovet.mascota.dao.MascotaDAO;
@@ -9,9 +8,9 @@ import pe.com.mascovet.mascota.model.Mascota;
 import pe.com.mascovet.usuario.model.Cliente;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,24 +18,23 @@ public class MascotaImpl implements MascotaDAO {
 
     @Override
     public int insertar(Mascota mascota) {
-        String sql = "INSERT INTO MASCOTA (id_usuario, nombre, fechaNacimiento, especie, raza, sexo, activo) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "{call INSERTAR_MASCOTA(?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setInt(1, mascota.getCliente().getIdUsuario());
-            ps.setString(2, mascota.getNombre());
-            ps.setDate(3, new java.sql.Date(mascota.getFechaNacimiento().getTime()));
-            ps.setString(4, mascota.getEspecie().name());
-            ps.setString(5, mascota.getRaza());
-            ps.setString(6, mascota.getSexo().name());
-            ps.setBoolean(7, mascota.isActivo());
-            ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_id_mascota", Types.INTEGER);
+            cs.setInt("_id_usuario", mascota.getCliente().getIdUsuario());
+            cs.setString("_nombre", mascota.getNombre());
+            cs.setDate("_fechanacimiento", new java.sql.Date(mascota.getFechaNacimiento().getTime()));
+            cs.setString("_especie", mascota.getEspecie().name());
+            cs.setString("_raza", mascota.getRaza());
+            cs.setString("_sexo", mascota.getSexo().name());
+            cs.setBoolean("_activo", mascota.isActivo());
+            cs.executeUpdate();
 
-            try (ResultSet rs = ps.getGeneratedKeys()) {
-                if (rs.next()) {
-                    mascota.setIdMascota(rs.getInt(1));
+            if (cs.getInt("_id_mascota") > 0) {
+                    mascota.setIdMascota(cs.getInt("_id_mascota"));
                     return mascota.getIdMascota();
                 }
-            }
             return 0;
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR MASCOTA: " + ex.getMessage());
@@ -46,18 +44,20 @@ public class MascotaImpl implements MascotaDAO {
 
     @Override
     public int modificar(Mascota mascota) {
-        String sql = "UPDATE MASCOTA SET id_usuario=?, nombre=?, fechaNacimiento=?, especie=?, raza=?, sexo=?, activo=? WHERE id_mascota=?";
+        String sql = "{call MODIFICAR_MASCOTA(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, mascota.getCliente().getIdUsuario());
-            ps.setString(2, mascota.getNombre());
-            ps.setDate(3, new java.sql.Date(mascota.getFechaNacimiento().getTime()));
-            ps.setString(4, mascota.getEspecie().name());
-            ps.setString(5, mascota.getRaza());
-            ps.setString(6, mascota.getSexo().name());
-            ps.setBoolean(7, mascota.isActivo());
-            ps.setInt(8, mascota.getIdMascota());
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_usuario", mascota.getCliente().getIdUsuario());
+            cs.setString("_nombre", mascota.getNombre());
+            cs.setDate("_fechanacimiento", new java.sql.Date(mascota.getFechaNacimiento().getTime()));
+            cs.setString("_especie", mascota.getEspecie().name());
+            cs.setString("_raza", mascota.getRaza());
+            cs.setString("_sexo", mascota.getSexo().name());
+            cs.setBoolean("_activo", mascota.isActivo());
+            cs.setInt("_id_mascota", mascota.getIdMascota());
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR MASCOTA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -66,11 +66,13 @@ public class MascotaImpl implements MascotaDAO {
 
     @Override
     public int eliminar(int idMascota) {
-        String sql = "UPDATE MASCOTA SET activo=0 WHERE id_mascota=?";
+        String sql = "{call ELIMINAR_MASCOTA(?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idMascota);
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_mascota", idMascota);
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR MASCOTA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -80,11 +82,11 @@ public class MascotaImpl implements MascotaDAO {
     @Override
     public Mascota obtenerPorId(int idMascota) {
         Mascota mascota = null;
-        String sql = "SELECT id_mascota, id_usuario, nombre, fechaNacimiento, especie, raza, sexo, activo FROM MASCOTA WHERE id_mascota=?";
+        String sql = "{call LISTAR_MASCOTA_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idMascota);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_mascota", idMascota);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     mascota = new Mascota();
                     mascota.setIdMascota(rs.getInt("id_mascota"));
@@ -109,10 +111,10 @@ public class MascotaImpl implements MascotaDAO {
     @Override
     public List<Mascota> listarTodos() {
         List<Mascota> mascotas = new ArrayList<>();
-        String sql = "SELECT id_mascota, id_usuario, nombre, fechaNacimiento, especie, raza, sexo, activo FROM MASCOTA WHERE activo=1";
+        String sql = "{call LISTAR_MASCOTA_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Mascota mascota = new Mascota();
                 mascota.setIdMascota(rs.getInt("id_mascota"));
@@ -130,43 +132,6 @@ public class MascotaImpl implements MascotaDAO {
             return mascotas;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR MASCOTAS: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void vincularMascotaSP(String dni, String nombre, java.sql.Date fechaNacimiento, String especie, String raza, String sexo) {
-        String sql = "{CALL vincular_mascota(?, ?, ?, ?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dni);
-                cs.setString(2, nombre);
-                cs.setDate(3, fechaNacimiento);
-                cs.setString(4, especie);
-                cs.setString(5, raza);
-                cs.setString(6, sexo);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR vincular_mascota: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void cambiarEstadoMascotaSP(String dniCliente, String nombreMascota, boolean activo) {
-        String sql = "{CALL cambiar_estado_mascota(?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dniCliente);
-                cs.setString(2, nombreMascota);
-                cs.setBoolean(3, activo);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR cambiar_estado_mascota: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

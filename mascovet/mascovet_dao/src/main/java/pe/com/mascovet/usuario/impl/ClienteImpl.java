@@ -1,39 +1,37 @@
 package pe.com.mascovet.usuario.impl;
 
 import pe.com.mascovet.config.DBManager;
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.usuario.dao.ClienteDAO;
 import pe.com.mascovet.usuario.model.Cliente;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClienteImpl implements ClienteDAO {
 
-    private final UsuarioImpl usuarioDao = new UsuarioImpl();
-
     @Override
     public int insertar(Cliente cliente) {
-        String sql = "INSERT INTO CLIENTE (id_usuario, correo, telefono) VALUES (?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                int idUsuario = usuarioDao.insertarUsuarioBase(cliente, con);
-                if (idUsuario <= 0) {
-                    throw new RuntimeException("No se pudo generar el identificador del usuario");
-                }
-                ps.setInt(1, idUsuario);
-                ps.setString(2, cliente.getCorreo());
-                ps.setString(3, cliente.getTelefono());
-                ps.executeUpdate();
-                cliente.setIdUsuario(idUsuario);
-                return cliente.getIdUsuario();
-            } catch (Exception ex) {
-                System.out.println("ERROR AL INSERTAR CLIENTE: " + ex.getMessage());
-                throw new RuntimeException(ex);
+        String sql = "{call INSERTAR_CLIENTE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_usuario", Types.INTEGER);
+                cs.setString("_dni", cliente.getDni());
+                cs.setString("_nombre", cliente.getNombre());
+                cs.setString("_apellido_paterno", cliente.getApellidoPaterno());
+                cs.setString("_apellido_materno", cliente.getApellidoMaterno());
+                cs.setString("_nombre_usuario", cliente.getNombreUsuario());
+                cs.setString("_contrasena", cliente.getContrasena());
+                cs.setBoolean("_activo", cliente.isActivo());
+                cs.setString("_correo", cliente.getCorreo());
+                cs.setString("_telefono", cliente.getTelefono());
+                cs.executeUpdate();
+                int idGenerado = cs.getInt("_id_usuario");
+                cliente.setIdUsuario(idGenerado);
+                return idGenerado;
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR CLIENTE: " + ex.getMessage());
@@ -43,19 +41,22 @@ public class ClienteImpl implements ClienteDAO {
 
     @Override
     public int modificar(Cliente cliente) {
-        String sql = "UPDATE CLIENTE SET correo=?, telefono=? WHERE id_usuario=?";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                int filasUsuario = usuarioDao.modificarUsuarioBase(cliente, con);
-                ps.setString(1, cliente.getCorreo());
-                ps.setString(2, cliente.getTelefono());
-                ps.setInt(3, cliente.getIdUsuario());
-                int filasCliente = ps.executeUpdate();
-                return (filasUsuario > 0 && filasCliente > 0) ? 1 : 0;
-            } catch (Exception ex) {
-                System.out.println("ERROR AL MODIFICAR CLIENTE: " + ex.getMessage());
-                throw new RuntimeException(ex);
+        String sql = "{call MODIFICAR_CLIENTE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setString("_dni", cliente.getDni());
+                cs.setString("_nombre", cliente.getNombre());
+                cs.setString("_apellido_paterno", cliente.getApellidoPaterno());
+                cs.setString("_apellido_materno", cliente.getApellidoMaterno());
+                cs.setString("_nombre_usuario", cliente.getNombreUsuario());
+                cs.setString("_contrasena", cliente.getContrasena());
+                cs.setBoolean("_activo", cliente.isActivo());
+                cs.setInt("_id_usuario", cliente.getIdUsuario());
+                cs.setString("_correo", cliente.getCorreo());
+                cs.setString("_telefono", cliente.getTelefono());
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR CLIENTE: " + ex.getMessage());
@@ -65,11 +66,14 @@ public class ClienteImpl implements ClienteDAO {
 
     @Override
     public int eliminar(int idCliente) {
-        String sql = "UPDATE USUARIO SET activo=0 WHERE id_usuario=?";
-        try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idCliente);
-            return ps.executeUpdate();
+        String sql = "{call ELIMINAR_CLIENTE(?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setInt("_id_usuario", idCliente);
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
+            }
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR CLIENTE: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -79,18 +83,18 @@ public class ClienteImpl implements ClienteDAO {
     @Override
     public Cliente obtenerPorId(int idCliente) {
         Cliente cliente = null;
-        String sql = "SELECT u.id_usuario, u.dni, u.nombre, u.apellido, u.nombre_usuario, u.contrasena, u.activo, c.correo, c.telefono " +
-                "FROM USUARIO u INNER JOIN CLIENTE c ON u.id_usuario=c.id_usuario WHERE u.id_usuario=?";
+        String sql = "{call LISTAR_CLIENTE_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idCliente);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_usuario", idCliente);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     cliente = new Cliente();
                     cliente.setIdUsuario(rs.getInt("id_usuario"));
                     cliente.setDni(rs.getString("dni"));
                     cliente.setNombre(rs.getString("nombre"));
-                    cliente.setApellido(rs.getString("apellido"));
+                    cliente.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    cliente.setApellidoMaterno(rs.getString("apellido_materno"));
                     cliente.setNombreUsuario(rs.getString("nombre_usuario"));
                     cliente.setContrasena(rs.getString("contrasena"));
                     cliente.setActivo(rs.getBoolean("activo"));
@@ -108,17 +112,17 @@ public class ClienteImpl implements ClienteDAO {
     @Override
     public List<Cliente> listarTodos() {
         List<Cliente> clientes = new ArrayList<>();
-        String sql = "SELECT u.id_usuario, u.dni, u.nombre, u.apellido, u.nombre_usuario, u.contrasena, u.activo, c.correo, c.telefono " +
-                "FROM USUARIO u INNER JOIN CLIENTE c ON u.id_usuario=c.id_usuario WHERE u.activo=1";
+        String sql = "{call LISTAR_CLIENTE_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Cliente cliente = new Cliente();
                 cliente.setIdUsuario(rs.getInt("id_usuario"));
                 cliente.setDni(rs.getString("dni"));
                 cliente.setNombre(rs.getString("nombre"));
-                cliente.setApellido(rs.getString("apellido"));
+                cliente.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    cliente.setApellidoMaterno(rs.getString("apellido_materno"));
                 cliente.setNombreUsuario(rs.getString("nombre_usuario"));
                 cliente.setContrasena(rs.getString("contrasena"));
                 cliente.setActivo(rs.getBoolean("activo"));
@@ -129,23 +133,6 @@ public class ClienteImpl implements ClienteDAO {
             return clientes;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR CLIENTES: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void asignarClienteSP(String dni, String correo, String telefono) {
-        String sql = "{CALL asignar_cliente(?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dni);
-                cs.setString(2, correo);
-                cs.setString(3, telefono);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR asignar_cliente: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

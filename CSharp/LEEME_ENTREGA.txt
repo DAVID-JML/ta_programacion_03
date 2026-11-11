@@ -1,0 +1,47 @@
+MASCOVET | PAQUETE CONSOLIDADO PARA REVISIÓN
+Fecha: 10/11/2026
+
+CONTENIDO (tres componentes)
+- CSharp/: MascovetSolution.slnx, MascovetDomain, MascovetWA, 15 RestService.
+- Java/: proyecto Maven MascoVet original de TA_P3, incluidos REST, BO, DAO y dominio.
+- SQL/: mascovet_original_mas_inserts.sql, mismo script de TA_P3.
+
+IMPORTANTE SOBRE JAVA Y SQL
+- NO se cambiaron archivos fuente Java ni SQL.
+- El código Java conserva el parche de RecetaRS/BO y la comparación fechaLocal de CitaBOImpl ya incluidos en TA_P3.
+- Se omitieron solamente archivos temporales de compilación (target/) y configuración local del IDE (.idea/).
+- ATENCIÓN: el SQL comienza con DROP DATABASE IF EXISTS mascovetd. Si la base ya existe, NO ejecute este script completo sobre ella, porque BORRA los datos existentes. Utilice su base actual para las pruebas.
+
+AJUSTES C# REALIZADOS SOBRE LA ÚLTIMA VERSIÓN DISPONIBLE
+1) Incorporados AccionCita.razor y GestionarVacunacion.razor de la última actualización del 10/11.
+2) Cartilla de vacunación: busca el nombre real de la vacuna en el catálogo usando su ID; no inventa nombres cuando falta la asociación.
+3) Mis mascotas: relación de vacunación por ID de cita y consulta del nombre de la vacuna desde el catálogo.
+4) Cliente: vinculación temporal de la cuenta de prueba con nombre_usuario del SQL, evitando relacionar personas solo por el nombre. Afecta perfil, mascotas, mis citas, registro y reserva.
+5) Veterinario: la agenda y el panel inicial filtran por el veterinario vinculado a la cuenta de prueba, sin mostrar indiscriminadamente citas de otros profesionales.
+6) El panel inicial de cliente, recepción y administración consulta datos desde REST y deja de mostrar cantidades o citas ficticias.
+7) Reserva: nombre completo del propietario relacionado con la mascota; no se permiten horas pasadas.
+8) Se mantienen las mejoras previas: edición independiente de horarios y medicamentos, acceso a cartilla, buscadores corregidos, navegación de formularios y carga asíncrona global.
+
+ACCESO TEMPORAL PARA PRUEBAS (NO ES AUTENTICACIÓN REAL)
+Seleccionar el rol correcto en la pantalla de inicio.
+- Cliente: ana@correo.com / Cliente123! -> prueba_cliente_ana del SQL.
+- Veterinario: vet.salazar / Vet123! -> prueba_veterinario_luis del SQL.
+- Alias veterano conservado: vet.paredes / Vet123! -> mismo veterinario de prueba Luis Salazar.
+- Recepcionista: recepcion / Recep123!
+- Administrador: admin / Admin123!
+El cliente y el veterinario necesitan que los registros de prueba estén efectivamente insertados en mascovetd.
+Se usa nombre_usuario porque es estable aunque cambie el correo o nombre de una persona.
+
+CÓMO ABRIR
+1. Abrir Java/pom.xml como proyecto Maven (NetBeans) y desplegar mascovet_services en GlassFish.
+2. Verificar la URL local: http://localhost:8080/mascovet_services-1.0-SNAPSHOT/webresources/
+3. Abrir CSharp/MascovetSolution.slnx en Visual Studio 2022 con SDK .NET 10.
+4. Establecer MascovetWA como proyecto de inicio y ejecutar con perfil http.
+5. Probar en este orden: Clientes/Mascotas, Citas (reservar/reprogramar), Cartilla/Vacunación, Recetas, Agenda del veterinario.
+
+QUÉ FALTA COMPROBAR
+- No se compiló con .NET 10 ni se ejecutó contra GlassFish/MySQL en este entorno. Se realizó validación estática.
+- Si el DAO de vacunaciones no devuelve ninguna vacuna asociada, C# mostrará 'Vacuna sin asociar'; el nombre no se puede deducir sin un ID. Comprobar relación VACUNACION_VACUNA en MySQL.
+- El inicio de sesión real, cambio/recuperación de contraseña, permisos reales y ciertos reportes están fuera de esta implementación. No se deben contar como RF completamente probados.
+- El objetivo de 20/29 RF no queda acreditado por este ZIP: son necesarias pruebas funcionales por requisito. El mínimo matemático para superar 60% de 29 es 18 RF completos.
+- Para presentar según rúbrica también se debe adjuntar catálogo, diagrama de BD, reporte de avance y credenciales de prueba como artefactos separados, si la entrega los solicita.

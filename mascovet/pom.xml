@@ -14,6 +14,7 @@
         <module>mascovet_dbmanager</module>
         <module>mascovet_bussiness_logic</module>
         <module>mascovet_dao</module>
+        <module>mascovet_services</module>
     </modules>
 
     <properties>

@@ -1,6 +1,5 @@
 package pe.com.mascovet.atencionmedica.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.atencionmedica.bo.IVacunaBO;
 import pe.com.mascovet.atencionmedica.dao.VacunaDAO;
 import pe.com.mascovet.atencionmedica.impl.VacunaImpl;
@@ -21,27 +20,18 @@ public class VacunaBOImpl implements IVacunaBO {
             throw new RuntimeException("La vacuna que se quiere registrar es null");
         if (vacuna.getNombre() == null || vacuna.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre de la vacuna es obligatorio");
-        if (vacuna.getNombre().length() > 50)
-            throw new RuntimeException("El nombre de la vacuna no debe exceder los 50 caracteres");
+        if (vacuna.getNombre().length() > 100)
+            throw new RuntimeException("El nombre de la vacuna no debe exceder los 100 caracteres");
         if (vacuna.getDescripcion() == null || vacuna.getDescripcion().trim().isEmpty())
             throw new RuntimeException("La descripción de la vacuna es obligatoria");
-        if (vacuna.getDescripcion().length() > 255)
-            throw new RuntimeException("La descripción no debe exceder los 255 caracteres");
+        if (vacuna.getDescripcion().length() > 500)
+            throw new RuntimeException("La descripción no debe exceder los 500 caracteres");
     }
 
     @Override
     public int insertar(Vacuna vacuna) {
         validarVacuna(vacuna);
-        try {
-            int resultado = daoVacuna.insertar(vacuna);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoVacuna.insertar(vacuna);
     }
 
     @Override
@@ -70,18 +60,4 @@ public class VacunaBOImpl implements IVacunaBO {
             throw new RuntimeException("El identificador de la vacuna no es válido");
         return daoVacuna.obtenerPorId(idVacuna);
     }
-
-    @Override
-    public void registrarVacunaSP(String nombre, String descripcion) {
-        try {
-            daoVacuna.registrarVacunaSP(nombre, descripcion);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en registrarVacunaSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
-    }
-
 }

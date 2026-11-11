@@ -1,0 +1,81 @@
+@page "/administrador/personal"
+@inject VeterinarioRestService VeterinariosREST
+@inject RecepcionistaRestService RecepcionistasREST
+@layout MainLayout
+@inject ToastService Toast
+<PageTitle>Personal | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Personal</h1><p>Registro y administración de veterinarios y recepcionistas.</p></div></header>
+    <AppCard Title="Registrar personal">
+        <div class="form-grid">
+            <div class="span-4"><AppSelect TValue="string" Label="Tipo de personal" Options="tipos" @bind-Value="tipo" /></div>
+            <div class="span-4"><AppInput TValue="string" Label="Nombres" Required="true" maxlength="50" @bind-Value="nombres" /></div>
+            <div class="span-4"><AppInput TValue="string" Label="Apellido paterno" Required="true" maxlength="50" @bind-Value="paterno" /></div>
+            <div class="span-4"><AppInput TValue="string" Label="Apellido materno" Required="true" maxlength="50" @bind-Value="materno" /></div>
+            <div class="span-4"><AppInput TValue="string" Label="DNI" Required="true" maxlength="9" @bind-Value="dni" /></div>
+            <div class="span-4"><AppInput TValue="string" Type="tel" Label="Teléfono" Required="true" @bind-Value="telefono" /></div>
+            <div class="span-4"><AppInput TValue="string" Type="email" Label="Correo electrónico" Required="true" @bind-Value="correo" /></div>
+            <div class="span-4"><AppInput TValue="string" Label="Nombre de usuario" Required="true" @bind-Value="usuario" /></div>
+            <div class="span-4"><AppInput TValue="string" Label="Contraseña inicial" Type="password" Required="true" @bind-Value="contrasena" /></div>
+            @if (tipo == "Veterinario")
+            {
+                <div class="span-6"><AppSelect TValue="string" Label="Especialidad" Options="especialidades" @bind-Value="especialidad" /></div>
+                <div class="span-6"><AppInput TValue="string" Label="Número de colegiatura" @bind-Value="colegiatura" /></div>
+            }
+            else { <div class="span-6"><AppSelect TValue="string" Label="Turno" Options="turnos" @bind-Value="turno" /></div> }
+        </div>
+        <div class="acciones"><AppButton OnClick="Guardar">Registrar personal</AppButton><AppButton OnClick="Limpiar" Variant="ButtonVariant.Secondary">Limpiar formulario</AppButton></div>
+    </AppCard>
+    <AppCard Title="Personal registrado">
+        <AppTable Items="personas" Caption="Personal de la clínica" ColumnCount="6">
+            <HeaderContent><th>Nombre completo</th><th>Rol</th><th>Teléfono</th><th>Correo</th><th>Estado</th><th>Acciones</th></HeaderContent>
+            <RowTemplate Context="p"><td>@p.Nombre</td><td>@p.Rol</td><td>@p.Telefono</td><td>@p.Correo</td><td><AppBadge Variant="@(p.Activo ? SemanticVariant.Success : SemanticVariant.Warning)" ShowIcon="false">@(p.Activo ? "Activo" : "Inactivo")</AppBadge></td><td><div class="ms-inline-actions"><AppButton Href="@($"/administrador/personal/ver/{p.Id}")" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver</AppButton><AppButton Href="@($"/administrador/personal/editar/{p.Id}")" Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Editar / inactivar</AppButton></div></td></RowTemplate>
+        </AppTable>
+    </AppCard>
+</div>
+@code {
+    private sealed record PersonaFila(int Id,string Nombre,string Rol,string Telefono,string Correo,bool Activo);
+    private List<PersonaFila> personas = new();
+    private readonly List<SelectOption<string>> tipos=[new("Veterinario","Veterinario"),new("Recepcionista","Recepcionista")];
+    private readonly List<SelectOption<string>> especialidades=[new("MEDICINA_GENERAL","Medicina general"),new("CIRUGIA","Cirugía"),new("DERMATOLOGIA","Dermatología"),new("ODONTOLOGIA","Odontología"),new("CARDIOLOGIA","Cardiología")];
+    private readonly List<SelectOption<string>> turnos=[new("Mañana","Mañana"),new("Tarde","Tarde"),new("Noche","Noche")];
+    private string tipo="Veterinario", nombres="", paterno="", materno="", dni="", telefono="", correo="", usuario="", contrasena="", especialidad="MEDICINA_GENERAL", colegiatura="", turno="Mañana";
+    protected override async Task OnInitializedAsync() => await Cargar();
+    private async Task Cargar()
+    {
+        try
+        {
+            personas = (await VeterinariosREST.ListarTodosAsync()).Select(v => new PersonaFila(v.IdUsuario,
+                $"{v.Nombre} {v.ApellidoPaterno} {v.ApellidoMaterno}".Trim(), "Veterinario", v.Telefono ?? "", v.Correo ?? "", v.Activo))
+                .Concat((await RecepcionistasREST.ListarTodosAsync()).Select(r => new PersonaFila(r.IdUsuario,
+                    $"{r.Nombre} {r.ApellidoPaterno} {r.ApellidoMaterno}".Trim(), "Recepcionista", r.Telefono ?? "", r.Correo ?? "", r.Activo))).ToList();
+        }
+        catch (Exception ex) { Toast.Error($"No se pudo cargar el personal: {ex.Message}"); }
+    }
+    private void Limpiar(){tipo="Veterinario";nombres=paterno=materno=dni=telefono=correo=usuario=contrasena=colegiatura="";especialidad="MEDICINA_GENERAL";turno="Mañana";}
+    private async Task Guardar()
+    {
+        if(string.IsNullOrWhiteSpace(nombres)||string.IsNullOrWhiteSpace(dni)||string.IsNullOrWhiteSpace(usuario))
+        {Toast.Warning("Completa los campos obligatorios.");return;}
+        try
+        {
+            int result;
+            if(tipo=="Veterinario")
+                result = await VeterinariosREST.InsertarAsync(new MascovetDomain.Usuarios.Veterinario
+                {
+                    Nombre=nombres, ApellidoPaterno=paterno, ApellidoMaterno=materno, Dni=dni,
+                    Telefono=telefono, Correo=correo, NombreUsuario=usuario, Contrasena=contrasena,
+                    Especialidad=Enum.Parse<MascovetDomain.Enums.Especialidad>(especialidad), NumeroColegiatura=colegiatura
+                });
+            else
+                result = await RecepcionistasREST.InsertarAsync(new MascovetDomain.Usuarios.Recepcionista
+                {
+                    Nombre=nombres, ApellidoPaterno=paterno, ApellidoMaterno=materno, Dni=dni,
+                    Telefono=telefono, Correo=correo, NombreUsuario=usuario, Contrasena=contrasena, Turno=turno
+                });
+            if (result<=0) { Toast.Warning("El servidor no confirmó el registro."); return; }
+            Toast.Success("Personal registrado."); Limpiar(); await Cargar();
+        }
+        catch(Exception ex){Toast.Error($"No se pudo registrar al personal: {ex.Message}");}
+    }
+}

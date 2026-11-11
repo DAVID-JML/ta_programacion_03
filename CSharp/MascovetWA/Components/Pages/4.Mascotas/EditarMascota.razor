@@ -1,0 +1,88 @@
+@page "/cliente/mascotas/{IdMascota:int}/editar"
+@inject MascotaRestService MascotasREST
+@page "/recepcion/mascotas/{IdMascota:int}/editar"
+@layout MainLayout
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<PageTitle>Editar mascota | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Editar mascota</h1><p>Actualiza los datos registrados de la mascota.</p></div></header>
+    @if (!Existe)
+    {
+        <AppCard Title="Mascota no encontrada"><p>No se encontró el registro solicitado.</p><AppButton Href="@Volver" Variant="ButtonVariant.Secondary">Volver</AppButton></AppCard>
+    }
+    else
+    {
+        <AppCard Title="Datos de la mascota">
+            <div class="form-grid">
+                <div class="span-6"><AppInput TValue="string" Label="Nombre" Required="true" maxlength="150" @bind-Value="nombre" /></div>
+                <div class="span-3"><AppSelect TValue="string" Label="Especie" Options="especies" @bind-Value="especie" /></div>
+                <div class="span-3"><AppSelect TValue="string" Label="Sexo" Options="sexos" @bind-Value="sexo" /></div>
+                <div class="span-6"><AppInput TValue="string" Label="Raza" Required="true" maxlength="150" @bind-Value="raza" /></div>
+                <div class="span-6"><AppDatePicker Label="Fecha de nacimiento" Required="true" @bind-Value="nacimiento" /></div>
+            </div>
+            <div class="acciones">
+                <AppButton OnClick="Guardar">Guardar cambios</AppButton>
+                @if (EsRecepcion) { <AppButton OnClick="() => mostrarConfirmacion = true" Variant="ButtonVariant.Danger">Inactivar mascota</AppButton> }
+                <AppButton Href="@Volver" Variant="ButtonVariant.Secondary">Cancelar</AppButton>
+            </div>
+        </AppCard>
+    }
+</div>
+<AppModal @bind-Visible="mostrarConfirmacion" Title="Inactivar mascota" ConfirmText="Sí, inactivar" ConfirmVariant="ButtonVariant.Danger" OnConfirm="Inactivar">
+    <p>¿Deseas inactivar a @nombre? Sus registros médicos deben seguir disponibles para consulta.</p>
+</AppModal>
+@code {
+    [Parameter] public int IdMascota { get; set; }
+    private bool EsRecepcion => Navigation.ToBaseRelativePath(Navigation.Uri).StartsWith("recepcion/", StringComparison.OrdinalIgnoreCase);
+    private string Volver => EsRecepcion ? "/recepcion/mascotas" : "/cliente/mascotas";
+    private bool Existe => mascotaActual is not null;
+    private MascovetDomain.Mascotas.Mascota? mascotaActual;
+    private bool mostrarConfirmacion;
+    private string nombre = "", especie = "PERRO", sexo = "HEMBRA", raza = "";
+    private DateOnly? nacimiento;
+    private readonly List<SelectOption<string>> especies = [new("PERRO", "Perro"), new("GATO", "Gato"), new("AVE", "Ave"), new("CONEJO", "Conejo")];
+    private readonly List<SelectOption<string>> sexos = [new("HEMBRA", "Hembra"), new("MACHO", "Macho")];
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            mascotaActual = await MascotasREST.BuscarPorIdAsync(IdMascota);
+            if (mascotaActual is null) return;
+            nombre = mascotaActual.Nombre ?? ""; especie = mascotaActual.Especie?.ToString() ?? "PERRO";
+            sexo = mascotaActual.Sexo?.ToString() ?? "HEMBRA"; raza = mascotaActual.Raza ?? "";
+            nacimiento = mascotaActual.FechaNacimiento.HasValue ? DateOnly.FromDateTime(mascotaActual.FechaNacimiento.Value) : null;
+        }
+        catch (Exception ex) { Toast.Error($"No se pudo cargar la mascota: {ex.Message}"); }
+    }
+    private async Task Guardar()
+    {
+        if (mascotaActual is null) return;
+        if (string.IsNullOrWhiteSpace(nombre) || string.IsNullOrWhiteSpace(raza) || !nacimiento.HasValue)
+        { Toast.Warning("Completa los campos obligatorios."); return; }
+        mascotaActual.Nombre = nombre; mascotaActual.Raza = raza;
+        mascotaActual.FechaNacimiento = nacimiento.Value.ToDateTime(TimeOnly.MinValue);
+        mascotaActual.Especie = Enum.Parse<MascovetDomain.Enums.Especie>(especie);
+        mascotaActual.Sexo = Enum.Parse<MascovetDomain.Enums.Sexo>(sexo);
+        try
+        {
+            int resultado = await MascotasREST.ModificarAsync(mascotaActual);
+            if (resultado <= 0) { Toast.Warning("No se confirmó la actualización."); return; }
+            Toast.Success("Mascota actualizada."); Navigation.NavigateTo(Volver);
+        }
+        catch (Exception ex) { Toast.Error($"No se pudieron guardar los cambios: {ex.Message}"); }
+    }
+    private async Task Inactivar()
+    {
+        mostrarConfirmacion = false;
+        if (mascotaActual is null) return;
+        try
+        {
+            int resultado = await MascotasREST.EliminarAsync(IdMascota);
+            if (resultado <= 0) { Toast.Warning("No se confirmó la inactivación."); return; }
+            Toast.Success("Mascota inactivada."); Navigation.NavigateTo("/recepcion/mascotas");
+        }
+        catch (Exception ex) { Toast.Error($"No se pudo inactivar la mascota: {ex.Message}"); }
+    }
+}

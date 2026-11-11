@@ -1,6 +1,5 @@
 package pe.com.mascovet.usuario.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.usuario.bo.IUsuarioBO;
 import pe.com.mascovet.usuario.dao.UsuarioDAO;
 import pe.com.mascovet.usuario.impl.UsuarioImpl;
@@ -25,12 +24,16 @@ public class UsuarioBOImpl implements IUsuarioBO {
             throw new RuntimeException("El DNI no debe exceder los 9 caracteres");
         if (usuario.getNombre() == null || usuario.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre del usuario es obligatorio");
-        if (usuario.getNombre().length() > 150)
-            throw new RuntimeException("El nombre no debe exceder los 150 caracteres");
-        if (usuario.getApellido() == null || usuario.getApellido().trim().isEmpty())
+        if (usuario.getNombre().length() > 50)
+            throw new RuntimeException("El nombre no debe exceder los 50 caracteres");
+        if (usuario.getApellidoPaterno() == null || usuario.getApellidoPaterno().trim().isEmpty())
             throw new RuntimeException("El apellido del usuario es obligatorio");
-        if (usuario.getApellido().length() > 150)
-            throw new RuntimeException("El apellido no debe exceder los 150 caracteres");
+        if (usuario.getApellidoPaterno().length() > 50)
+            throw new RuntimeException("El apellido no debe exceder los 50 caracteres");
+        if (usuario.getApellidoMaterno() == null || usuario.getApellidoMaterno().trim().isEmpty())
+            throw new RuntimeException("El apellido materno es obligatorio");
+        if (usuario.getApellidoMaterno().length() > 50)
+            throw new RuntimeException("El apellido materno no debe exceder los 50 caracteres");
         if (usuario.getNombreUsuario() == null || usuario.getNombreUsuario().trim().isEmpty())
             throw new RuntimeException("El nombre de usuario es obligatorio");
         if (usuario.getNombreUsuario().length() > 100)
@@ -45,16 +48,7 @@ public class UsuarioBOImpl implements IUsuarioBO {
     public int insertar(Usuario usuario) {
         validarUsuario(usuario);
         usuario.setActivo(true);
-        try {
-            int resultado = daoUsuario.insertar(usuario);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoUsuario.insertar(usuario);
     }
 
     @Override
@@ -62,16 +56,7 @@ public class UsuarioBOImpl implements IUsuarioBO {
         validarUsuario(usuario);
         if (usuario.getIdUsuario() <= 0)
             throw new RuntimeException("El identificador del usuario no es válido");
-        try {
-            int resultado = daoUsuario.modificar(usuario);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoUsuario.modificar(usuario);
     }
 
     @Override

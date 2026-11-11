@@ -2,11 +2,19 @@ package pe.com.mascovet.atencionmedica.model;
 
 public class Vacuna {
     private int idVacuna;
-    private Vacunacion vacunacion;
     private String nombre;
     private String descripcion;
+    private boolean activo = true;
 
     public Vacuna() {
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public int getIdVacuna() {
@@ -15,14 +23,6 @@ public class Vacuna {
 
     public void setIdVacuna(int idVacuna) {
         this.idVacuna = idVacuna;
-    }
-
-    public Vacunacion getVacunacion() {
-        return vacunacion;
-    }
-
-    public void setVacunacion(Vacunacion vacunacion) {
-        this.vacunacion = vacunacion;
     }
 
     public String getNombre() {

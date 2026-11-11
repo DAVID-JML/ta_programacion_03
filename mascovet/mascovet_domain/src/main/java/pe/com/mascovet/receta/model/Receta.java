@@ -11,10 +11,19 @@ public class Receta {
     private AtencionMedica atencionMedica;
     private Date fecha;
     private String indicaciones;
+    private boolean activo = true;
     private final List<DetalleReceta> detallesReceta;
 
     public Receta() {
         detallesReceta = new ArrayList<>();
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public int getIdReceta() {

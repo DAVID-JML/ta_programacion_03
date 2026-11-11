@@ -5,13 +5,13 @@ import pe.com.mascovet.usuario.model.Veterinario;
 
 import java.time.LocalTime;
 
-
 public class HorarioAtencion {
     private int idHorario;
     private Veterinario veterinario;
     private Dia dia;
     private LocalTime horaInicio;
     private LocalTime horaFin;
+    private boolean activo = true;
 
     public HorarioAtencion() {
     }
@@ -20,6 +20,14 @@ public class HorarioAtencion {
         this.dia = dia;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public int getIdHorario() {

@@ -11,9 +11,9 @@ import pe.com.mascovet.receta.dao.RecetaDAO;
 import pe.com.mascovet.receta.model.Receta;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,21 +21,22 @@ public class RecetaImpl implements RecetaDAO {
 
     @Override
     public int insertar(Receta receta) {
-        String sql = "INSERT INTO RECETA (id_atencion, fecha, indicaciones) VALUES (?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                ps.setInt(1, receta.getAtencionMedica().getIdAtencion());
-                ps.setDate(2, new java.sql.Date(receta.getFecha().getTime()));
-                ps.setString(3, receta.getIndicaciones());
-                ps.executeUpdate();
+        String sql = "{call INSERTAR_RECETA(?, ?, ?, ?)}";
+        Connection conexion = TransactionContext.getCurrentConnection();
+        if (conexion == null)
+            conexion = DBManager.getInstance().getConnection();
+        try (Connection con = conexion) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_receta", Types.INTEGER);
+                cs.setInt("_id_atencion", receta.getAtencionMedica().getIdAtencion());
+                cs.setDate("_fecha", new java.sql.Date(receta.getFecha().getTime()));
+                cs.setString("_indicaciones", receta.getIndicaciones());
+                cs.executeUpdate();
 
-                try (ResultSet rs = ps.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        receta.setIdReceta(rs.getInt(1));
+                if (cs.getInt("_id_receta") > 0) {
+                        receta.setIdReceta(cs.getInt("_id_receta"));
                         return receta.getIdReceta();
                     }
-                }
                 return 0;
             } catch (Exception ex) {
                 System.out.println("ERROR AL INSERTAR RECETA: " + ex.getMessage());
@@ -49,14 +50,16 @@ public class RecetaImpl implements RecetaDAO {
 
     @Override
     public int modificar(Receta receta) {
-        String sql = "UPDATE RECETA SET id_atencion=?, fecha=?, indicaciones=? WHERE id_receta=?";
+        String sql = "{call MODIFICAR_RECETA(?, ?, ?, ?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, receta.getAtencionMedica().getIdAtencion());
-            ps.setDate(2, new java.sql.Date(receta.getFecha().getTime()));
-            ps.setString(3, receta.getIndicaciones());
-            ps.setInt(4, receta.getIdReceta());
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_atencion", receta.getAtencionMedica().getIdAtencion());
+            cs.setDate("_fecha", new java.sql.Date(receta.getFecha().getTime()));
+            cs.setString("_indicaciones", receta.getIndicaciones());
+            cs.setInt("_id_receta", receta.getIdReceta());
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR RECETA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -65,11 +68,13 @@ public class RecetaImpl implements RecetaDAO {
 
     @Override
     public int eliminar(int idReceta) {
-        String sql = "DELETE FROM RECETA WHERE id_receta=?";
+        String sql = "{call ELIMINAR_RECETA(?, ?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idReceta);
-            return ps.executeUpdate();
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.registerOutParameter("_resultado", Types.INTEGER);
+            cs.setInt("_id_receta", idReceta);
+            cs.executeUpdate();
+            return cs.getInt("_resultado");
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR RECETA: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -79,18 +84,11 @@ public class RecetaImpl implements RecetaDAO {
     @Override
     public Receta obtenerPorId(int idReceta) {
         Receta receta = null;
-        String sql = "SELECT r.id_receta, r.id_atencion, r.fecha, r.indicaciones, " +
-                "co.id_atencion AS id_consulta, ct.id_atencion AS id_control, ci.id_atencion AS id_cirugia, va.id_atencion AS id_vacunacion " +
-                "FROM RECETA r " +
-                "LEFT JOIN CONSULTA co ON r.id_atencion=co.id_atencion " +
-                "LEFT JOIN CONTROL ct ON r.id_atencion=ct.id_atencion " +
-                "LEFT JOIN CIRUGIA ci ON r.id_atencion=ci.id_atencion " +
-                "LEFT JOIN VACUNACION va ON r.id_atencion=va.id_atencion " +
-                "WHERE r.id_receta=?";
+        String sql = "{call LISTAR_RECETA_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idReceta);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_receta", idReceta);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     receta = new Receta();
                     receta.setIdReceta(rs.getInt("id_receta"));
@@ -124,16 +122,10 @@ public class RecetaImpl implements RecetaDAO {
     @Override
     public List<Receta> listarTodos() {
         List<Receta> recetas = new ArrayList<>();
-        String sql = "SELECT r.id_receta, r.id_atencion, r.fecha, r.indicaciones, " +
-                "co.id_atencion AS id_consulta, ct.id_atencion AS id_control, ci.id_atencion AS id_cirugia, va.id_atencion AS id_vacunacion " +
-                "FROM RECETA r " +
-                "LEFT JOIN CONSULTA co ON r.id_atencion=co.id_atencion " +
-                "LEFT JOIN CONTROL ct ON r.id_atencion=ct.id_atencion " +
-                "LEFT JOIN CIRUGIA ci ON r.id_atencion=ci.id_atencion " +
-                "LEFT JOIN VACUNACION va ON r.id_atencion=va.id_atencion";
+        String sql = "{call LISTAR_RECETA_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Receta receta = new Receta();
                 receta.setIdReceta(rs.getInt("id_receta"));
@@ -158,26 +150,6 @@ public class RecetaImpl implements RecetaDAO {
             return recetas;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR RECETAS: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void registrarRecetaSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaReceta, String indicaciones) {
-        String sql = "{CALL registrar_receta(?, ?, ?, ?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dniCliente);
-                cs.setString(2, nombreMascota);
-                cs.setDate(3, fechaCita);
-                cs.setTime(4, horaCita);
-                cs.setDate(5, fechaReceta);
-                cs.setString(6, indicaciones);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR registrar_receta: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

@@ -11,8 +11,17 @@ public class DetalleReceta {
     private String duracion;
     private Double montoTotal;
     private Medicamento medicamento;
+    private boolean activo = true;
 
     public DetalleReceta() {
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public int getIdDetalleReceta() {

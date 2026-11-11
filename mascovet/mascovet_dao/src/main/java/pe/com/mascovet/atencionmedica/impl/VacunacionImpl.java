@@ -9,9 +9,8 @@ import pe.com.mascovet.mascota.model.Mascota;
 import pe.com.mascovet.receta.model.Receta;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.Types;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -21,49 +20,54 @@ public class VacunacionImpl implements VacunacionDAO {
 
     @Override
     public int insertar(Vacunacion vacunacion) {
-        String sqlAtencion = "INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_cita, peso_actual, alergias) " +
-                "VALUES (?, ?, ?, ?, ?, ?)";
-        String sql = "INSERT INTO VACUNACION (id_atencion, fechaAplicacion, fechaProximaDosis, dosis) VALUES (?, ?, ?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement psAtencion = con.prepareStatement(sqlAtencion, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement ps = con.prepareStatement(sql)) {
-                psAtencion.setString(1, vacunacion.getObservaciones());
+        String sql = "{call INSERTAR_VACUNACION(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        Connection conexion = TransactionContext.getCurrentConnection();
+        if (conexion == null)
+            conexion = DBManager.getInstance().getConnection();
+        try (Connection con = conexion) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_atencion", Types.INTEGER);
+                cs.setString("_observaciones", vacunacion.getObservaciones());
                 if (vacunacion.getHoraInicio() == null) {
-                    psAtencion.setNull(2, Types.TIME);
+                    cs.setNull("_hora_inicio", Types.TIME);
                 } else {
-                    psAtencion.setTime(2, Time.valueOf(vacunacion.getHoraInicio()));
+                    cs.setTime("_hora_inicio", Time.valueOf(vacunacion.getHoraInicio()));
                 }
                 if (vacunacion.getHoraFin() == null) {
-                    psAtencion.setNull(3, Types.TIME);
+                    cs.setNull("_hora_fin", Types.TIME);
                 } else {
-                    psAtencion.setTime(3, Time.valueOf(vacunacion.getHoraFin()));
+                    cs.setTime("_hora_fin", Time.valueOf(vacunacion.getHoraFin()));
                 }
-                psAtencion.setInt(4, vacunacion.getCita().getIdCita());
-                psAtencion.setDouble(5, vacunacion.getPesoActual());
-                psAtencion.setString(6, vacunacion.getAlergias());
-                psAtencion.executeUpdate();
+                cs.setInt("_id_cita", vacunacion.getCita().getIdCita());
+                cs.setDouble("_peso_actual", vacunacion.getPesoActual());
+                cs.setString("_alergias", vacunacion.getAlergias());
+                if (vacunacion.getFechaAplicacion() == null) {
+                    cs.setNull("_fechaaplicacion", Types.DATE);
+                } else {
+                    cs.setDate("_fechaaplicacion", new java.sql.Date(vacunacion.getFechaAplicacion().getTime()));
+                }
+                if (vacunacion.getFechaProximaDosis() == null) {
+                    cs.setNull("_fechaproximadosis", Types.DATE);
+                } else {
+                    cs.setDate("_fechaproximadosis", new java.sql.Date(vacunacion.getFechaProximaDosis().getTime()));
+                }
+                cs.setString("_dosis", vacunacion.getDosis());
+                cs.executeUpdate();
+                int idGenerado = cs.getInt("_id_atencion");
+                vacunacion.setIdAtencion(idGenerado);
 
-                int idAtencion = 0;
-                try (ResultSet rs = psAtencion.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        idAtencion = rs.getInt(1);
+                for (pe.com.mascovet.atencionmedica.model.Vacuna vacuna : vacunacion.getVacunas()) {
+                    if (vacuna.getIdVacuna() <= 0) {
+                        throw new RuntimeException("La vacuna debe existir en el catálogo antes de asociarse");
+                    }
+                    try (CallableStatement csRelacion = con.prepareCall("{call ASOCIARVACUNA_VACUNACION(?, ?, ?)}")) {
+                        csRelacion.registerOutParameter("_resultado", Types.INTEGER);
+                        csRelacion.setInt("_id_vacunacion", idGenerado);
+                        csRelacion.setInt("_id_vacuna", vacuna.getIdVacuna());
+                        csRelacion.executeUpdate();
                     }
                 }
-                if (idAtencion <= 0) {
-                    throw new RuntimeException("No se pudo generar el identificador de la atencion medica");
-                }
-                vacunacion.setIdAtencion(idAtencion);
-
-                ps.setInt(1, idAtencion);
-                ps.setDate(2, new java.sql.Date(vacunacion.getFechaAplicacion().getTime()));
-                ps.setDate(3, new java.sql.Date(vacunacion.getFechaProximaDosis().getTime()));
-                ps.setString(4, vacunacion.getDosis());
-                ps.executeUpdate();
-                return vacunacion.getIdAtencion();
-            } catch (Exception ex) {
-                System.out.println("ERROR AL INSERTAR VACUNACION: " + ex.getMessage());
-                throw new RuntimeException(ex);
+                return idGenerado;
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR VACUNACION: " + ex.getMessage());
@@ -73,39 +77,38 @@ public class VacunacionImpl implements VacunacionDAO {
 
     @Override
     public int modificar(Vacunacion vacunacion) {
-        String sqlAtencion = "UPDATE ATENCION_MEDICA SET observaciones=?, hora_inicio=?, hora_fin=?, id_cita=?, peso_actual=?, alergias=? " +
-                "WHERE id_atencion=?";
-        String sql = "UPDATE VACUNACION SET fechaAplicacion=?, fechaProximaDosis=?, dosis=? WHERE id_atencion=?";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement psAtencion = con.prepareStatement(sqlAtencion);
-                 PreparedStatement ps = con.prepareStatement(sql)) {
-                psAtencion.setString(1, vacunacion.getObservaciones());
+        String sql = "{call MODIFICAR_VACUNACION(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setString("_observaciones", vacunacion.getObservaciones());
                 if (vacunacion.getHoraInicio() == null) {
-                    psAtencion.setNull(2, Types.TIME);
+                    cs.setNull("_hora_inicio", Types.TIME);
                 } else {
-                    psAtencion.setTime(2, Time.valueOf(vacunacion.getHoraInicio()));
+                    cs.setTime("_hora_inicio", Time.valueOf(vacunacion.getHoraInicio()));
                 }
                 if (vacunacion.getHoraFin() == null) {
-                    psAtencion.setNull(3, Types.TIME);
+                    cs.setNull("_hora_fin", Types.TIME);
                 } else {
-                    psAtencion.setTime(3, Time.valueOf(vacunacion.getHoraFin()));
+                    cs.setTime("_hora_fin", Time.valueOf(vacunacion.getHoraFin()));
                 }
-                psAtencion.setInt(4, vacunacion.getCita().getIdCita());
-                psAtencion.setDouble(5, vacunacion.getPesoActual());
-                psAtencion.setString(6, vacunacion.getAlergias());
-                psAtencion.setInt(7, vacunacion.getIdAtencion());
-                int filasBase = psAtencion.executeUpdate();
-
-                ps.setDate(1, new java.sql.Date(vacunacion.getFechaAplicacion().getTime()));
-                ps.setDate(2, new java.sql.Date(vacunacion.getFechaProximaDosis().getTime()));
-                ps.setString(3, vacunacion.getDosis());
-                ps.setInt(4, vacunacion.getIdAtencion());
-                int filasHija = ps.executeUpdate();
-                return (filasBase > 0 && filasHija > 0) ? 1 : 0;
-            } catch (Exception ex) {
-                System.out.println("ERROR AL MODIFICAR VACUNACION: " + ex.getMessage());
-                throw new RuntimeException(ex);
+                cs.setInt("_id_cita", vacunacion.getCita().getIdCita());
+                cs.setDouble("_peso_actual", vacunacion.getPesoActual());
+                cs.setString("_alergias", vacunacion.getAlergias());
+                cs.setInt("_id_atencion", vacunacion.getIdAtencion());
+                if (vacunacion.getFechaAplicacion() == null) {
+                    cs.setNull("_fechaaplicacion", Types.DATE);
+                } else {
+                    cs.setDate("_fechaaplicacion", new java.sql.Date(vacunacion.getFechaAplicacion().getTime()));
+                }
+                if (vacunacion.getFechaProximaDosis() == null) {
+                    cs.setNull("_fechaproximadosis", Types.DATE);
+                } else {
+                    cs.setDate("_fechaproximadosis", new java.sql.Date(vacunacion.getFechaProximaDosis().getTime()));
+                }
+                cs.setString("_dosis", vacunacion.getDosis());
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR VACUNACION: " + ex.getMessage());
@@ -115,11 +118,14 @@ public class VacunacionImpl implements VacunacionDAO {
 
     @Override
     public int eliminar(int idVacunacion) {
-        String sql = "DELETE FROM ATENCION_MEDICA WHERE id_atencion=?";
-        try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idVacunacion);
-            return ps.executeUpdate();
+        String sql = "{call ELIMINAR_VACUNACION(?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setInt("_id_atencion", idVacunacion);
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
+            }
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR VACUNACION: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -129,15 +135,11 @@ public class VacunacionImpl implements VacunacionDAO {
     @Override
     public Vacunacion obtenerPorId(int idVacunacion) {
         Vacunacion vacunacion = null;
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
-                "v.fechaAplicacion, v.fechaProximaDosis, v.dosis, r.id_receta " +
-                "FROM ATENCION_MEDICA a INNER JOIN VACUNACION v ON a.id_atencion=v.id_atencion " +
-                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
-                "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion WHERE a.id_atencion=?";
+        String sql = "{call LISTAR_VACUNACION_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idVacunacion);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_atencion", idVacunacion);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     vacunacion = new Vacunacion();
                     vacunacion.setIdAtencion(rs.getInt("id_atencion"));
@@ -146,9 +148,7 @@ public class VacunacionImpl implements VacunacionDAO {
                     if (horaInicio != null) vacunacion.setHoraInicio(horaInicio.toLocalTime());
                     Time horaFin = rs.getTime("hora_fin");
                     if (horaFin != null) vacunacion.setHoraFin(horaFin.toLocalTime());
-                    Mascota mascota = new Mascota();
-                    mascota.setIdMascota(rs.getInt("id_mascota"));
-                    vacunacion.setMascota(mascota);
+
                     Cita cita = new Cita();
                     cita.setIdCita(rs.getInt("id_cita"));
                     vacunacion.setCita(cita);
@@ -163,6 +163,18 @@ public class VacunacionImpl implements VacunacionDAO {
                         receta.setIdReceta(idReceta);
                         vacunacion.setReceta(receta);
                     }
+                    try (CallableStatement csVacunas = con.prepareCall("{call CARGARVACUNAS_VACUNACION(?)}")) {
+                        csVacunas.setInt("_id_vacunacion", vacunacion.getIdAtencion());
+                        try (ResultSet rsVacunas = csVacunas.executeQuery()) {
+                            while (rsVacunas.next()) {
+                                pe.com.mascovet.atencionmedica.model.Vacuna vacuna = new pe.com.mascovet.atencionmedica.model.Vacuna();
+                                vacuna.setIdVacuna(rsVacunas.getInt("id_vacuna"));
+                                vacuna.setNombre(rsVacunas.getString("nombre"));
+                                vacuna.setDescripcion(rsVacunas.getString("descripcion"));
+                                vacunacion.agregarVacuna(vacuna);
+                            }
+                        }
+                    }
                 }
             }
             return vacunacion;
@@ -175,14 +187,10 @@ public class VacunacionImpl implements VacunacionDAO {
     @Override
     public List<Vacunacion> listarTodos() {
         List<Vacunacion> vacunaciones = new ArrayList<>();
-        String sql = "SELECT a.id_atencion, a.observaciones, a.hora_inicio, a.hora_fin, ci.id_mascota AS id_mascota, a.id_cita, a.peso_actual, a.alergias, " +
-                "v.fechaAplicacion, v.fechaProximaDosis, v.dosis, r.id_receta " +
-                "FROM ATENCION_MEDICA a INNER JOIN VACUNACION v ON a.id_atencion=v.id_atencion " +
-                "INNER JOIN CITA ci ON a.id_cita = ci.id_cita " +
-                "LEFT JOIN RECETA r ON a.id_atencion=r.id_atencion";
+        String sql = "{call LISTAR_VACUNACION_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Vacunacion vacunacion = new Vacunacion();
                 vacunacion.setIdAtencion(rs.getInt("id_atencion"));
@@ -191,9 +199,7 @@ public class VacunacionImpl implements VacunacionDAO {
                 if (horaInicio != null) vacunacion.setHoraInicio(horaInicio.toLocalTime());
                 Time horaFin = rs.getTime("hora_fin");
                 if (horaFin != null) vacunacion.setHoraFin(horaFin.toLocalTime());
-                Mascota mascota = new Mascota();
-                mascota.setIdMascota(rs.getInt("id_mascota"));
-                vacunacion.setMascota(mascota);
+
                 Cita cita = new Cita();
                 cita.setIdCita(rs.getInt("id_cita"));
                 vacunacion.setCita(cita);
@@ -208,47 +214,23 @@ public class VacunacionImpl implements VacunacionDAO {
                     receta.setIdReceta(idReceta);
                     vacunacion.setReceta(receta);
                 }
+                try (CallableStatement csVacunas = con.prepareCall("{call CARGARVACUNAS_VACUNACION(?)}")) {
+                        csVacunas.setInt("_id_vacunacion", vacunacion.getIdAtencion());
+                        try (ResultSet rsVacunas = csVacunas.executeQuery()) {
+                            while (rsVacunas.next()) {
+                                pe.com.mascovet.atencionmedica.model.Vacuna vacuna = new pe.com.mascovet.atencionmedica.model.Vacuna();
+                                vacuna.setIdVacuna(rsVacunas.getInt("id_vacuna"));
+                                vacuna.setNombre(rsVacunas.getString("nombre"));
+                                vacuna.setDescripcion(rsVacunas.getString("descripcion"));
+                                vacunacion.agregarVacuna(vacuna);
+                            }
+                        }
+                    }
                 vacunaciones.add(vacunacion);
             }
             return vacunaciones;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR VACUNACIONES: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public int asociarVacuna(int idAtencion, int idVacuna) {
-        String sql = "INSERT INTO VACUNACION_VACUNA (id_atencion, id_vacuna) VALUES (?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setInt(1, idAtencion);
-                ps.setInt(2, idVacuna);
-                return ps.executeUpdate();
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException("Error al asociar la vacuna a la vacunacion", ex);
-        }
-    }
-
-    @Override
-    public void registrarVacunacionSP(String dniCliente, String nombreMascota, java.sql.Date fechaCita, java.sql.Time horaCita, java.sql.Date fechaAplicacion, java.sql.Date fechaProximaDosis, String dosis) {
-        String sql = "{CALL registrar_vacunacion(?, ?, ?, ?, ?, ?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dniCliente);
-                cs.setString(2, nombreMascota);
-                cs.setDate(3, fechaCita);
-                cs.setTime(4, horaCita);
-                cs.setDate(5, fechaAplicacion);
-                cs.setDate(6, fechaProximaDosis);
-                cs.setString(7, dosis);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR registrar_vacunacion: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

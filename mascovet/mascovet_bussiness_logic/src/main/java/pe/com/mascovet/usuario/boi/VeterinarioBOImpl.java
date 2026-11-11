@@ -30,12 +30,16 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
             throw new RuntimeException("El DNI no debe exceder los 9 caracteres");
         if (veterinario.getNombre() == null || veterinario.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre del veterinario es obligatorio");
-        if (veterinario.getNombre().length() > 150)
-            throw new RuntimeException("El nombre no debe exceder los 150 caracteres");
-        if (veterinario.getApellido() == null || veterinario.getApellido().trim().isEmpty())
+        if (veterinario.getNombre().length() > 50)
+            throw new RuntimeException("El nombre no debe exceder los 50 caracteres");
+        if (veterinario.getApellidoPaterno() == null || veterinario.getApellidoPaterno().trim().isEmpty())
             throw new RuntimeException("El apellido del veterinario es obligatorio");
-        if (veterinario.getApellido().length() > 150)
-            throw new RuntimeException("El apellido no debe exceder los 150 caracteres");
+        if (veterinario.getApellidoPaterno().length() > 50)
+            throw new RuntimeException("El apellido no debe exceder los 50 caracteres");
+        if (veterinario.getApellidoMaterno() == null || veterinario.getApellidoMaterno().trim().isEmpty())
+            throw new RuntimeException("El apellido materno es obligatorio");
+        if (veterinario.getApellidoMaterno().length() > 50)
+            throw new RuntimeException("El apellido materno no debe exceder los 50 caracteres");
         if (veterinario.getNombreUsuario() == null || veterinario.getNombreUsuario().trim().isEmpty())
             throw new RuntimeException("El nombre de usuario es obligatorio");
         if (veterinario.getNombreUsuario().length() > 100)
@@ -46,10 +50,18 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
             throw new RuntimeException("La contraseña no debe exceder los 255 caracteres");
         if (veterinario.getNumeroColegiatura() == null || veterinario.getNumeroColegiatura().trim().isEmpty())
             throw new RuntimeException("El número de colegiatura es obligatorio");
-        if (veterinario.getNumeroColegiatura().length() > 200)
-            throw new RuntimeException("El número de colegiatura no debe exceder los 200 caracteres");
+        if (veterinario.getNumeroColegiatura().length() > 10)
+            throw new RuntimeException("El número de colegiatura no debe exceder los 10 caracteres");
         if (veterinario.getEspecialidad() == null)
             throw new RuntimeException("La especialidad es obligatoria");
+        if (veterinario.getCorreo() == null || veterinario.getCorreo().trim().isEmpty())
+            throw new RuntimeException("El correo es obligatorio");
+        if (veterinario.getCorreo().length() > 200)
+            throw new RuntimeException("El correo no debe exceder los 200 caracteres");
+        if (veterinario.getTelefono() == null || veterinario.getTelefono().trim().isEmpty())
+            throw new RuntimeException("El teléfono es obligatorio");
+        if (veterinario.getTelefono().length() > 20)
+            throw new RuntimeException("El teléfono no debe exceder los 20 caracteres");
     }
 
     private void validarHorarioAtencion(HorarioAtencion horario) {
@@ -67,17 +79,7 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
     public int insertar(Veterinario veterinario) {
         validarVeterinario(veterinario);
         veterinario.setActivo(true);
-
-        try {
-            int resultado = daoVeterinario.insertar(veterinario);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoVeterinario.insertar(veterinario);
     }
 
     @Override
@@ -85,17 +87,7 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
         validarVeterinario(veterinario);
         if (veterinario.getIdUsuario() <= 0)
             throw new RuntimeException("El identificador del veterinario no es válido");
-
-        try {
-            int resultado = daoVeterinario.modificar(veterinario);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoVeterinario.modificar(veterinario);
     }
 
     @Override
@@ -127,7 +119,20 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
         for (HorarioAtencion horario : veterinario.getHorariosAtencion())
             validarHorarioAtencion(horario);
 
+        List<HorarioAtencion> horarios = veterinario.getHorariosAtencion();
+        for (int i = 0; i < horarios.size(); i++) {
+            for (int j = i + 1; j < horarios.size(); j++) {
+                HorarioAtencion primero = horarios.get(i);
+                HorarioAtencion segundo = horarios.get(j);
+                if (primero.getDia() == segundo.getDia()
+                        && primero.getHoraInicio().isBefore(segundo.getHoraFin())
+                        && primero.getHoraFin().isAfter(segundo.getHoraInicio()))
+                    throw new RuntimeException("Los horarios del veterinario no pueden superponerse");
+            }
+        }
+
         try {
+            TransactionContext.getConnection();
             daoVeterinario.insertar(veterinario);
             for (HorarioAtencion horario : veterinario.getHorariosAtencion()) {
                 horario.setVeterinario(veterinario);
@@ -138,20 +143,6 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
         } catch (Exception ex) {
             TransactionContext.rollback();
             throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
-    }
-
-
-    @Override
-    public void asignarVeterinarioSP(String dni, String numColegiatura, String especialidad) {
-        try {
-            daoVeterinario.asignarVeterinarioSP(dni, numColegiatura, especialidad);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en asignarVeterinarioSP: " + ex.getMessage(), ex);
         } finally {
             TransactionContext.close();
         }

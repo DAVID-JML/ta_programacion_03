@@ -1,0 +1,132 @@
+@page "/administrador/atenciones"
+@inject ConsultaRestService ConsultasREST
+@inject ControlRestService ControlesREST
+@inject CirugiaRestService CirugiasREST
+@inject VacunacionRestService VacunacionesREST
+@inject CitaRestService CitasREST
+@inject MascotaRestService MascotasREST
+@inject VeterinarioRestService VeterinariosREST
+@inject ToastService Toast
+@using MascovetWA.Servicios.Validaciones
+@layout MainLayout
+<PageTitle>Atenciones médicas | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Atenciones médicas</h1><p>Consulta las atenciones registradas y su estado.</p></div>
+        <AppButton Href="/administrador/atenciones/nueva?tipo=Consulta" Icon="plus">Registrar atención</AppButton>
+    </header>
+    @if (errores.Count > 0)
+    {
+        <AppCard Title="Error al consultar atenciones">
+            <p role="alert">GlassFish está devolviendo un error en los siguientes servicios REST. La consulta de las otras categorías se conserva:</p>
+            <ul>
+                @foreach (var error in errores)
+                {
+                    <li>@error</li>
+                }
+            </ul>
+            <div class="acciones"><AppButton Variant="ButtonVariant.Secondary" OnClick="Cargar">Reintentar consulta</AppButton></div>
+        </AppCard>
+    }
+    <AppCard Title="Registro de atenciones">
+        <AppTable Items="AtencionesOrdenadas" Caption="Atenciones médicas" ColumnCount="7">
+            <HeaderContent><th>Código</th><th>Mascota</th><th>Tipo</th><th>Veterinario</th><th>Fecha</th><th>Estado</th><th>Acciones</th></HeaderContent>
+            <RowTemplate Context="a"><td>AT-@a.Id</td><td>@a.Mascota</td><td>@a.Tipo</td><td>@a.Veterinario</td><td>@a.Fecha</td><td><AppBadge Variant="@(a.Activo ? SemanticVariant.Success : SemanticVariant.Warning)" ShowIcon="false">@(a.Activo ? "Activo" : "Inactivo")</AppBadge></td><td><div class="ms-inline-actions"><AppButton Href="@($"/administrador/atenciones/ver/{a.Id}?tipo={Uri.EscapeDataString(a.Tipo)}")" Size="ButtonSize.Small" Variant="ButtonVariant.Tertiary">Ver</AppButton><AppButton Href="@($"/administrador/atenciones/editar/{a.Id}?tipo={Uri.EscapeDataString(a.Tipo)}")" Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">Editar</AppButton>
+                    @if (a.Activo) { <AppButton Variant="ButtonVariant.Danger" Size="ButtonSize.Small" OnClick="() => SolicitarInactivar(a)">Inactivar</AppButton> }
+                </div></td></RowTemplate>
+        </AppTable>
+        <div class="acciones">
+            <AppButton Href="/administrador/atenciones/nueva?tipo=Control" Variant="ButtonVariant.Secondary">Nuevo control</AppButton>
+            <AppButton Href="/administrador/atenciones/nueva?tipo=Cirugía" Variant="ButtonVariant.Secondary">Nueva cirugía</AppButton>
+            <AppButton Href="/administrador/atenciones/nueva?tipo=Vacunación" Variant="ButtonVariant.Secondary">Nueva vacunación</AppButton>
+        </div>
+    </AppCard>
+</div>
+<AppModal @bind-Visible="mostrarInactivar" Title="Inactivar atención médica" ConfirmText="Inactivar" ConfirmVariant="ButtonVariant.Danger" OnConfirm="Inactivar">
+    <p>¿Confirmas la inactivación lógica de la atención @(seleccionada?.Tipo) AT-@(seleccionada?.Id)?</p>
+    <p>El registro conservará sus datos en la base de datos.</p>
+</AppModal>
+@code {
+    private sealed record AtencionFila(int Id,string Mascota,string Tipo,string Veterinario,string Fecha,bool Activo);
+    private List<AtencionFila> atenciones = new();
+    private bool mostrarInactivar;
+    private AtencionFila? seleccionada;
+    private IEnumerable<AtencionFila> AtencionesOrdenadas => atenciones
+        .OrderByDescending(a => a.Activo).ThenByDescending(a =>
+            DateTime.TryParseExact(a.Fecha,"dd/MM/yyyy",System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None,out var fecha) ? fecha : DateTime.MinValue);
+    private void SolicitarInactivar(AtencionFila a) { seleccionada=a; mostrarInactivar=true; }
+    private async Task Inactivar()
+    {
+        mostrarInactivar=false;
+        if (seleccionada is null) return;
+        try
+        {
+            int resultado=seleccionada.Tipo switch
+            {
+                "Consulta" => await ConsultasREST.EliminarAsync(seleccionada.Id),
+                "Control" => await ControlesREST.EliminarAsync(seleccionada.Id),
+                "Cirugía" => await CirugiasREST.EliminarAsync(seleccionada.Id),
+                "Vacunación" => await VacunacionesREST.EliminarAsync(seleccionada.Id),
+                _ => 0
+            };
+            if (resultado>0) { Toast.Success("Atención inactivada."); await Cargar(); }
+            else Toast.Warning("No se confirmó la inactivación de la atención.");
+        }
+        catch (Exception ex) { Toast.Error($"No se pudo inactivar: {ex.Message}"); }
+        finally { seleccionada=null; }
+    }
+    private List<string> errores = new();
+    protected override async Task OnInitializedAsync() => await Cargar();
+
+    private async Task Cargar()
+    {
+        atenciones.Clear();
+        errores.Clear();
+
+        // Los DAO de atenciones entregan la Cita con su ID.
+        // Obtener los nombres desde las consultas REST existentes, sin modificar Java.
+        List<MascovetDomain.Citas.Cita> citas = new();
+        List<MascovetDomain.Mascotas.Mascota> mascotas = new();
+        List<MascovetDomain.Usuarios.Veterinario> veterinarios = new();
+        try { citas = await CitasREST.ListarTodosAsync(); }
+        catch (Exception ex) { errores.Add($"Citas: {ex.Message}"); }
+        try { mascotas = await MascotasREST.ListarTodosAsync(); }
+        catch (Exception ex) { errores.Add($"Mascotas: {ex.Message}"); }
+        try { veterinarios = await VeterinariosREST.ListarTodosAsync(); }
+        catch (Exception ex) { errores.Add($"Veterinarios: {ex.Message}"); }
+
+        void Agregar(MascovetDomain.AtencionesMedicas.AtencionMedica atencion, string tipo)
+        {
+            var cita = citas.FirstOrDefault(c => c.IdCita == atencion.Cita?.IdCita) ?? atencion.Cita;
+            int idMascota = cita?.Mascota?.IdMascota ?? 0;
+            int idVet = cita?.Veterinario?.IdUsuario ?? 0;
+            var mascota = mascotas.FirstOrDefault(m => m.IdMascota == idMascota) ?? cita?.Mascota;
+            var vet = veterinarios.FirstOrDefault(v => v.IdUsuario == idVet) ?? cita?.Veterinario;
+            string nombreVet = $"{vet?.Nombre} {vet?.ApellidoPaterno}".Trim();
+
+            atenciones.Add(new AtencionFila(
+                atencion.IdAtencion,
+                !string.IsNullOrWhiteSpace(mascota?.Nombre) ? mascota.Nombre :
+                    idMascota > 0 ? $"Mascota #{idMascota}" : "Sin mascota asociada",
+                tipo,
+                !string.IsNullOrWhiteSpace(nombreVet) ? nombreVet :
+                    idVet > 0 ? $"Veterinario #{idVet}" : "Sin veterinario asociado",
+                cita?.Fecha?.ToString("dd/MM/yyyy") ?? "Sin fecha",
+                atencion.Activo));
+        }
+
+        // Las consultas se hacen por separado. Si una categoría devuelve 500,
+        // las demás se siguen mostrando.
+        try { foreach (var a in await ConsultasREST.ListarTodosAsync()) Agregar(a, "Consulta"); }
+        catch (Exception ex) { errores.Add($"Consultas: {ex.Message}"); }
+        try { foreach (var a in await ControlesREST.ListarTodosAsync()) Agregar(a, "Control"); }
+        catch (Exception ex) { errores.Add($"Controles: {ex.Message}"); }
+        try { foreach (var a in await CirugiasREST.ListarTodosAsync()) Agregar(a, "Cirugía"); }
+        catch (Exception ex) { errores.Add($"Cirugías: {ex.Message}"); }
+        try { foreach (var a in await VacunacionesREST.ListarTodosAsync()) Agregar(a, "Vacunación"); }
+        catch (Exception ex) { errores.Add($"Vacunaciones: {ex.Message}"); }
+
+        if (errores.Count > 0)
+            Toast.Warning("Algunas consultas REST fallaron. Puedes ver los detalles en esta página.");
+    }
+}

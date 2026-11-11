@@ -1,0 +1,75 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject MascovetWA.Servicios.LoadingService Loading
+@inject UserContext User
+@inject NavigationManager Navigation
+
+<div class="ms-shell">
+    <a class="ms-skip-link" href="#main-content">Saltar al contenido principal</a>
+
+    <aside class="ms-sidebar">
+        <NavMenu />
+    </aside>
+
+    <div class="ms-main">
+        <header class="ms-topbar">
+            <div>
+                <span class="ms-topbar__caption">@Portal</span>
+                <p>Tu mascota, nuestra prioridad.</p>
+            </div>
+
+            <div class="ms-topbar__user">
+                <span class="ms-topbar__avatar" aria-hidden="true">@Inicial</span>
+                <span>
+                    <strong>@Nombre</strong>
+                    <small>@User.Role</small>
+                </span>
+            </div>
+        </header>
+
+        <main id="main-content" class="ms-content" tabindex="-1">
+            @Body
+        </main>
+
+        <footer class="ms-footer">
+            <span>© 2026 Mascovet</span>
+            <span>Atención veterinaria y cuidado integral de mascotas</span>
+        </footer>
+    </div>
+</div>
+
+<AppToastContainer />
+
+@if (Loading.IsLoading)
+{
+    <div class="ms-global-loading" role="status" aria-live="polite" aria-label="Cargando información">
+        <div class="ms-global-loading__panel">
+            <div class="ms-global-loading__spinner" aria-hidden="true"></div>
+            <strong>Cargando información…</strong>
+            <span>Consultando MascoVet, por favor espera.</span>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        Loading.Changed += AlCambiarCarga;
+        // Sin sesión no se muestra nada de la aplicación: vuelve al login.
+        if (!User.IsAuthenticated) Navigation.NavigateTo("/", replace: true);
+    }
+    private void AlCambiarCarga() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Loading.Changed -= AlCambiarCarga;
+
+    private string Nombre => string.IsNullOrWhiteSpace(User.Nombre) ? "Usuario" : User.Nombre;
+    private string Inicial => Nombre[..1].ToUpperInvariant();
+
+    private string Portal => User.Role switch
+    {
+        UserRole.Cliente => "PORTAL DEL CLIENTE",
+        UserRole.Recepcionista => "PORTAL DE RECEPCIÓN",
+        UserRole.Veterinario => "PORTAL DEL VETERINARIO",
+        _ => "PANEL DE ADMINISTRACIÓN"
+    };
+}

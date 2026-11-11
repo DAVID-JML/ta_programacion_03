@@ -1,38 +1,36 @@
 package pe.com.mascovet.usuario.impl;
 
 import pe.com.mascovet.config.DBManager;
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.usuario.dao.AdministradorDAO;
 import pe.com.mascovet.usuario.model.Administrador;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.sql.CallableStatement;
+import java.sql.Types;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AdministradorImpl implements AdministradorDAO {
 
-    private final UsuarioImpl usuarioDao = new UsuarioImpl();
-
     @Override
     public int insertar(Administrador administrador) {
-        String sql = "INSERT INTO ADMINISTRADOR (id_usuario, cargo) VALUES (?, ?)";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                int idUsuario = usuarioDao.insertarUsuarioBase(administrador, con);
-                if (idUsuario <= 0) {
-                    throw new RuntimeException("No se pudo generar el identificador del usuario");
-                }
-                ps.setInt(1, idUsuario);
-                ps.setString(2, administrador.getCargo());
-                ps.executeUpdate();
-                administrador.setIdUsuario(idUsuario);
-                return administrador.getIdUsuario();
-            } catch (Exception ex) {
-                System.out.println("ERROR AL INSERTAR ADMINISTRADOR: " + ex.getMessage());
-                throw new RuntimeException(ex);
+        String sql = "{call INSERTAR_ADMINISTRADOR(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_id_usuario", Types.INTEGER);
+                cs.setString("_dni", administrador.getDni());
+                cs.setString("_nombre", administrador.getNombre());
+                cs.setString("_apellido_paterno", administrador.getApellidoPaterno());
+                cs.setString("_apellido_materno", administrador.getApellidoMaterno());
+                cs.setString("_nombre_usuario", administrador.getNombreUsuario());
+                cs.setString("_contrasena", administrador.getContrasena());
+                cs.setBoolean("_activo", administrador.isActivo());
+                cs.setString("_cargo", administrador.getCargo());
+                cs.executeUpdate();
+                int idGenerado = cs.getInt("_id_usuario");
+                administrador.setIdUsuario(idGenerado);
+                return idGenerado;
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL INSERTAR ADMINISTRADOR: " + ex.getMessage());
@@ -42,18 +40,21 @@ public class AdministradorImpl implements AdministradorDAO {
 
     @Override
     public int modificar(Administrador administrador) {
-        String sql = "UPDATE ADMINISTRADOR SET cargo=? WHERE id_usuario=?";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                int filasUsuario = usuarioDao.modificarUsuarioBase(administrador, con);
-                ps.setString(1, administrador.getCargo());
-                ps.setInt(2, administrador.getIdUsuario());
-                int filasAdministrador = ps.executeUpdate();
-                return (filasUsuario > 0 && filasAdministrador > 0) ? 1 : 0;
-            } catch (Exception ex) {
-                System.out.println("ERROR AL MODIFICAR ADMINISTRADOR: " + ex.getMessage());
-                throw new RuntimeException(ex);
+        String sql = "{call MODIFICAR_ADMINISTRADOR(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setString("_dni", administrador.getDni());
+                cs.setString("_nombre", administrador.getNombre());
+                cs.setString("_apellido_paterno", administrador.getApellidoPaterno());
+                cs.setString("_apellido_materno", administrador.getApellidoMaterno());
+                cs.setString("_nombre_usuario", administrador.getNombreUsuario());
+                cs.setString("_contrasena", administrador.getContrasena());
+                cs.setBoolean("_activo", administrador.isActivo());
+                cs.setInt("_id_usuario", administrador.getIdUsuario());
+                cs.setString("_cargo", administrador.getCargo());
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
             }
         } catch (Exception ex) {
             System.out.println("ERROR AL MODIFICAR ADMINISTRADOR: " + ex.getMessage());
@@ -63,11 +64,14 @@ public class AdministradorImpl implements AdministradorDAO {
 
     @Override
     public int eliminar(int idAdministrador) {
-        String sql = "UPDATE USUARIO SET activo=0 WHERE id_usuario=?";
-        try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idAdministrador);
-            return ps.executeUpdate();
+        String sql = "{call ELIMINAR_ADMINISTRADOR(?, ?)}";
+        try (Connection con = DBManager.getInstance().getConnection()) {
+            try (CallableStatement cs = con.prepareCall(sql)) {
+                cs.registerOutParameter("_resultado", Types.INTEGER);
+                cs.setInt("_id_usuario", idAdministrador);
+                cs.executeUpdate();
+                return cs.getInt("_resultado");
+            }
         } catch (Exception ex) {
             System.out.println("ERROR AL ELIMINAR ADMINISTRADOR: " + ex.getMessage());
             throw new RuntimeException(ex);
@@ -77,18 +81,18 @@ public class AdministradorImpl implements AdministradorDAO {
     @Override
     public Administrador obtenerPorId(int idAdministrador) {
         Administrador administrador = null;
-        String sql = "SELECT u.id_usuario, u.dni, u.nombre, u.apellido, u.nombre_usuario, u.contrasena, u.activo, a.cargo " +
-                "FROM USUARIO u INNER JOIN ADMINISTRADOR a ON u.id_usuario=a.id_usuario WHERE u.id_usuario=?";
+        String sql = "{call LISTAR_ADMINISTRADOR_X_ID(?)}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idAdministrador);
-            try (ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql)) {
+            cs.setInt("_id_usuario", idAdministrador);
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     administrador = new Administrador();
                     administrador.setIdUsuario(rs.getInt("id_usuario"));
                     administrador.setDni(rs.getString("dni"));
                     administrador.setNombre(rs.getString("nombre"));
-                    administrador.setApellido(rs.getString("apellido"));
+                    administrador.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    administrador.setApellidoMaterno(rs.getString("apellido_materno"));
                     administrador.setNombreUsuario(rs.getString("nombre_usuario"));
                     administrador.setContrasena(rs.getString("contrasena"));
                     administrador.setActivo(rs.getBoolean("activo"));
@@ -105,17 +109,17 @@ public class AdministradorImpl implements AdministradorDAO {
     @Override
     public List<Administrador> listarTodos() {
         List<Administrador> administradores = new ArrayList<>();
-        String sql = "SELECT u.id_usuario, u.dni, u.nombre, u.apellido, u.nombre_usuario, u.contrasena, u.activo, a.cargo " +
-                "FROM USUARIO u INNER JOIN ADMINISTRADOR a ON u.id_usuario=a.id_usuario WHERE u.activo=1";
+        String sql = "{call LISTAR_ADMINISTRADOR_TODOS()}";
         try (Connection con = DBManager.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             CallableStatement cs = con.prepareCall(sql);
+             ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Administrador administrador = new Administrador();
                 administrador.setIdUsuario(rs.getInt("id_usuario"));
                 administrador.setDni(rs.getString("dni"));
                 administrador.setNombre(rs.getString("nombre"));
-                administrador.setApellido(rs.getString("apellido"));
+                administrador.setApellidoPaterno(rs.getString("apellido_paterno"));
+                    administrador.setApellidoMaterno(rs.getString("apellido_materno"));
                 administrador.setNombreUsuario(rs.getString("nombre_usuario"));
                 administrador.setContrasena(rs.getString("contrasena"));
                 administrador.setActivo(rs.getBoolean("activo"));
@@ -125,22 +129,6 @@ public class AdministradorImpl implements AdministradorDAO {
             return administradores;
         } catch (Exception ex) {
             System.out.println("ERROR AL LISTAR ADMINISTRADORES: " + ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    @Override
-    public void asignarAdministradorSP(String dni, String cargo) {
-        String sql = "{CALL asignar_administrador(?, ?)}";
-        try {
-            Connection con = TransactionContext.getConnection();
-            try (java.sql.CallableStatement cs = con.prepareCall(sql)) {
-                cs.setString(1, dni);
-                cs.setString(2, cargo);
-                cs.execute();
-            }
-        } catch (Exception ex) {
-            System.out.println("ERROR AL EJECUTAR asignar_administrador: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
     }

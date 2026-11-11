@@ -1,6 +1,5 @@
 package pe.com.mascovet.usuario.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.usuario.bo.IClienteBO;
 import pe.com.mascovet.usuario.dao.ClienteDAO;
 import pe.com.mascovet.usuario.impl.ClienteImpl;
@@ -25,12 +24,16 @@ public class ClienteBOImpl implements IClienteBO {
             throw new RuntimeException("El DNI no debe exceder los 9 caracteres");
         if (cliente.getNombre() == null || cliente.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre del cliente es obligatorio");
-        if (cliente.getNombre().length() > 150)
-            throw new RuntimeException("El nombre no debe exceder los 150 caracteres");
-        if (cliente.getApellido() == null || cliente.getApellido().trim().isEmpty())
+        if (cliente.getNombre().length() > 50)
+            throw new RuntimeException("El nombre no debe exceder los 50 caracteres");
+        if (cliente.getApellidoPaterno() == null || cliente.getApellidoPaterno().trim().isEmpty())
             throw new RuntimeException("El apellido del cliente es obligatorio");
-        if (cliente.getApellido().length() > 150)
-            throw new RuntimeException("El apellido no debe exceder los 150 caracteres");
+        if (cliente.getApellidoPaterno().length() > 50)
+            throw new RuntimeException("El apellido no debe exceder los 50 caracteres");
+        if (cliente.getApellidoMaterno() == null || cliente.getApellidoMaterno().trim().isEmpty())
+            throw new RuntimeException("El apellido materno es obligatorio");
+        if (cliente.getApellidoMaterno().length() > 50)
+            throw new RuntimeException("El apellido materno no debe exceder los 50 caracteres");
         if (cliente.getNombreUsuario() == null || cliente.getNombreUsuario().trim().isEmpty())
             throw new RuntimeException("El nombre de usuario es obligatorio");
         if (cliente.getNombreUsuario().length() > 100)
@@ -45,25 +48,15 @@ public class ClienteBOImpl implements IClienteBO {
             throw new RuntimeException("El correo no debe exceder los 200 caracteres");
         if (cliente.getTelefono() == null || cliente.getTelefono().trim().isEmpty())
             throw new RuntimeException("El teléfono del cliente es obligatorio");
-        if (cliente.getTelefono().length() > 100)
-            throw new RuntimeException("El teléfono no debe exceder los 100 caracteres");
+        if (cliente.getTelefono().length() > 20)
+            throw new RuntimeException("El teléfono no debe exceder los 20 caracteres");
     }
 
     @Override
     public int insertar(Cliente cliente) {
         validarCliente(cliente);
         cliente.setActivo(true);
-
-        try {
-            int resultado = daoCliente.insertar(cliente);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoCliente.insertar(cliente);
     }
 
     @Override
@@ -71,17 +64,7 @@ public class ClienteBOImpl implements IClienteBO {
         validarCliente(cliente);
         if (cliente.getIdUsuario() <= 0)
             throw new RuntimeException("El identificador del cliente no es válido");
-
-        try {
-            int resultado = daoCliente.modificar(cliente);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoCliente.modificar(cliente);
     }
 
     @Override
@@ -101,18 +84,5 @@ public class ClienteBOImpl implements IClienteBO {
         if (idCliente <= 0)
             throw new RuntimeException("El identificador del cliente no es válido");
         return daoCliente.obtenerPorId(idCliente);
-    }
-
-    @Override
-    public void asignarClienteSP(String dni, String correo, String telefono) {
-        try {
-            daoCliente.asignarClienteSP(dni, correo, telefono);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en asignarClienteSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

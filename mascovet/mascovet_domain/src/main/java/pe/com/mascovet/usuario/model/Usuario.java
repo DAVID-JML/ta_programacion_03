@@ -4,20 +4,23 @@ public abstract class Usuario {
     private int idUsuario;
     private String dni;
     private String nombre;
-    private String apellido;
+    private String apellidoPaterno;
+    private String apellidoMaterno;
     private String nombreUsuario;
     private String contrasena;
-    private boolean activo;
+    private boolean activo = true;
 
     public Usuario() {
     }
 
-    public Usuario(int idUsuario, String dni, String nombre, String apellido,
+    public Usuario(int idUsuario, String dni, String nombre,
+                   String apellidoPaterno, String apellidoMaterno,
                    String nombreUsuario, String contrasena, boolean activo) {
         this.idUsuario = idUsuario;
         this.dni = dni;
         this.nombre = nombre;
-        this.apellido = apellido;
+        this.apellidoPaterno = apellidoPaterno;
+        this.apellidoMaterno = apellidoMaterno;
         this.nombreUsuario = nombreUsuario;
         this.contrasena = contrasena;
         this.activo = activo;
@@ -47,12 +50,20 @@ public abstract class Usuario {
         this.nombre = nombre;
     }
 
-    public String getApellido() {
-        return apellido;
+    public String getApellidoPaterno() {
+        return apellidoPaterno;
     }
 
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
+    public void setApellidoPaterno(String apellidoPaterno) {
+        this.apellidoPaterno = apellidoPaterno;
+    }
+
+    public String getApellidoMaterno() {
+        return apellidoMaterno;
+    }
+
+    public void setApellidoMaterno(String apellidoMaterno) {
+        this.apellidoMaterno = apellidoMaterno;
     }
 
     public String getNombreUsuario() {
@@ -80,7 +91,7 @@ public abstract class Usuario {
     }
 
     public String getNombreCompleto() {
-        return nombre + " " + apellido;
+        return nombre + " " + apellidoPaterno + " " + apellidoMaterno;
     }
 
     public boolean iniciarSesion(String nombreUsuario, String contrasena) {
@@ -88,6 +99,5 @@ public abstract class Usuario {
                 && this.nombreUsuario.equals(nombreUsuario)
                 && this.contrasena.equals(contrasena);
     }
-
 
 }

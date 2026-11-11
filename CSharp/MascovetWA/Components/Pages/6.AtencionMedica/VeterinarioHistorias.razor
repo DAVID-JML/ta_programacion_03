@@ -1,0 +1,91 @@
+@page "/veterinario/historias"
+@inject MascotaRestService MascotasREST
+@inject ClienteRestService ClientesREST
+@inject CitaRestService CitasREST
+@inject ConsultaRestService ConsultasREST
+@inject ControlRestService ControlesREST
+@inject CirugiaRestService CirugiasREST
+@inject VacunacionRestService VacunacionesREST
+@inject ToastService Toast
+@layout MainLayout
+
+<PageTitle>Historias clínicas | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Historias clínicas</h1><p>Consulta el seguimiento médico y la cartilla de cada mascota.</p></div></header>
+    <AppCard Title="Seleccionar mascota">
+        <div class="form-grid">
+            <div class="span-6"><AppSelect TValue="string" Label="Propietario" Options="propietarios" @bind-Value="idPropietario" @bind-Value:after="CambiarPropietario" /></div>
+            <div class="span-6"><AppSelect TValue="string" Label="Mascota" Options="MascotasPropietario" @bind-Value="idMascota" /></div>
+            <div class="span-3"><AppDatePicker Label="Desde" @bind-Value="desde" /></div>
+            <div class="span-3"><AppDatePicker Label="Hasta" @bind-Value="hasta" /></div>
+        </div>
+        <div class="acciones">
+            <AppButton Href="@($"/veterinario/mascotas/{idMascota}")" Variant="ButtonVariant.Secondary">Ficha de mascota</AppButton>
+            <AppButton Href="@($"/veterinario/mascotas/{idMascota}/cartilla")">Cartilla de vacunación</AppButton>
+        </div>
+    </AppCard>
+    <AppCard Title="Atenciones registradas">
+        <AppTable Items="Filtradas" ColumnCount="5" Caption="Historial médico">
+            <HeaderContent><th>Fecha</th><th>Tipo</th><th>Diagnóstico / observación</th><th>Tratamiento</th><th>Acción</th></HeaderContent>
+            <RowTemplate Context="a"><td>@a.Fecha.ToString("dd/MM/yyyy")</td><td>@a.Tipo</td><td>@a.Diagnostico</td><td>@a.Tratamiento</td><td><AppButton Href="@($"/veterinario/atenciones/ver/{a.IdAtencion}?tipo={a.TipoCodigo}")" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver detalle</AppButton></td></RowTemplate>
+            <EmptyContent><AppEmptyState Icon="file-text" Title="Sin registros" Description="No hay atenciones para estos criterios." /></EmptyContent>
+        </AppTable>
+        <div class="acciones"><AppButton Href="/veterinario/reportes/historial" Variant="ButtonVariant.Secondary">Reporte clínico</AppButton></div>
+    </AppCard>
+</div>
+@code {
+    [SupplyParameterFromQuery(Name="mascota")]private int? MascotaSeleccionada{get;set;}
+    private string idMascota="",idPropietario="";private DateOnly? desde,hasta;
+    private List<SelectOption<string>> propietarios=new();
+    private List<MascovetDomain.Mascotas.Mascota> mascotasDatos=new();
+    private IEnumerable<SelectOption<string>> MascotasPropietario => mascotasDatos
+        .Where(m=>m.Activo && m.Cliente?.IdUsuario.ToString()==idPropietario)
+        .OrderBy(m=>m.Nombre).Select(m=>new SelectOption<string>(m.IdMascota.ToString(),m.Nombre??"Sin nombre"));
+    private void CambiarPropietario() { idMascota=MascotasPropietario.FirstOrDefault()?.Value??""; }
+    private List<SelectOption<string>> mascotas=new();
+    private sealed record AtencionFila(int IdAtencion,int IdMascota,DateOnly Fecha,string Tipo,string TipoCodigo,string Diagnostico,string Tratamiento);
+    private List<AtencionFila> atenciones=new();
+    protected override async Task OnInitializedAsync()
+    {
+        atenciones.Clear();
+        try
+        {
+            mascotasDatos=await MascotasREST.ListarTodosAsync();
+            var clientes=await ClientesREST.ListarTodosAsync();
+            propietarios=clientes.Where(c=>c.Activo && mascotasDatos.Any(m=>m.Cliente?.IdUsuario==c.IdUsuario))
+                .OrderBy(c=>c.Nombre).Select(c=>new SelectOption<string>(c.IdUsuario.ToString(),
+                    $"{c.Nombre} {c.ApellidoPaterno}".Trim())).ToList();
+            var actual=mascotasDatos.FirstOrDefault(m=>m.IdMascota==MascotaSeleccionada);
+            idPropietario=actual?.Cliente?.IdUsuario.ToString()??propietarios.FirstOrDefault()?.Value??"";
+            CambiarPropietario();
+            if (actual?.Cliente?.IdUsuario.ToString()==idPropietario) idMascota=MascotaSeleccionada!.Value.ToString();
+        }
+        catch (Exception ex) { Toast.Error($"No se pudieron cargar las mascotas: {ex.Message}"); }
+        try
+        {
+            var citas = await CitasREST.ListarTodosAsync();
+            var porCita = citas.Where(c => c.Mascota is not null).ToDictionary(c => c.IdCita);
+            void Agregar(int idAtencion, int idCita, DateTime? fecha, string tipo, string tipoCodigo, string diagnostico, string tratamiento)
+            {
+                if (!porCita.TryGetValue(idCita, out var cita)) return;
+                var id = cita.Mascota?.IdMascota ?? 0;
+                if (id <= 0) return;
+                atenciones.Add(new(idAtencion,id, DateOnly.FromDateTime(fecha ?? cita.Fecha ?? DateTime.Today),
+                    tipo, tipoCodigo, diagnostico, tratamiento));
+            }
+            foreach (var a in await ConsultasREST.ListarTodosAsync())
+                Agregar(a.IdAtencion,a.Cita?.IdCita ?? 0, null, "Consulta", "CONSULTA", a.Diagnostico ?? "", a.Tratamiento ?? "");
+            foreach (var a in await ControlesREST.ListarTodosAsync())
+                Agregar(a.IdAtencion,a.Cita?.IdCita ?? 0, null, "Control", "CONTROL", a.Evolucion ?? "", a.Indicaciones ?? "");
+            foreach (var a in await CirugiasREST.ListarTodosAsync())
+                Agregar(a.IdAtencion,a.Cita?.IdCita ?? 0, null, "Cirugía", "CIRUGIA", a.Procedimiento ?? "", a.IndicacionesPostOperatorias ?? "");
+            foreach (var a in await VacunacionesREST.ListarTodosAsync())
+                Agregar(a.IdAtencion,a.Cita?.IdCita ?? 0, a.FechaAplicacion, "Vacunación", "VACUNACION",
+                    a.Vacunas.FirstOrDefault()?.Nombre ?? "", a.Dosis ?? "");
+        }
+        catch (Exception ex) { Toast.Error($"No se pudieron cargar las atenciones: {ex.Message}"); }
+    }
+    private IEnumerable<AtencionFila> Filtradas=>atenciones.Where(a=>a.IdMascota.ToString()==idMascota &&
+        (!desde.HasValue||a.Fecha>=desde)&&(!hasta.HasValue||a.Fecha<=hasta) &&
+        (!desde.HasValue||!hasta.HasValue||desde<=hasta)).OrderByDescending(a=>a.Fecha);
+}

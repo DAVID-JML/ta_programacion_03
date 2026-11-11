@@ -1,0 +1,101 @@
+@page "/recepcion/citas"
+@inject CitaRestService CitasREST
+@inject MascotaRestService MascotasREST
+@inject ClienteRestService ClientesREST
+@inject VeterinarioRestService VeterinariosREST
+@layout MainLayout
+@inject ToastService Toast
+@using MascovetWA.Servicios.Validaciones
+<PageTitle>Gestión de citas | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Gestión de citas</h1><p>Confirma, reprograma y cancela las citas según su estado.</p></div>
+    <AppButton Href="/recepcion/citas/nueva" Icon="plus">Registrar cita</AppButton></header>
+    <AppCard Title="Citas registradas">
+        <AppTable Items="citas" ColumnCount="7" Caption="Citas de la clínica">
+            <HeaderContent><th>Código</th><th>Mascota / Cliente</th><th>Veterinario</th><th>Tipo</th><th>Fecha y hora</th><th>Estado</th><th>Acciones</th></HeaderContent>
+            <RowTemplate Context="c">
+                <td>@c.Id</td><td>@c.Mascota / @c.Cliente</td><td>@c.Veterinario</td><td>@c.Tipo</td><td>@c.FechaHora</td>
+                <td><AppBadge Variant="@Color(c.Estado)" ShowIcon="false">@c.Estado</AppBadge></td>
+                <td><div class="ms-inline-actions">
+                    @if (c.Estado == "RESERVADA") { <AppButton Size="ButtonSize.Small" OnClick="() => SolicitarConfirmacion(c)">Confirmar</AppButton> }
+                    @if (c.Estado is "RESERVADA" or "CONFIRMADA")
+                    {
+                        @if (c.Estado == "RESERVADA")
+                        {
+                            <AppButton Size="ButtonSize.Small" Href="@($"/recepcion/citas/{c.Id}/reprogramar")" Variant="ButtonVariant.Secondary">Reprogramar</AppButton>
+                        }
+                        <AppButton Size="ButtonSize.Small" Href="@($"/recepcion/citas/{c.Id}/cancelar")" Variant="ButtonVariant.Danger">Cancelar</AppButton>
+                    }
+                    @if (c.Estado is "ATENDIDA" or "CANCELADA") { <span class="ms-muted">Sin acciones</span> }
+                </div></td>
+            </RowTemplate>
+        </AppTable>
+        <div class="acciones"><AppButton Href="/recepcion/disponibilidad" Variant="ButtonVariant.Secondary">Consultar disponibilidad</AppButton></div>
+    </AppCard>
+</div>
+<AppModal @bind-Visible="mostrarConfirmacion" Title="Confirmar cita" ConfirmText="Confirmar" OnConfirm="Confirmar">
+    <p>¿Deseas confirmar la cita @idSeleccionado?</p>
+</AppModal>
+@code {
+    private sealed record CitaFila(int Id,string Mascota,string Cliente,string Veterinario,string Tipo,string FechaHora,string Estado);
+    private List<CitaFila> citas=new();
+    private static SemanticVariant Color(string e)=>e switch{"RESERVADA"=>SemanticVariant.Warning,"CONFIRMADA"=>SemanticVariant.Success,"ATENDIDA"=>SemanticVariant.Info,"CANCELADA"=>SemanticVariant.Error,_=>SemanticVariant.Neutral};
+    private bool mostrarConfirmacion;
+    private int idSeleccionado;
+    protected override async Task OnInitializedAsync()=>await Cargar();
+    private async Task Cargar()
+    {
+        try
+        {
+            // Consultas independientes en paralelo para evitar esperas acumuladas.
+            var citasTask = CitasREST.ListarTodosAsync();
+            var mascotasTask = MascotasREST.ListarTodosAsync();
+            var clientesTask = ClientesREST.ListarTodosAsync();
+            var veterinariosTask = VeterinariosREST.ListarTodosAsync();
+            await Task.WhenAll(citasTask, mascotasTask, clientesTask, veterinariosTask);
+            var citasREST = await citasTask;
+            var mascotas = await mascotasTask;
+            var clientes = await clientesTask;
+            var veterinarios = await veterinariosTask;
+            citas = citasREST.Where(c => c.Activo).Select(c =>
+            {
+                var mascota = mascotas.FirstOrDefault(m => m.IdMascota == c.Mascota?.IdMascota);
+                int idCliente = mascota?.Cliente?.IdUsuario ?? c.Mascota?.Cliente?.IdUsuario ?? 0;
+                var cliente = clientes.FirstOrDefault(x => x.IdUsuario == idCliente);
+                var vet = veterinarios.FirstOrDefault(v => v.IdUsuario == c.Veterinario?.IdUsuario);
+                string nombreMascota = mascota?.Nombre ?? c.Mascota?.Nombre ?? $"Mascota #{c.Mascota?.IdMascota}";
+                string nombreCliente = cliente?.NombreCompleto ?? (idCliente > 0 ? $"Cliente #{idCliente}" : "Sin propietario");
+                string nombreVet = vet?.NombreCompleto ?? (c.Veterinario?.IdUsuario > 0 ? $"Veterinario #{c.Veterinario.IdUsuario}" : "Sin asignar");
+                return new CitaFila(c.IdCita, nombreMascota, nombreCliente, nombreVet,
+                    c.TipoAtencion?.ToString() ?? "", $"{c.Fecha:dd/MM/yyyy} {c.Hora:HH:mm}", c.Estado?.ToString() ?? "");
+            }).OrderBy(c => c.Estado switch {"CONFIRMADA" => 0, "RESERVADA" => 1, "ATENDIDA" => 2, "CANCELADA" => 3, _ => 4})
+                .ThenBy(c => DateTime.TryParseExact(c.FechaHora, "dd/MM/yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None, out var d) ? d : DateTime.MaxValue).ToList();
+        }
+        catch(Exception ex){Toast.Error($"No se pudieron cargar las citas: {ex.Message}");}
+    }
+    private void SolicitarConfirmacion(CitaFila c){idSeleccionado=c.Id;mostrarConfirmacion=true;}
+    private async Task Confirmar()
+    {
+        mostrarConfirmacion=false;
+        try
+        {
+            var cita=await CitasREST.BuscarPorIdAsync(idSeleccionado);
+            if(cita is null || cita.Estado!=MascovetDomain.Enums.EstadoCita.RESERVADA){Toast.Warning("La cita ya no está reservada.");return;}
+            var mascota = await MascotasREST.BuscarPorIdAsync(cita.Mascota?.IdMascota ?? 0);
+            if (mascota?.Cliente?.IdUsuario is not > 0)
+            { Toast.Warning("La cita no tiene un cliente asociado en la base de datos."); return; }
+            cita.Mascota = new MascovetDomain.Mascotas.Mascota
+            {
+                IdMascota = mascota.IdMascota,
+                Cliente = new MascovetDomain.Usuarios.Cliente { IdUsuario = mascota.Cliente.IdUsuario }
+            };
+            if (cita.Fecha.HasValue) cita.Fecha=ReglasCitas.FechaParaRest(cita.Fecha.Value);
+            cita.Estado=MascovetDomain.Enums.EstadoCita.CONFIRMADA;
+            int result=await CitasREST.ModificarAsync(cita);
+            if(result<=0){Toast.Warning("No se confirmó el cambio de estado.");return;}
+            Toast.Success("Cita confirmada.");await Cargar();
+        }
+        catch(Exception ex){Toast.Error($"No se pudo confirmar la cita: {ex.Message}");}
+    }
+}

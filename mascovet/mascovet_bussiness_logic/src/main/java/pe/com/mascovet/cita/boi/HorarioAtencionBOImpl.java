@@ -1,6 +1,5 @@
 package pe.com.mascovet.cita.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.cita.bo.IHorarioAtencionBO;
 import pe.com.mascovet.cita.dao.HorarioAtencionDAO;
 import pe.com.mascovet.cita.impl.HorarioAtencionImpl;
@@ -29,80 +28,31 @@ public class HorarioAtencionBOImpl implements IHorarioAtencionBO {
             throw new RuntimeException("La hora de inicio debe ser anterior a la hora de fin");
     }
 
-    private void validarSuperposicion(
-            HorarioAtencion nuevo, int idHorarioExcluir) {
-
-        List<HorarioAtencion> horarios = daoHorarioAtencion.listarTodos();
-
-        for (HorarioAtencion existente : horarios) {
-
-            // Al modificar, no comparar el horario consigo mismo.
-            if (existente.getIdHorario() == idHorarioExcluir) {
+    private void validarSuperposicion(HorarioAtencion horario, int idExcluido) {
+        for (HorarioAtencion existente : daoHorarioAtencion.listarTodos()) {
+            if (existente.getIdHorario() == idExcluido)
                 continue;
-            }
-
-            boolean mismoVeterinario =
-                    nuevo.getVeterinario().getIdUsuario()
-                            == existente.getVeterinario().getIdUsuario();
-
-            boolean mismoDia = nuevo.getDia() == existente.getDia();
-
-            if (!mismoVeterinario || !mismoDia) {
-                continue;
-            }
-
-            boolean seSuperponen =
-                    nuevo.getHoraInicio().isBefore(existente.getHoraFin())
-                            && nuevo.getHoraFin().isAfter(existente.getHoraInicio());
-
-            if (seSuperponen) {
-                throw new RuntimeException(
-                        "El veterinario ya tiene un horario el "
-                                + existente.getDia()
-                                + " de " + existente.getHoraInicio()
-                                + " a " + existente.getHoraFin()
-                                + ". El horario ingresado se superpone."
-                );
-            }
+            if (existente.getVeterinario().getIdUsuario() == horario.getVeterinario().getIdUsuario()
+                    && existente.getDia() == horario.getDia()
+                    && horario.getHoraInicio().isBefore(existente.getHoraFin())
+                    && horario.getHoraFin().isAfter(existente.getHoraInicio()))
+                throw new RuntimeException("El veterinario ya tiene un horario superpuesto para ese día");
         }
     }
-
 
     @Override
     public int insertar(HorarioAtencion horarioAtencion) {
         validarHorarioAtencion(horarioAtencion);
         validarSuperposicion(horarioAtencion, 0);
-
-        try {
-            int resultado = daoHorarioAtencion.insertar(horarioAtencion);
-            TransactionContext.commit();
-            return resultado;
-
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException(
-                    "Error al insertar el horario: " + ex.getMessage(), ex
-            );
-
-        } finally {
-            TransactionContext.close();
-        }
+        return daoHorarioAtencion.insertar(horarioAtencion);
     }
 
     @Override
     public int modificar(HorarioAtencion horarioAtencion) {
         validarHorarioAtencion(horarioAtencion);
-
-        if (horarioAtencion.getIdHorario() <= 0) {
-            throw new RuntimeException(
-                    "El identificador del horario no es válido"
-            );
-        }
-
-        validarSuperposicion(
-                horarioAtencion, horarioAtencion.getIdHorario()
-        );
-
+        if (horarioAtencion.getIdHorario() <= 0)
+            throw new RuntimeException("El identificador del horario no es válido");
+        validarSuperposicion(horarioAtencion, horarioAtencion.getIdHorario());
         return daoHorarioAtencion.modificar(horarioAtencion);
     }
 
@@ -123,18 +73,5 @@ public class HorarioAtencionBOImpl implements IHorarioAtencionBO {
         if (idHorario <= 0)
             throw new RuntimeException("El identificador del horario no es válido");
         return daoHorarioAtencion.obtenerPorId(idHorario);
-    }
-
-    @Override
-    public void asignarHorarioVeterinarioSP(String dni, String dia, java.sql.Time horaInicio, java.sql.Time horaFin) {
-        try {
-            daoHorarioAtencion.asignarHorarioVeterinarioSP(dni, dia, horaInicio, horaFin);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en asignarHorarioVeterinarioSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

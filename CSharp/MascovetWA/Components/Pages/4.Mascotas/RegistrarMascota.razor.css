@@ -1,0 +1,89 @@
+
+.registrar-mascota {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.registrar-mascota__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--ms-space-6);
+}
+
+.registrar-mascota__field {
+    min-width: 0;
+}
+
+    .registrar-mascota__field ::deep .ms-field {
+        width: 100%;
+    }
+
+.registrar-mascota__notice {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ms-space-3);
+    margin-top: var(--ms-space-6);
+    padding: var(--ms-space-4);
+    border: var(--ms-border-width) solid var(--ms-color-info-border);
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-info-bg);
+    color: var(--ms-color-info-text);
+}
+
+    .registrar-mascota__notice ::deep .ms-icon {
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .registrar-mascota__notice p {
+        margin: 0;
+        font-size: var(--ms-font-size-small);
+        line-height: var(--ms-line-height-normal);
+    }
+
+.registrar-mascota__validation {
+    margin: 0 0 var(--ms-space-4);
+    color: var(--ms-color-error-text);
+    font-size: var(--ms-font-size-small);
+}
+
+    .registrar-mascota__validation ::deep ul {
+        margin: 0;
+        padding: var(--ms-space-3) var(--ms-space-4) var(--ms-space-3) var(--ms-space-8);
+        border: var(--ms-border-width) solid var(--ms-color-error-border);
+        border-radius: var(--ms-radius-control);
+        background: var(--ms-color-error-bg);
+    }
+
+.registrar-mascota__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--ms-space-3);
+}
+
+@media (max-width: 700px) {
+    .registrar-mascota {
+        gap: var(--ms-space-4);
+    }
+
+    .registrar-mascota__grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--ms-space-4);
+    }
+
+    .registrar-mascota__actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+        .registrar-mascota__actions ::deep .ms-btn {
+            width: 100%;
+            justify-content: center;
+        }
+}

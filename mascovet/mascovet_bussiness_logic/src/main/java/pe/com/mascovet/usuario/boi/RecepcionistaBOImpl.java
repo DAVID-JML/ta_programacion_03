@@ -1,6 +1,5 @@
 package pe.com.mascovet.usuario.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.usuario.bo.IRecepcionistaBO;
 import pe.com.mascovet.usuario.dao.RecepcionistaDAO;
 import pe.com.mascovet.usuario.impl.RecepcionistaImpl;
@@ -25,12 +24,16 @@ public class RecepcionistaBOImpl implements IRecepcionistaBO {
             throw new RuntimeException("El DNI no debe exceder los 9 caracteres");
         if (recepcionista.getNombre() == null || recepcionista.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre del recepcionista es obligatorio");
-        if (recepcionista.getNombre().length() > 150)
-            throw new RuntimeException("El nombre no debe exceder los 150 caracteres");
-        if (recepcionista.getApellido() == null || recepcionista.getApellido().trim().isEmpty())
+        if (recepcionista.getNombre().length() > 50)
+            throw new RuntimeException("El nombre no debe exceder los 50 caracteres");
+        if (recepcionista.getApellidoPaterno() == null || recepcionista.getApellidoPaterno().trim().isEmpty())
             throw new RuntimeException("El apellido del recepcionista es obligatorio");
-        if (recepcionista.getApellido().length() > 150)
-            throw new RuntimeException("El apellido no debe exceder los 150 caracteres");
+        if (recepcionista.getApellidoPaterno().length() > 50)
+            throw new RuntimeException("El apellido no debe exceder los 50 caracteres");
+        if (recepcionista.getApellidoMaterno() == null || recepcionista.getApellidoMaterno().trim().isEmpty())
+            throw new RuntimeException("El apellido materno es obligatorio");
+        if (recepcionista.getApellidoMaterno().length() > 50)
+            throw new RuntimeException("El apellido materno no debe exceder los 50 caracteres");
         if (recepcionista.getNombreUsuario() == null || recepcionista.getNombreUsuario().trim().isEmpty())
             throw new RuntimeException("El nombre de usuario es obligatorio");
         if (recepcionista.getNombreUsuario().length() > 100)
@@ -43,24 +46,21 @@ public class RecepcionistaBOImpl implements IRecepcionistaBO {
             throw new RuntimeException("El turno del recepcionista es obligatorio");
         if (recepcionista.getTurno().length() > 150)
             throw new RuntimeException("El turno no debe exceder los 150 caracteres");
+        if (recepcionista.getCorreo() == null || recepcionista.getCorreo().trim().isEmpty())
+            throw new RuntimeException("El correo es obligatorio");
+        if (recepcionista.getCorreo().length() > 200)
+            throw new RuntimeException("El correo no debe exceder los 200 caracteres");
+        if (recepcionista.getTelefono() == null || recepcionista.getTelefono().trim().isEmpty())
+            throw new RuntimeException("El teléfono es obligatorio");
+        if (recepcionista.getTelefono().length() > 20)
+            throw new RuntimeException("El teléfono no debe exceder los 20 caracteres");
     }
 
     @Override
     public int insertar(Recepcionista recepcionista) {
         validarRecepcionista(recepcionista);
         recepcionista.setActivo(true);
-
-
-        try {
-            int resultado = daoRecepcionista.insertar(recepcionista);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoRecepcionista.insertar(recepcionista);
     }
 
     @Override
@@ -68,18 +68,7 @@ public class RecepcionistaBOImpl implements IRecepcionistaBO {
         validarRecepcionista(recepcionista);
         if (recepcionista.getIdUsuario() <= 0)
             throw new RuntimeException("El identificador del recepcionista no es válido");
-
-
-        try {
-            int resultado = daoRecepcionista.modificar(recepcionista);
-            TransactionContext.commit();
-            return resultado;
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error:" + ex.getMessage());
-        } finally {
-            TransactionContext.close();
-        }
+        return daoRecepcionista.modificar(recepcionista);
     }
 
     @Override
@@ -99,18 +88,5 @@ public class RecepcionistaBOImpl implements IRecepcionistaBO {
         if (idRecepcionista <= 0)
             throw new RuntimeException("El identificador del recepcionista no es válido");
         return daoRecepcionista.obtenerPorId(idRecepcionista);
-    }
-
-    @Override
-    public void asignarRecepcionistaSP(String dni, String turno) {
-        try {
-            daoRecepcionista.asignarRecepcionistaSP(dni, turno);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en asignarRecepcionistaSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

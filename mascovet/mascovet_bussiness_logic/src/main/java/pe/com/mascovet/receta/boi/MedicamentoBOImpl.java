@@ -1,6 +1,5 @@
 package pe.com.mascovet.receta.boi;
 
-import pe.com.mascovet.config.TransactionContext;
 import pe.com.mascovet.receta.bo.IMedicamentoBO;
 import pe.com.mascovet.receta.dao.MedicamentoDAO;
 import pe.com.mascovet.receta.impl.MedicamentoImpl;
@@ -21,8 +20,8 @@ public class MedicamentoBOImpl implements IMedicamentoBO {
             throw new RuntimeException("El medicamento que se quiere registrar es null");
         if (medicamento.getNombre() == null || medicamento.getNombre().trim().isEmpty())
             throw new RuntimeException("El nombre del medicamento es obligatorio");
-        if (medicamento.getNombre().length() > 200)
-            throw new RuntimeException("El nombre del medicamento no debe exceder los 200 caracteres");
+        if (medicamento.getNombre().length() > 100)
+            throw new RuntimeException("El nombre del medicamento no debe exceder los 100 caracteres");
         if (medicamento.getDescripcion() == null || medicamento.getDescripcion().trim().isEmpty())
             throw new RuntimeException("La descripción del medicamento es obligatoria");
         if (medicamento.getDescripcion().length() > 200)
@@ -62,18 +61,5 @@ public class MedicamentoBOImpl implements IMedicamentoBO {
         if (idMedicamento <= 0)
             throw new RuntimeException("El identificador del medicamento no es válido");
         return daoMedicamento.obtenerPorId(idMedicamento);
-    }
-
-    @Override
-    public void registrarMedicamentoSP(String nombre, String descripcion, double monto, java.sql.Date fechaVencimiento) {
-        try {
-            daoMedicamento.registrarMedicamentoSP(nombre, descripcion, monto, fechaVencimiento);
-            TransactionContext.commit();
-        } catch (Exception ex) {
-            TransactionContext.rollback();
-            throw new RuntimeException("Error en registrarMedicamentoSP: " + ex.getMessage(), ex);
-        } finally {
-            TransactionContext.close();
-        }
     }
 }

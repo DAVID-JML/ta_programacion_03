@@ -7,16 +7,19 @@ import java.util.List;
 
 public class Recepcionista extends Usuario{
     private String turno;
+    private String correo;
+    private String telefono;
     private final List<Cita> citas;
 
     public Recepcionista() {
         citas = new ArrayList<>();
     }
 
-    public Recepcionista(int idUsuario, String dni, String nombre, String apellido,
+    public Recepcionista(int idUsuario, String dni, String nombre, String apellidoPaterno, String apellidoMaterno,
                          String nombreUsuario, String contrasena, boolean activo,
                          String turno) {
-        super(idUsuario, dni, nombre, apellido, nombreUsuario, contrasena, activo);
+        super(idUsuario, dni, nombre, apellidoPaterno, apellidoMaterno,
+                nombreUsuario, contrasena, activo);
         this.turno = turno;
         citas = new ArrayList<>();
     }
@@ -27,6 +30,22 @@ public class Recepcionista extends Usuario{
 
     public void setTurno(String turno) {
         this.turno = turno;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
     }
 
     public List<Cita> getCitas() {

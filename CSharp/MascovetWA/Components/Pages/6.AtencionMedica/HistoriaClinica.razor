@@ -1,0 +1,127 @@
+@page "/cliente/mascotas/{IdMascota:int}/historial"
+@inject MascotaRestService MascotasREST
+@inject ConsultaRestService ConsultasREST
+@inject ControlRestService ControlesREST
+@inject CirugiaRestService CirugiasREST
+@inject VacunacionRestService VacunacionesREST
+@inject RecetaRestService RecetasREST
+@inject DetalleRecetaRestService DetallesREST
+@inject CitaRestService CitasREST
+@inject ToastService Toast
+@page "/recepcion/mascotas/{IdMascota:int}/historial"
+@layout MainLayout
+@inject NavigationManager Navigation
+<PageTitle>Historial médico | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div><h1>Historial médico</h1><p>Seguimiento de consultas, vacunaciones y recetas de la mascota.</p></div>
+        <div class="ms-inline-actions">
+            <AppButton Href="@CartillaHref" Icon="check-circle">Cartilla de vacunación</AppButton>
+            <AppButton Href="@FichaHref" Variant="ButtonVariant.Secondary">Volver a la ficha</AppButton>
+        </div>
+    </header>
+    @if (Cargando)
+    {
+        <AppCard Title="Cargando historial"><p>Consultando atenciones y recetas...</p></AppCard>
+    }
+    else if (Mascota is null)
+    {
+        <AppCard Title="Mascota no encontrada"><p>No se encontró la mascota solicitada.</p></AppCard>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(ErrorHistorial))
+        {
+            <p class="ms-small-note" role="alert">@ErrorHistorial</p>
+        }
+        <AppCard Title="@($"Historial de {Mascota}")" Subtitle="Atenciones médicas">
+            <AppTable Items="Atenciones.OrderByDescending(a => ParseFecha(a.Fecha))" ColumnCount="4" Caption="Atenciones médicas">
+                <HeaderContent><th>Fecha</th><th>Tipo</th><th>Diagnóstico</th><th>Tratamiento</th></HeaderContent>
+                <RowTemplate Context="a"><td>@a.Fecha</td><td>@a.Tipo</td><td>@a.Diagnostico</td><td>@a.Tratamiento</td></RowTemplate>
+                <EmptyContent><AppEmptyState Icon="file-text" Title="Sin atenciones" Description="No se encontraron atenciones médicas." /></EmptyContent>
+            </AppTable>
+        </AppCard>
+        <AppCard Title="Vacunaciones" Subtitle="Acceso rápido a las próximas dosis.">
+            <p>Puedes consultar las vacunas aplicadas, sus fechas y próximas dosis en la cartilla de esta mascota.</p>
+            <div class="acciones"><AppButton Href="@CartillaHref" Variant="ButtonVariant.Secondary">Consultar cartilla</AppButton></div>
+        </AppCard>
+        <AppCard Title="Recetas médicas">
+            <AppTable Items="Recetas.OrderByDescending(r => ParseFecha(r.Fecha))" ColumnCount="3" Caption="Recetas registradas">
+                <HeaderContent><th>Fecha</th><th>Medicamento</th><th>Indicaciones</th></HeaderContent>
+                <RowTemplate Context="r"><td>@r.Fecha</td><td>@r.Medicamento</td><td>@r.Indicaciones</td></RowTemplate>
+                <EmptyContent><AppEmptyState Icon="file-text" Title="Sin recetas" Description="No hay recetas registradas para esta mascota." /></EmptyContent>
+            </AppTable>
+        </AppCard>
+    }
+</div>
+@code {
+    [Parameter]public int IdMascota{get;set;}
+    private string Prefijo=>Navigation.ToBaseRelativePath(Navigation.Uri).StartsWith("recepcion/",StringComparison.OrdinalIgnoreCase)?"recepcion":"cliente";
+    private string FichaHref=>$"/{Prefijo}/mascotas/{IdMascota}";
+    private string CartillaHref=>$"/{Prefijo}/mascotas/{IdMascota}/cartilla";
+    private string? Mascota;
+    private bool Cargando = true;
+    private string? ErrorHistorial;
+    private sealed record AtencionFila(string Fecha,string Tipo,string Diagnostico,string Tratamiento);
+    private sealed record RecetaFila(string Fecha,string Medicamento,string Indicaciones);
+    private static DateTime ParseFecha(string fecha) => DateTime.TryParseExact(fecha,"dd/MM/yyyy",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None,out var f) ? f : DateTime.MinValue;
+    private List<AtencionFila> Atenciones=new();
+    private List<RecetaFila> Recetas=new();
+    protected override async Task OnParametersSetAsync()
+    {
+        Cargando = true;
+        Atenciones.Clear();
+        Recetas.Clear();
+        ErrorHistorial = null;
+        try
+        {
+            Mascota = (await MascotasREST.BuscarPorIdAsync(IdMascota))?.Nombre;
+            var citas = await CitasREST.ListarTodosAsync();
+            var citasMascota = citas.Where(c => c.Mascota?.IdMascota == IdMascota).ToList();
+            var ids = citasMascota.Select(c => c.IdCita).ToHashSet();
+            var atencionesIds = new HashSet<int>();
+            DateTime? FechaAtencion(int id) => citasMascota.FirstOrDefault(c => c.IdCita == id)?.Fecha;
+            void Agregar(int idAtencion, int idCita, string tipo, string diagnostico, string tratamiento, DateTime? fecha = null)
+            {
+                if (idCita <= 0 || !ids.Contains(idCita)) return;
+                atencionesIds.Add(idAtencion);
+                Atenciones.Add(new AtencionFila((fecha ?? FechaAtencion(idCita))?.ToString("dd/MM/yyyy") ?? "Sin fecha",
+                    tipo, diagnostico, tratamiento));
+            }
+            try
+            {
+                foreach (var a in await ConsultasREST.ListarTodosAsync())
+                    Agregar(a.IdAtencion, a.Cita?.IdCita ?? 0, "Consulta", a.Diagnostico ?? "", a.Tratamiento ?? "");
+                foreach (var a in await ControlesREST.ListarTodosAsync())
+                    Agregar(a.IdAtencion, a.Cita?.IdCita ?? 0, "Control", a.Evolucion ?? "", a.Indicaciones ?? "");
+                foreach (var a in await CirugiasREST.ListarTodosAsync())
+                    Agregar(a.IdAtencion, a.Cita?.IdCita ?? 0, "Cirugía", a.Procedimiento ?? "", a.IndicacionesPostOperatorias ?? "");
+                foreach (var a in await VacunacionesREST.ListarTodosAsync())
+                    Agregar(a.IdAtencion, a.Cita?.IdCita ?? 0, "Vacunación", a.Vacunas.FirstOrDefault()?.Nombre ?? "",
+                        a.Dosis ?? "", a.FechaAplicacion);
+            }
+            catch (Exception ex) { ErrorHistorial = $"Atenciones: {ex.Message}"; }
+            try
+            {
+                var recetas = await RecetasREST.ListarTodosAsync();
+                var detalles = await DetallesREST.ListarTodosAsync();
+                Recetas = recetas.Where(r => r.AtencionMedica is not null && atencionesIds.Contains(r.AtencionMedica.IdAtencion))
+                    .Select(r => new RecetaFila(r.Fecha?.ToString("dd/MM/yyyy") ?? "Sin fecha",
+                        string.Join(", ", detalles.Where(d => d.Receta?.IdReceta == r.IdReceta)
+                            .Select(d => d.Medicamento?.Nombre).Where(n => !string.IsNullOrWhiteSpace(n))),
+                        r.Indicaciones ?? "")).ToList();
+            }
+            catch (Exception ex)
+            {
+                ErrorHistorial = string.Join(" ", new[] { ErrorHistorial, $"Recetas: {ex.Message}" }
+                    .Where(x => !string.IsNullOrWhiteSpace(x)));
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorHistorial = $"No se pudieron consultar los datos de la mascota: {ex.Message}";
+            Toast.Error(ErrorHistorial);
+        }
+        finally { Cargando = false; }
+    }
+}
