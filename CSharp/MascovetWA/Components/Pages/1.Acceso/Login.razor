@@ -1,10 +1,9 @@
-@page "/"
+﻿@page "/"
 @layout AuthLayout
-@inject AuthRestService Auth
+@using System.Text.Json
+@inject AuthRestService AuthRest
 @inject UserContext User
 @inject NavigationManager Navigation
-@using System.ComponentModel.DataAnnotations
-@using MascovetWA.Servicios.REST
 
 <PageTitle>Iniciar sesión | Mascovet</PageTitle>
 
@@ -13,7 +12,7 @@
 
         <header class="login-brand">
             <div class="login-logo" aria-hidden="true">
-                <span>🐾</span>
+                <AppIcon Name="paw-print" Size="28" />
             </div>
 
             <h1>Mascovet</h1>
@@ -31,20 +30,14 @@
             <DataAnnotationsValidator />
 
             <div class="login-fields">
-                <label class="ms-role-field"><span>Tipo de usuario</span>
-                    <select class="ms-role-input" @bind="rolSeleccionado">
-                        <option value="Cliente">Cliente</option><option value="Recepcionista">Recepcionista</option>
-                        <option value="Veterinario">Veterinario</option><option value="Administrador">Administrador</option>
-                    </select>
-                </label>
                 <AppInput TValue="string"
-                          Label="@(rolSeleccionado == "Cliente" ? "Correo electrónico" : "Nombre de usuario")"
+                          Label="Usuario o correo electrónico"
                           Type="text"
                           Placeholder="usuario o nombre@correo.com"
                           Required="true"
                           @bind-Value="modelo.Usuario"
                           autocomplete="username" />
-                
+
                 <AppInput TValue="string"
                           Label="Contraseña"
                           Type="password"
@@ -55,7 +48,8 @@
             </div>
 
             <div class="login-options">
-                <a href="#" @onclick="AbrirModalRecuperacion"
+                <a href="#"
+                   @onclick="AbrirModalRecuperacion"
                    @onclick:preventDefault="true">
                     ¿Olvidaste tu contraseña?
                 </a>
@@ -88,38 +82,42 @@
     <p class="login-copyright">
         © 2026 Mascovet. Todos los derechos reservados.
     </p>
+
     <AppModal @bind-Visible="mostrarModalRecuperacion"
-          Title="Recuperar contraseña"
-          ConfirmText="Enviar instrucciones"
-          CancelText="Cancelar"
-          OnConfirm="EnviarSolicitudRecuperacion">
+              Title="Recuperar contraseña"
+              ConfirmText="Enviar instrucciones"
+              CancelText="Cancelar"
+              OnConfirm="EnviarSolicitudRecuperacion">
 
-    <p>Ingresa tu correo electrónico para recuperar tu cuenta.</p>
+        <p>Ingresa tu correo electrónico para recuperar tu cuenta.</p>
 
-    <AppInput TValue="string"
-              Label="Correo electrónico"
-              Type="email"
-              Placeholder="nombre@correo.com"
-              Required="true"
-              @bind-Value="correoRecuperacion"
-              autocomplete="email" />
+        <AppInput TValue="string"
+                  Label="Correo electrónico"
+                  Type="email"
+                  Placeholder="nombre@correo.com"
+                  Required="true"
+                  @bind-Value="correoRecuperacion"
+                  autocomplete="email" />
 
-    @if (!string.IsNullOrWhiteSpace(errorRecuperacion))
-    {
-        <p class="login-feedback">@errorRecuperacion</p>
-    }
+        @if (!string.IsNullOrWhiteSpace(errorRecuperacion))
+        {
+            <p class="login-feedback">
+                @errorRecuperacion
+            </p>
+        }
     </AppModal>
 </main>
 
 @code {
     private LoginModel modelo = new();
-    private string rolSeleccionado = "Cliente";
+
     private bool enviando;
     private string mensaje = string.Empty;
+
     private bool mostrarModalRecuperacion;
     private string correoRecuperacion = string.Empty;
     private string errorRecuperacion = string.Empty;
-    
+
     private void AbrirModalRecuperacion()
     {
         errorRecuperacion = string.Empty;
@@ -128,65 +126,91 @@
 
     private void EnviarSolicitudRecuperacion()
     {
-        if (!new System.ComponentModel.DataAnnotations
-            .EmailAddressAttribute().IsValid(correoRecuperacion))
+        if (!new EmailAddressAttribute().IsValid(correoRecuperacion))
         {
             errorRecuperacion = "Ingresa un correo electrónico válido.";
             return;
         }
 
         mostrarModalRecuperacion = false;
-        mensaje = "No se pudo enviar la solicitud. El servicio de recuperación no está disponible.";
+        mensaje = "El servicio de recuperación de contraseña todavía no está conectado.";
     }
 
     private async Task IniciarSesion()
     {
+        if (enviando)
+            return;
+
         enviando = true;
         mensaje = string.Empty;
 
         try
         {
-            string usuario = modelo.Usuario.Trim();
-            bool esCliente = rolSeleccionado == "Cliente";
+            var identificador = modelo.Usuario.Trim();
 
-            var sesion = esCliente
-                ? await Auth.AutenticarAsync(usuario, modelo.Contrasena)
-                : await Auth.AutenticarPersonalAsync(usuario, modelo.Contrasena);
+            AuthRestService.SesionLogin? sesion;
 
+            // Los clientes ingresan con correo.
+            // El personal ingresa con nombre de usuario.
+            if (identificador.Contains('@'))
+            {
+                sesion = await AuthRest.AutenticarAsync(
+                    identificador,
+                    modelo.Contrasena
+                );
+            }
+            else
+            {
+                sesion = await AuthRest.AutenticarPersonalAsync(
+                    identificador,
+                    modelo.Contrasena
+                );
+            }
+
+            // El backend devuelve null cuando responde 401.
             if (sesion is null)
             {
-                mensaje = esCliente
-                    ? "Correo o contraseña incorrectos."
-                    : "Nombre de usuario o contraseña incorrectos.";
+                mensaje = "Usuario o contraseña incorrectos.";
+                modelo.Contrasena = string.Empty;
                 return;
             }
 
-            UserRole? rolRecibido = sesion.Rol switch
+            // Convertimos el rol recibido del backend al enum de Blazor.
+            if (!Enum.TryParse<UserRole>(
+                    sesion.Rol,
+                    ignoreCase: true,
+                    out var rol)
+                || !Enum.IsDefined(typeof(UserRole), rol))
             {
-                "CLIENTE" => UserRole.Cliente,
-                "RECEPCIONISTA" => UserRole.Recepcionista,
-                "VETERINARIO" => UserRole.Veterinario,
-                "ADMINISTRADOR" => UserRole.Administrador,
-                _ => null
-            };
-
-            if (rolRecibido is not UserRole rol ||
-                !string.Equals(sesion.Rol, rolSeleccionado, StringComparison.OrdinalIgnoreCase))
-            {
-                mensaje = "La cuenta no corresponde al tipo de usuario seleccionado.";
+                mensaje = "El servidor devolvió un rol que la aplicación no reconoce.";
                 return;
             }
 
-            User.SignIn(rol, sesion.Nombre, sesion.NombreUsuario);
+            // Actualizamos el contexto de usuario de Blazor.
+            User.SignIn(
+                rol,
+                sesion.Nombre,
+                sesion.NombreUsuario,
+                sesion.IdUsuario
+            );
+
+            // Redirigimos al dashboard correspondiente.
             Navigation.NavigateTo(NavCatalog.HomeFor(rol));
         }
-        catch (Exception)
+        catch (HttpRequestException)
         {
-            mensaje = "No se pudo iniciar sesión. Inténtalo nuevamente.";
+            mensaje = "No se pudo conectar con el servidor. Intenta nuevamente.";
+        }
+        catch (JsonException)
+        {
+            mensaje = "El servidor devolvió una respuesta que no se pudo interpretar.";
+        }
+        catch (InvalidOperationException)
+        {
+            mensaje = "El servidor devolvió una respuesta de autenticación vacía.";
         }
         finally
         {
-            modelo.Contrasena = string.Empty;
             enviando = false;
         }
     }
@@ -199,5 +223,4 @@
         [Required(ErrorMessage = "Ingresa tu contraseña.")]
         public string Contrasena { get; set; } = string.Empty;
     }
-    
 }
