@@ -19,7 +19,6 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddScoped<MascovetWA.Components.Layout.UserContext>();
 builder.Services.AddScoped<MascovetWA.Components.DesignSystem.Feedback.ToastService>();
-builder.Services.AddSingleton<MascovetWA.Components.Layout.AuthService>();
 builder.Services.AddScoped<MascovetWA.Servicios.REST.AdministradorRestService>();
 builder.Services.AddScoped<MascovetWA.Servicios.REST.RecepcionistaRestService>();
 builder.Services.AddScoped<MascovetWA.Servicios.REST.VeterinarioRestService>();
