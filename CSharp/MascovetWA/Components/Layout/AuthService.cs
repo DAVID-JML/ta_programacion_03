@@ -21,7 +21,7 @@ public sealed class AuthService
         // La cuenta antigua se conserva como alias de prueba para el veterinario de los INSERT.
         Add("vet.paredes", "Vet123!", UserRole.Veterinario, "Luis Salazar", "prueba_veterinario_luis");
         Add("vet.salazar", "Vet123!", UserRole.Veterinario, "Luis Salazar", "prueba_veterinario_luis");
-        Add("admin", "Admin123!", UserRole.Administrador, "Administrador");
+        Add("admin", "Admin123!", UserRole.Administrador, dministrador");
     }
 
     private void Add(string login, string password, UserRole role, string nombre, string? usuarioVinculado = null) =>
