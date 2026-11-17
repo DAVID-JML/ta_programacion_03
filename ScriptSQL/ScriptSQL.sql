@@ -887,19 +887,9 @@ END$$
 DELIMITER ;
 
 
--- ===== INICIO DE LOS NUEVOS DATOS DE PRUEBA (SIN CAMBIOS AL ORIGINAL) =====
--- ============================================================
--- MASCOVET / DATOS DE PRUEBA PARA INTEGRACION JAVA REST + C#
--- Uso: ejecutar DESPUES del SQL original mascovetF.sql.
--- NO crea ni modifica tablas, procedimientos ni vistas.
--- Reejecutable: evita insertar otra vez los registros de muestra.
--- ADVERTENCIA: todos los nombres y usuarios son ficticios;
--- credenciales de demostracion: NO usar en produccion.
--- ============================================================
 USE mascovetd;
 START TRANSACTION;
 
--- 1. USUARIOS DEL SISTEMA (identificadores locales y ficticios)
 INSERT INTO USUARIO (dni, nombre, apellido_paterno, apellido_materno, nombre_usuario, contrasena, activo)
 SELECT s.dni, s.nombre, s.apellido_paterno, s.apellido_materno, s.nombre_usuario, 'demo1234', 1
 FROM (
@@ -915,7 +905,6 @@ FROM (
 ) s
 WHERE NOT EXISTS (SELECT 1 FROM USUARIO u WHERE u.nombre_usuario=s.nombre_usuario OR u.dni=s.dni);
 
--- 2. ROLES: CLIENTES
 INSERT INTO CLIENTE (id_usuario, correo, telefono, activo)
 SELECT u.id_usuario,
        CASE u.nombre_usuario
@@ -931,7 +920,6 @@ FROM USUARIO u
 WHERE u.nombre_usuario IN ('prueba_cliente_ana','prueba_cliente_bruno','prueba_cliente_carla')
 AND NOT EXISTS (SELECT 1 FROM CLIENTE c WHERE c.id_usuario=u.id_usuario);
 
--- 3. ROLES: VETERINARIOS (especialidades validas del dominio)
 INSERT INTO VETERINARIO (id_usuario, num_colegiatura, especialidad, correo, telefono, activo)
 SELECT u.id_usuario,
        CASE u.nombre_usuario WHEN 'prueba_veterinario_luis' THEN 'CMVP9001'
@@ -948,7 +936,6 @@ FROM USUARIO u
 WHERE u.nombre_usuario IN ('prueba_veterinario_luis','prueba_veterinario_elena','prueba_veterinario_mario')
 AND NOT EXISTS (SELECT 1 FROM VETERINARIO v WHERE v.id_usuario=u.id_usuario);
 
--- 4. ROLES: RECEPCIONISTAS Y ADMINISTRADOR
 INSERT INTO RECEPCIONISTA (id_usuario, turno, correo, telefono, activo)
 SELECT u.id_usuario,
        CASE WHEN u.nombre_usuario='prueba_recepcionista_diana' THEN 'MAÑANA' ELSE 'TARDE' END,
@@ -964,7 +951,6 @@ SELECT u.id_usuario, 'ADMINISTRADOR', 1 FROM USUARIO u
 WHERE u.nombre_usuario='prueba_administrador_sofia'
 AND NOT EXISTS (SELECT 1 FROM ADMINISTRADOR a WHERE a.id_usuario=u.id_usuario);
 
--- 5. MASCOTAS: cubre fichas por cliente, especies y sexos distintos
 INSERT INTO MASCOTA (id_usuario, nombre, fechaNacimiento, especie, raza, sexo, activo)
 SELECT u.id_usuario, s.mascota, s.nacimiento, s.especie, s.raza, s.sexo, 1
 FROM (
@@ -979,7 +965,6 @@ JOIN USUARIO u ON u.nombre_usuario=s.usuario
 JOIN CLIENTE c ON c.id_usuario=u.id_usuario
 WHERE NOT EXISTS (SELECT 1 FROM MASCOTA m WHERE m.id_usuario=u.id_usuario AND m.nombre=s.mascota);
 
--- 6. HORARIOS SEMANALES: LUNES A VIERNES, y un SABADO
 INSERT INTO HORARIO_ATENCION (id_veterinario, dia, hora_inicio, hora_fin, activo)
 SELECT u.id_usuario, d.dia, '08:00:00', '13:00:00', 1
 FROM USUARIO u
@@ -999,8 +984,6 @@ WHERE u.nombre_usuario='prueba_veterinario_luis'
 AND NOT EXISTS (SELECT 1 FROM HORARIO_ATENCION h WHERE h.id_veterinario=u.id_usuario
                AND h.dia='SABADO' AND h.hora_inicio='09:00:00' AND h.hora_fin='12:00:00');
 
--- 7. CITAS HISTORICAS Y FUTURAS PARA RESERVA, CONFIRMACION Y CANCELACION
--- Fecha de referencia para estas pruebas: noviembre de 2026.
 INSERT INTO CITA (id_mascota, tipo_atencion, fecha, hora, estado, motivo_cancelacion,
                   id_recepcionista, id_veterinario, activo)
 SELECT m.id_mascota, s.tipo_atencion, s.fecha, s.hora, s.estado, s.motivo_cancelacion,
@@ -1031,8 +1014,6 @@ JOIN VETERINARIO vt ON vt.id_usuario=v.id_usuario
 WHERE NOT EXISTS (SELECT 1 FROM CITA c WHERE c.id_mascota=m.id_mascota
                   AND c.fecha=s.fecha AND c.hora=s.hora);
 
--- 8. ATENCIONES MEDICAS: CONSULTA, CONTROL, CIRUGIA Y VACUNACION
--- Identifica citas por propietario/mascota/fecha (sin asumir AUTOINCREMENT).
 INSERT INTO ATENCION_MEDICA (observaciones, hora_inicio, hora_fin, id_cita, peso_actual, alergias, activo)
 SELECT s.observaciones, s.hora_inicio, s.hora_fin, c.id_cita, s.peso, s.alergias, 1
 FROM (
@@ -1050,7 +1031,6 @@ JOIN MASCOTA m ON m.id_usuario=u.id_usuario AND m.nombre=s.mascota
 JOIN CITA c ON c.id_mascota=m.id_mascota AND c.fecha=s.fecha AND c.estado='ATENDIDA'
 WHERE NOT EXISTS (SELECT 1 FROM ATENCION_MEDICA a WHERE a.id_cita=c.id_cita);
 
--- 9. SUBTIPOS DE ATENCION (coinciden con el tipo de cada CITA)
 INSERT INTO CONSULTA (id_atencion, motivoConsulta, diagnostico, tratamiento, activo)
 SELECT a.id_atencion,
     CASE WHEN m.nombre='Nina' THEN 'Picazon de orejas' ELSE 'Enrojecimiento de piel' END,
@@ -1090,7 +1070,6 @@ WHERE u.nombre_usuario IN ('prueba_cliente_ana','prueba_cliente_bruno')
 AND c.tipo_atencion='VACUNACION' AND c.fecha IN ('2026-10-22','2026-11-06')
 AND NOT EXISTS (SELECT 1 FROM VACUNACION va WHERE va.id_atencion=a.id_atencion);
 
--- 10. CATALOGO DE VACUNAS
 INSERT INTO VACUNA (nombre, descripcion, activo)
 SELECT s.nombre, s.descripcion, 1
 FROM (
@@ -1112,7 +1091,6 @@ WHERE (u.nombre_usuario='prueba_cliente_ana' AND m.nombre='Nina' AND c.fecha='20
    OR (u.nombre_usuario='prueba_cliente_bruno' AND m.nombre='Kira' AND c.fecha='2026-11-06')
 ON DUPLICATE KEY UPDATE id_vacunacion=id_vacunacion;
 
--- 11. CATALOGO DE MEDICAMENTOS
 INSERT INTO MEDICAMENTO (nombre, descripcion, fecha_vencimiento, monto, activo)
 SELECT s.nombre, s.descripcion, s.fecha_vencimiento, s.monto, 1
 FROM (
@@ -1124,7 +1102,6 @@ FROM (
 ) s
 WHERE NOT EXISTS (SELECT 1 FROM MEDICAMENTO me WHERE me.nombre=s.nombre);
 
--- 12. RECETAS: una por atencion (restriccion uq_receta_atencion)
 INSERT INTO RECETA (id_atencion, fecha, indicaciones, activo)
 SELECT a.id_atencion, c.fecha,
        CASE WHEN m.nombre='Nina' THEN 'Aplicar gotas segun indicacion por 5 dias'
@@ -1154,7 +1131,6 @@ AND NOT EXISTS (SELECT 1 FROM DETALLE_RECETA d WHERE d.id_receta=r.id_receta AND
 
 COMMIT;
 
--- 13. COMPROBACION: conteo de datos de prueba
 SELECT 'Clientes' AS modulo, COUNT(*) AS cantidad FROM CLIENTE c
     JOIN USUARIO u ON u.id_usuario=c.id_usuario WHERE u.nombre_usuario LIKE 'prueba_cliente_%'
 UNION ALL SELECT 'Veterinarios', COUNT(*) FROM VETERINARIO v
