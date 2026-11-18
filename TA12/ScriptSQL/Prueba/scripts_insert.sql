@@ -1,0 +1,14 @@
+USE mascovet;
+
+INSERT INTO USUARIO (dni, nombre, apellido, nombre_usuario, contrasena, activo) 
+VALUES 
+('12345678', 'Juan', 'Perez', 'jperez', '123456', 1),
+('23456781', 'Maria', 'Gomez', 'mgomez', '123456',1),
+('34567812', 'Carlos', 'Ramirez', 'cramirez', '123456',1),
+('45678123', 'Ana', 'Torres', 'atorres', '123456', '1'),
+('11111111', 'Pedro', 'Lopez', 'plopez', '123456', 1),
+('55555555', 'Lucia', 'Fernandez', 'fernandez', '123456', 1),
+('66666666', 'Diego', 'Castro', 'castro', '123456', 1),
+('77777777', 'Sofia', 'Rojas', 'rojas', '123456', 1);
+
+

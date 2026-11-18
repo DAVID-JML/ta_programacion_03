@@ -1,0 +1,363 @@
+
+.admin-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-8);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.admin-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--ms-space-6);
+    flex-wrap: wrap;
+}
+
+.admin-header__heading {
+    min-width: 0;
+}
+
+.admin-eyebrow {
+    display: block;
+    margin-bottom: var(--ms-space-2);
+    color: var(--ms-color-primary);
+    font-size: var(--ms-font-size-small);
+    font-weight: var(--ms-font-weight-semibold);
+    letter-spacing: 0.06em;
+}
+
+.admin-header h1 {
+    margin: 0;
+    color: var(--ms-color-primary-dark);
+    font-size: var(--ms-font-size-title);
+    font-weight: var(--ms-font-weight-bold);
+    line-height: var(--ms-line-height-tight);
+}
+
+.admin-header__heading > p {
+    max-width: 680px;
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-body);
+    line-height: var(--ms-line-height-normal);
+}
+
+.admin-header__actions {
+    flex-shrink: 0;
+}
+
+.admin-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--ms-space-4);
+}
+
+.admin-metric {
+    display: flex;
+    min-width: 0;
+}
+
+    .admin-metric ::deep .ms-card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        border-top: 3px solid var(--ms-color-primary);
+    }
+
+.admin-metric--schedules ::deep .ms-card {
+    border-top-color: var(--ms-color-info);
+}
+
+.admin-metric--services ::deep .ms-card {
+    border-top-color: var(--ms-color-success);
+}
+
+.admin-metric--medicines ::deep .ms-card {
+    border-top-color: var(--ms-color-accent);
+}
+
+.admin-metric ::deep .ms-card__body {
+    flex: 1;
+}
+
+.admin-metric ::deep .ms-card__footer {
+    margin-top: auto;
+}
+
+.admin-metric__body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-3);
+}
+
+.admin-metric__number {
+    color: var(--ms-color-primary-dark);
+    font-size: 2rem;
+    font-weight: var(--ms-font-weight-bold);
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-metric__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--ms-radius-card);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary);
+}
+
+.admin-metric__description {
+    margin: var(--ms-space-3) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+.admin-metric__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ms-space-1);
+    color: var(--ms-color-primary);
+    font-size: var(--ms-font-size-small);
+    font-weight: var(--ms-font-weight-semibold);
+    text-decoration: none;
+}
+
+    .admin-metric__link:hover {
+        color: var(--ms-color-primary-hover);
+        text-decoration: underline;
+    }
+
+    .admin-metric__link:focus-visible {
+        outline: 2px solid var(--ms-color-focus);
+        outline-offset: 3px;
+        border-radius: var(--ms-radius-sm);
+    }
+
+.admin-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-4);
+}
+
+.admin-section__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-4);
+}
+
+    .admin-section__heading h2 {
+        margin: 0;
+        color: var(--ms-color-primary-dark);
+        font-size: var(--ms-font-size-section);
+        font-weight: var(--ms-font-weight-bold);
+        line-height: var(--ms-line-height-tight);
+    }
+
+    .admin-section__heading p {
+        max-width: 720px;
+        margin: var(--ms-space-2) 0 0;
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-small);
+        line-height: var(--ms-line-height-normal);
+    }
+
+.admin-management-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: var(--ms-space-4);
+}
+
+.admin-management-card {
+    display: flex;
+    min-width: 0;
+}
+
+    .admin-management-card ::deep .ms-card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        transition: box-shadow 0.15s ease;
+    }
+
+    .admin-management-card:hover ::deep .ms-card {
+        box-shadow: var(--ms-shadow-md);
+    }
+
+    .admin-management-card ::deep .ms-card__body {
+        flex: 1;
+    }
+
+    .admin-management-card ::deep .ms-card__footer {
+        margin-top: auto;
+    }
+
+.admin-management-card__icon,
+.admin-report-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--ms-space-3);
+    border-radius: var(--ms-radius-card);
+    background: var(--ms-color-background-soft);
+    color: var(--ms-color-primary);
+}
+
+.admin-management-card p,
+.admin-report-card p {
+    margin: 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+.admin-management-card ::deep .ms-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.admin-reports-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    gap: var(--ms-space-4);
+}
+
+.admin-report-card {
+    display: flex;
+    min-width: 0;
+}
+
+    .admin-report-card ::deep .ms-card {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+    }
+
+    .admin-report-card ::deep .ms-card__body {
+        flex: 1;
+    }
+
+    .admin-report-card ::deep .ms-card__footer {
+        margin-top: auto;
+    }
+
+.admin-report-card__icon {
+    width: 44px;
+    height: 44px;
+}
+
+.admin-report-card ::deep .ms-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+.admin-guidance {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ms-space-4);
+    padding: var(--ms-space-4) var(--ms-space-6);
+    border: var(--ms-border-width) solid var(--ms-color-info-border);
+    border-radius: var(--ms-radius-card);
+    background: var(--ms-color-info-bg);
+}
+
+.admin-guidance__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--ms-color-info-text);
+}
+
+.admin-guidance h2 {
+    margin: 0;
+    color: var(--ms-color-info-text);
+    font-size: var(--ms-font-size-body);
+    font-weight: var(--ms-font-weight-semibold);
+}
+
+.admin-guidance p {
+    margin: var(--ms-space-1) 0 0;
+    color: var(--ms-color-info-text);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+.admin-demo-note {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ms-space-2);
+    margin: calc(-1 * var(--ms-space-4)) 0 0;
+    color: var(--ms-color-text-muted);
+    font-size: var(--ms-font-size-small);
+    line-height: var(--ms-line-height-normal);
+}
+
+    .admin-demo-note ::deep .ms-icon {
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: var(--ms-color-primary);
+    }
+
+@media (max-width: 1150px) {
+    .admin-metrics,
+    .admin-management-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-reports-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 720px) {
+    .admin-dashboard {
+        gap: var(--ms-space-6);
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--ms-space-4);
+    }
+
+    .admin-header__actions ::deep .ms-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-metrics,
+    .admin-management-grid,
+    .admin-reports-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .admin-section__heading {
+        align-items: flex-start;
+    }
+
+    .admin-guidance {
+        padding: var(--ms-space-4);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-management-card ::deep .ms-card {
+        transition: none;
+    }
+}

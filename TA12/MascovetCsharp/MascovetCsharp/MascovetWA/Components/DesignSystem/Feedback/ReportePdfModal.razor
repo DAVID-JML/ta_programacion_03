@@ -1,0 +1,62 @@
+@using Microsoft.AspNetCore.Components.Web
+
+@if (Visible && !string.IsNullOrEmpty(PdfDataUrl))
+{
+    <div class="reporte-pdf-overlay" @onclick="Cerrar">
+        <section class="reporte-pdf-dialog" role="dialog" aria-modal="true"
+                 aria-label="@Title" tabindex="-1" @ref="panel"
+                 @onkeydown="ManejarTecla" @onclick:stopPropagation="true">
+            <header class="reporte-pdf-header">
+                <div>
+                    <p class="reporte-pdf-etiqueta">MASCOVET · REPORTES</p>
+                    <h2>@Title</h2>
+                </div>
+                <button class="reporte-pdf-cerrar" type="button" aria-label="Cerrar vista previa" @onclick="Cerrar">×</button>
+            </header>
+            <div class="reporte-pdf-visor">
+                <iframe src="@PdfDataUrl" title="Vista previa de @Title"></iframe>
+            </div>
+            <footer class="reporte-pdf-pie">
+                <div class="reporte-pdf-acciones">
+                    <button type="button" class="reporte-pdf-volver" @onclick="Cerrar">Volver al reporte</button>
+                    <a class="reporte-pdf-descargar" href="@PdfDataUrl" download="@FileName">Descargar PDF</a>
+                </div>
+            </footer>
+        </section>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string? PdfDataUrl { get; set; }
+    [Parameter] public string Title { get; set; } = "Vista previa del reporte";
+    [Parameter] public string FileName { get; set; } = "ReporteMascoVet.pdf";
+
+    private ElementReference panel;
+    private bool estabaVisible;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Visible && !estabaVisible)
+        {
+            estabaVisible = true;
+            try { await panel.FocusAsync(); }
+            catch (Exception) {   }
+        }
+        else if (!Visible)
+        {
+            estabaVisible = false;
+        }
+    }
+
+    private async Task Cerrar()
+    {
+        Visible = false;
+        estabaVisible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    private Task ManejarTecla(KeyboardEventArgs e) =>
+        e.Key == "Escape" ? Cerrar() : Task.CompletedTask;
+}

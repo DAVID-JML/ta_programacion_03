@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jasperReport name="ReporteCitasEspecialidad" language="java" pageWidth="595" pageHeight="842" orientation="Portrait" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="636fcc15-d030-4850-96ea-1fd4964b8595">
+  <parameter name="fechaInicio" class="java.sql.Date"/>
+  <parameter name="fechaFin" class="java.sql.Date"/>
+  <parameter name="rutaSubreporteGrafico" class="java.lang.String"/>
+  <query language="sql">SELECT COALESCE(NULLIF(REPLACE(v.especialidad, '_', ' '),''),'SIN ESPECIALIDAD ASIGNADA') AS especialidad,
+ CAST(COUNT(*) AS SIGNED) AS cantidad,
+ CAST(ROUND(COUNT(*)*100.0 / NULLIF(SUM(COUNT(*)) OVER(),0),1) AS DECIMAL(5,1)) AS porcentaje
+ FROM CITA c LEFT JOIN VETERINARIO v ON v.id_usuario = c.id_veterinario
+ WHERE c.activo = 1 AND c.fecha BETWEEN $P{fechaInicio} AND $P{fechaFin}
+ GROUP BY COALESCE(NULLIF(REPLACE(v.especialidad, '_', ' '),''),'SIN ESPECIALIDAD ASIGNADA')
+ ORDER BY cantidad DESC, especialidad</query>
+  <field name="especialidad" class="java.lang.String"/>
+  <field name="cantidad" class="java.lang.Long"/>
+  <field name="porcentaje" class="java.math.BigDecimal"/>
+  <variable name="TOTAL_ESPECIALIDAD" class="java.lang.Long" calculation="Sum">
+    <expression>$F{cantidad}</expression>
+  </variable>
+  <background splitType="Stretch"/>
+  <title height="108" splitType="Stretch">
+    <element kind="rectangle" uuid="f99f0da5-2bb4-403c-8c14-d34fa5e7b35e" x="0" y="0" width="555" height="101" mode="Opaque" backcolor="#143B56" forecolor="#143B56"/>
+    <element kind="rectangle" uuid="1c6dbfe0-8171-4b86-993e-115900a8b438" x="0" y="0" width="6" height="101" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="b04441fe-2ac4-484c-bdeb-0e66f8bb0353" x="20" y="9" width="300" height="18" fontName="DejaVu Sans" fontSize="9" forecolor="#B8ECF4" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>MASCOVET  ·  INFORMES</text>
+    </element>
+    <element kind="staticText" uuid="cd29f0bf-b55e-44d3-ae59-9b6ee580f32e" x="20" y="29" width="520" height="35" fontName="DejaVu Sans" fontSize="16" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>Citas por especialidad</text>
+    </element>
+    <element kind="staticText" uuid="438acb52-f283-4389-b3e5-c470eb68063a" x="20" y="65" width="520" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#C8DEEA" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Distribución estadística de las citas</text>
+    </element>
+    <element kind="textField" uuid="846eba16-fdf6-4f7b-9a3b-a5cd8e86ce7c" x="20" y="83" width="520" height="15" fontName="DejaVu Sans" fontSize="8" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Top" bold="false">
+      <expression>"Desde " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio}) + " hasta " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin})</expression>
+    </element>
+  </title>
+  <pageHeader height="39" splitType="Stretch">
+    <element kind="staticText" uuid="fedcea29-b54c-4e24-bff4-10814f48eacb" x="2" y="8" width="535" height="24" fontName="DejaVu Sans" fontSize="11" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>RANKING DE ESPECIALIDADES</text>
+    </element>
+  </pageHeader>
+  <columnHeader height="35" splitType="Stretch">
+    <element kind="rectangle" uuid="11972629-f1c5-467f-9ed5-56f8964f7a48" x="0" y="0" width="555" height="35" mode="Opaque" backcolor="#E9F4F7" forecolor="#E9F4F7"/>
+    <element kind="staticText" uuid="2a33faf4-b031-4603-9c37-274b58f84e39" x="6" y="7" width="297" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>ESPECIALIDAD</text>
+    </element>
+    <element kind="staticText" uuid="078b5eb4-5c31-446f-8378-07e266ee2e65" x="313" y="7" width="100" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>CANTIDAD</text>
+    </element>
+    <element kind="staticText" uuid="55e9c9c8-e914-4857-969a-fd352ce63c34" x="423" y="7" width="128" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>PARTICIPACIÓN</text>
+    </element>
+  </columnHeader>
+  <detail>
+    <band height="36" splitType="Stretch">
+      <element kind="rectangle" uuid="d67148ff-3ae1-4beb-a919-3d41d512d1b8" x="0" y="0" width="555" height="36" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+      <element kind="textField" uuid="66770718-d10c-4564-a687-5107e77000a8" x="6" y="7" width="297" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{especialidad}</expression>
+      </element>
+      <element kind="textField" uuid="060acecd-843c-401d-a62f-896feffff181" x="313" y="7" width="100" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{cantidad}</expression>
+      </element>
+      <element kind="textField" uuid="3daccb24-ee06-4164-9de0-b375d9c484ff" x="423" y="7" width="128" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{porcentaje} == null ? "0%" : $F{porcentaje}.toPlainString()+" %"</expression>
+      </element>
+    </band>
+  </detail>
+  <columnFooter height="26" splitType="Stretch">
+    <element kind="staticText" uuid="6741ba1e-0c8b-4483-8915-dac2ceb2a624" x="2" y="6" width="370" height="14" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>MASCOVET · Información de gestión clínica</text>
+    </element>
+    <element kind="textField" uuid="88ec7e91-0707-4d5b-80a7-eeb22beb436c" x="446" y="6" width="107" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Right" vTextAlign="Top" bold="false">
+      <expression>"Página " + $V{PAGE_NUMBER}</expression>
+    </element>
+  </columnFooter>
+  <summary height="455" splitType="Stretch">
+    <element kind="rectangle" uuid="80f623fe-09b9-41e6-a528-0793c744c28a" x="0" y="93" width="555" height="33" mode="Opaque" backcolor="#143B56" forecolor="#143B56"/>
+    <element kind="staticText" uuid="5a3168cd-5d5a-45f9-9df7-8d5815485355" x="12" y="100" width="529" height="18" fontName="DejaVu Sans" fontSize="11" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>DISTRIBUCIÓN GRÁFICA POR ESPECIALIDAD</text>
+    </element>
+    <element kind="staticText" uuid="caaef636-c6fa-401f-ac8b-f64c71334feb" x="10" y="134" width="535" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Left" vTextAlign="Middle">
+      <text>Cantidad de citas registradas por especialidad en el rango seleccionado</text>
+    </element>
+    <element kind="subreport" uuid="199fa0eb-c92f-4853-9e6e-3b4e88f79e9d" x="12" y="158" width="530" height="282">
+      <parameter name="fechaInicio">
+        <expression>$P{fechaInicio}</expression>
+      </parameter>
+      <parameter name="fechaFin">
+        <expression>$P{fechaFin}</expression>
+      </parameter>
+      <connectionExpression>$P{REPORT_CONNECTION}</connectionExpression>
+      <expression>$P{rutaSubreporteGrafico}</expression>
+    </element>
+    <element kind="rectangle" uuid="9648996e-c998-40be-b954-ca5c38f5323e" x="0" y="4" width="267" height="74" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+    <element kind="rectangle" uuid="62d3b2e0-3510-48e3-8e4d-d4fcfa0354a6" x="0" y="4" width="5" height="74" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="14678d4d-5b3e-412b-9979-c6f8bb31bf08" x="15" y="13" width="242" height="18" fontName="DejaVu Sans" fontSize="8" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>TOTAL DE CITAS</text>
+    </element>
+    <element kind="textField" uuid="76c3820d-d51d-499b-8c3a-96dfe4b9ae2c" x="15" y="34" width="242" height="36" fontName="DejaVu Sans" fontSize="19" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>String.valueOf($V{TOTAL_ESPECIALIDAD} == null ? 0 : $V{TOTAL_ESPECIALIDAD})</expression>
+    </element>
+    <element kind="rectangle" uuid="e3a6caab-b535-41a6-9f9c-b7da321bbe98" x="283" y="4" width="272" height="74" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+    <element kind="rectangle" uuid="a6273fb7-ce32-46cc-bb53-77f1f6cede0e" x="283" y="4" width="5" height="74" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="1639be32-f47d-4313-b562-0d21073ae829" x="297" y="13" width="250" height="18" fontName="DejaVu Sans" fontSize="8" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>ESPECIALIDADES CON REGISTROS</text>
+    </element>
+    <element kind="textField" uuid="4bb7c3e1-adf8-482d-912f-7c6bca6a83c2" x="297" y="34" width="249" height="36" fontName="DejaVu Sans" fontSize="19" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>String.valueOf($V{REPORT_COUNT})</expression>
+    </element>
+    <element kind="staticText" uuid="74d2134a-af15-4f57-8f90-4023be0a123d" x="8" y="442" width="537" height="12" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Los porcentajes representan la participación de cada especialidad en el total del rango.</text>
+    </element>
+  </summary>
+</jasperReport>

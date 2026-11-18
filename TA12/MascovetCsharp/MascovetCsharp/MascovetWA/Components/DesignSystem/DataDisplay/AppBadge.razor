@@ -1,0 +1,18 @@
+<span class="ms-badge ms-badge--@Variant.ToCss()">
+    @if (ShowIcon && Variant.IconName() is { } icon)
+    {
+        <AppIcon Name="@icon" Size="14" />
+    }
+    @ChildContent
+</span>
+
+@code {
+     
+    [Parameter] public SemanticVariant Variant { get; set; } = SemanticVariant.Neutral;
+
+     
+    [Parameter] public bool ShowIcon { get; set; } = true;
+
+     
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jasperReport name="ReporteGraficoEspecialidades" language="java" columnCount="1" pageWidth="530" pageHeight="842" orientation="Portrait" columnWidth="530" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="1a04c951-91d8-4b22-9bf4-06f974568740">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<parameter name="fechaInicio" class="java.sql.Date"/>
+	<parameter name="fechaFin" class="java.sql.Date"/>
+	<query language="sql">
+SELECT COALESCE(NULLIF(REPLACE(v.especialidad, '_', ' '), ''), 'SIN ESPECIALIDAD ASIGNADA') AS especialidad,
+       CAST(COUNT(*) AS SIGNED) AS cantidad
+FROM CITA c LEFT JOIN VETERINARIO v ON v.id_usuario = c.id_veterinario
+WHERE c.activo = 1 AND c.fecha BETWEEN $P{fechaInicio} AND $P{fechaFin}
+GROUP BY COALESCE(NULLIF(REPLACE(v.especialidad, '_', ' '), ''), 'SIN ESPECIALIDAD ASIGNADA')
+ORDER BY cantidad DESC, especialidad
+</query>
+	<field name="especialidad" class="java.lang.String"/>
+	<field name="cantidad" class="java.lang.Long"/>
+	<title height="278" splitType="Stretch">
+		<element kind="chart" uuid="7992d677-4967-4a1f-bf47-f6f00596b2aa" x="0" y="0" width="520" height="274" evaluationTime="Report" chartType="bar" linkType="None" linkTarget="Self">
+			<property name="net.sf.jasperreports.customizer.0.tickUnit" value="1"/>
+			<property name="net.sf.jasperreports.customizer.class.0" value="net.sf.jasperreports.customizers.axis.RangeAxisCustomizer"/>
+			<dataset kind="category">
+				<series>
+					<seriesExpression>"Citas"</seriesExpression>
+					<categoryExpression>$F{especialidad}</categoryExpression>
+					<valueExpression>$F{cantidad}</valueExpression>
+					<labelExpression>""</labelExpression>
+				</series>
+			</dataset>
+			<plot categoryAxisLabelColor="#17324F" categoryAxisTickLabelColor="#17324F" categoryAxisLineColor="#17324F" valueAxisLabelColor="#17324F" valueAxisTickLabelColor="#17324F" valueAxisLineColor="#17324F">
+				<itemLabel/>
+			</plot>
+		</element>
+	</title>
+</jasperReport>

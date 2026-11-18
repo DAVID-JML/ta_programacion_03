@@ -1,0 +1,74 @@
+@page "/cliente/cambiar-contrasena"
+@page "/veterinario/cambiar-contrasena"
+@page "/recepcion/cambiar-contrasena"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Cliente,Veterinario,Recepcionista")]
+@layout MainLayout
+@inject UserContext User
+
+<PageTitle>Cambiar contraseña | Mascovet</PageTitle>
+
+<div class="cambio-contrasena">
+    <header class="cambio-contrasena__encabezado">
+        <h1>Cambiar contraseña</h1>
+    </header>
+
+    @if (Estado == "ok")
+    {
+        <p class="cambio-contrasena__aviso cambio-contrasena__aviso--ok" role="status">
+            Contraseña actualizada correctamente. Utilízala la próxima vez que inicies sesión.
+        </p>
+    }
+    else if (Estado == "1")
+    {
+        <p class="cambio-contrasena__aviso cambio-contrasena__aviso--error" role="alert">
+            No se modificó la contraseña. Comprueba la clave actual y que la cuenta esté activa.
+        </p>
+    }
+    else if (Estado == "2")
+    {
+        <p class="cambio-contrasena__aviso cambio-contrasena__aviso--error" role="alert">
+            No fue posible comunicarse con el servicio de Java. Intenta nuevamente.
+        </p>
+    }
+    else if (Estado == "3")
+    {
+        <p class="cambio-contrasena__aviso cambio-contrasena__aviso--error" role="alert">
+            Verifica que ambas contraseñas nuevas coincidan, tengan al menos 8 caracteres
+            y sean diferentes de la anterior.
+        </p>
+    }
+
+    <section class="cambio-contrasena__tarjeta" aria-label="Formulario de cambio de contraseña">
+        <form method="post" action="/auth/cambiar-contrasena">
+            <AntiforgeryToken />
+
+            <div class="cambio-contrasena__campo">
+                <label for="contrasena-actual">Contraseña actual</label>
+                <input id="contrasena-actual" name="contrasenaActual" type="password"
+                       autocomplete="current-password" required maxlength="255"
+                       placeholder="Escribe tu contraseña actual" />
+            </div>
+            <div class="cambio-contrasena__campo">
+                <label for="contrasena-nueva">Nueva contraseña</label>
+                <input id="contrasena-nueva" name="contrasenaNueva" type="password"
+                       autocomplete="new-password" minlength="8" maxlength="255" required
+                       placeholder="Mínimo 8 caracteres" />
+            </div>
+            <div class="cambio-contrasena__campo">
+                <label for="confirmar-contrasena">Confirmar nueva contraseña</label>
+                <input id="confirmar-contrasena" name="confirmarContrasena" type="password"
+                       autocomplete="new-password" minlength="8" maxlength="255" required
+                       placeholder="Vuelve a escribir la nueva contraseña" />
+            </div>
+            <div class="cambio-contrasena__acciones">
+                <button type="submit" class="cambio-contrasena__boton">Guardar nueva contraseña</button>
+                <a href="@NavCatalog.HomeFor(User.Role)">Volver al inicio</a>
+            </div>
+        </form>
+    </section>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "estado")]
+    public string? Estado { get; set; }
+}

@@ -1,0 +1,103 @@
+@page "/administrador/cuentas"
+@page "/administrador/cuentas/gestionar"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrador")]
+@layout MainLayout
+@inject CuentaUsuarioRestService CuentasREST
+@inject ToastService Toast
+
+<PageTitle>Cuentas y roles | Mascovet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header">
+        <div><h1>Cuentas y roles</h1></div>
+    </header>
+    <AppCard Title="Cuentas del sistema">
+        @if (cargando)
+        {
+            <p>Consultando cuentas…</p>
+        }
+        else
+        {
+            <AppTable Items="cuentas" ColumnCount="4" Caption="Cuentas registradas">
+                <HeaderContent><th>Usuario</th><th>Rol</th><th>Estado</th><th>Acciones</th></HeaderContent>
+                <RowTemplate Context="c">
+                    <td>@c.Username</td><td>@c.Rol</td>
+                    <td>@(c.Activo ? "Habilitado" : "Deshabilitado")</td>
+                    <td><AppButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => Seleccionar(c)">Gestionar</AppButton></td>
+                </RowTemplate>
+            </AppTable>
+        }
+    </AppCard>
+</div>
+
+<AppModal @bind-Visible="mostrarGestion"
+          Title="Administrar acceso"
+          ConfirmText="Guardar cambios"
+          CancelText="Cancelar"
+          OnConfirm="Guardar"
+          Busy="@guardando">
+    @if (seleccionada is not null)
+    {
+        <div class="form-grid">
+            <div class="span-12"><AppInput TValue="string" Label="Nombre de usuario" @bind-Value="usuario" /></div>
+            <div class="span-12"><AppInput TValue="string" Label="Rol (definido en el registro de personal)" Disabled="true" @bind-Value="rol" /></div>
+            <div class="span-12"><AppSelect TValue="string" Label="Acceso" Options="estados" @bind-Value="estado" /></div>
+            <div class="span-12"><AppInput TValue="string" Type="password" autocomplete="new-password" Label="Nueva contraseña (dejar vacío para conservar)" @bind-Value="nuevaClave" /></div>
+        </div>
+    }
+</AppModal>
+@code {
+    private List<MascovetDomain.Usuarios.CuentaUsuario> cuentas = new();
+    private MascovetDomain.Usuarios.CuentaUsuario? seleccionada;
+    private readonly List<SelectOption<string>> estados =
+        [new("Habilitado", "Habilitado"), new("Deshabilitado", "Deshabilitado")];
+    private string usuario = "", rol = "", estado = "Habilitado", nuevaClave = "";
+    private bool cargando = true, guardando, mostrarGestion;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Recargar();
+    }
+    private async Task Recargar()
+    {
+        cargando = true;
+        try { cuentas = await CuentasREST.ListarTodosAsync(); }
+        catch { Toast.Warning("No se pudo consultar el servicio de cuentas Java."); }
+        finally { cargando = false; }
+    }
+    private void Seleccionar(MascovetDomain.Usuarios.CuentaUsuario c)
+    {
+        seleccionada = c;
+        usuario = c.Username ?? "";
+        rol = c.Rol ?? "Sin rol";
+        estado = c.Activo ? "Habilitado" : "Deshabilitado";
+        nuevaClave = "";
+        mostrarGestion = true;
+    }
+    private async Task Guardar()
+    {
+        if (seleccionada is null) return;
+        if (string.IsNullOrWhiteSpace(usuario) || (nuevaClave.Length > 0 && nuevaClave.Length < 8))
+        {
+            Toast.Warning("Ingresa un usuario y, si cambias la contraseña, al menos 8 caracteres.");
+            return;
+        }
+        guardando = true;
+        try
+        {
+            var editada = new MascovetDomain.Usuarios.CuentaUsuario
+            {
+                IdCuentaUsuario = seleccionada.IdCuentaUsuario,
+                Username = usuario.Trim(), Password = nuevaClave,
+                Activo = estado == "Habilitado"
+            };
+            await CuentasREST.ModificarAsync(editada);
+            Toast.Success("Cuenta actualizada.");
+            nuevaClave = "";
+            mostrarGestion = false;
+            seleccionada = null;
+            await Recargar();
+        }
+        catch { Toast.Warning("No se pudieron guardar los cambios de la cuenta."); }
+        finally { guardando = false; }
+    }
+}
