@@ -1,11 +1,14 @@
-﻿@page "/"
+﻿@page "/autentificar-personal"
 @layout AuthLayout
+
 @using System.Text.Json
+@using System.ComponentModel.DataAnnotations
+
 @inject AuthRestService AuthRest
 @inject UserContext User
 @inject NavigationManager Navigation
 
-<PageTitle>Iniciar sesión | Mascovet</PageTitle>
+<PageTitle>Acceso del personal | Mascovet</PageTitle>
 
 <main class="login-page">
     <section class="login-panel" aria-labelledby="login-title">
@@ -22,8 +25,8 @@
         </header>
 
         <div class="login-heading">
-            <h2 id="login-title">¡Bienvenido!</h2>
-            <p>Ingresa tus datos para acceder a tu cuenta.</p>
+            <h2 id="login-title">Acceso del personal</h2>
+            <p>Ingresa tus credenciales para acceder al sistema.</p>
         </div>
 
         <EditForm Model="@modelo" OnValidSubmit="@IniciarSesion">
@@ -31,9 +34,9 @@
 
             <div class="login-fields">
                 <AppInput TValue="string"
-                          Label="Usuario o correo electrónico"
+                          Label="Nombre de usuario"
                           Type="text"
-                          Placeholder="usuario o nombre@correo.com"
+                          Placeholder="Ingresa tu nombre de usuario"
                           Required="true"
                           @bind-Value="modelo.Usuario"
                           autocomplete="username" />
@@ -45,14 +48,6 @@
                           Required="true"
                           @bind-Value="modelo.Contrasena"
                           autocomplete="current-password" />
-            </div>
-
-            <div class="login-options">
-                <a href="#"
-                   @onclick="AbrirModalRecuperacion"
-                   @onclick:preventDefault="true">
-                    ¿Olvidaste tu contraseña?
-                </a>
             </div>
 
             <div class="login-submit">
@@ -74,38 +69,15 @@
         </EditForm>
 
         <footer class="login-footer">
-            <span>¿Todavía no tienes una cuenta?</span>
-            <a href="/registro">Crear una cuenta</a>
+            <span>¿Eres cliente?</span>
+            <a href="/">Ingresar como cliente</a>
         </footer>
+
     </section>
 
     <p class="login-copyright">
         © 2026 Mascovet. Todos los derechos reservados.
     </p>
-
-    <AppModal @bind-Visible="mostrarModalRecuperacion"
-              Title="Recuperar contraseña"
-              ConfirmText="Enviar instrucciones"
-              CancelText="Cancelar"
-              OnConfirm="EnviarSolicitudRecuperacion">
-
-        <p>Ingresa tu correo electrónico para recuperar tu cuenta.</p>
-
-        <AppInput TValue="string"
-                  Label="Correo electrónico"
-                  Type="email"
-                  Placeholder="nombre@correo.com"
-                  Required="true"
-                  @bind-Value="correoRecuperacion"
-                  autocomplete="email" />
-
-        @if (!string.IsNullOrWhiteSpace(errorRecuperacion))
-        {
-            <p class="login-feedback">
-                @errorRecuperacion
-            </p>
-        }
-    </AppModal>
 </main>
 
 @code {
@@ -113,28 +85,6 @@
 
     private bool enviando;
     private string mensaje = string.Empty;
-
-    private bool mostrarModalRecuperacion;
-    private string correoRecuperacion = string.Empty;
-    private string errorRecuperacion = string.Empty;
-
-    private void AbrirModalRecuperacion()
-    {
-        errorRecuperacion = string.Empty;
-        mostrarModalRecuperacion = true;
-    }
-
-    private void EnviarSolicitudRecuperacion()
-    {
-        if (!new EmailAddressAttribute().IsValid(correoRecuperacion))
-        {
-            errorRecuperacion = "Ingresa un correo electrónico válido.";
-            return;
-        }
-
-        mostrarModalRecuperacion = false;
-        mensaje = "El servicio de recuperación de contraseña todavía no está conectado.";
-    }
 
     private async Task IniciarSesion()
     {
@@ -146,23 +96,18 @@
 
         try
         {
-            var identificador = modelo.Usuario.Trim();
+            var nombreUsuario = modelo.Usuario.Trim();
 
-            AuthRestService.SesionLogin? sesion;
-
-            // Los clientes ingresan con correo.
-           
-            sesion = await AuthRest.AutenticarClienteAsync(
-                                identificador,
-                                modelo.Contrasena
-                            );
-
-       
+            // El personal ingresa mediante nombre de usuario.
+            var sesion = await AuthRest.AutenticarPersonalAsync(
+                nombreUsuario,
+                modelo.Contrasena
+            );
 
             // El backend devuelve null cuando responde 401.
             if (sesion is null)
             {
-                mensaje = "Usuario o contraseña incorrectos.";
+                mensaje = "Nombre de usuario o contraseña incorrectos.";
                 modelo.Contrasena = string.Empty;
                 return;
             }
@@ -175,6 +120,13 @@
                 || !Enum.IsDefined(typeof(UserRole), rol))
             {
                 mensaje = "El servidor devolvió un rol que la aplicación no reconoce.";
+                return;
+            }
+
+            // Evitamos que un cliente ingrese mediante el acceso del personal.
+            if (rol == UserRole.Cliente)
+            {
+                mensaje = "Esta página es exclusiva para el personal de Mascovet.";
                 return;
             }
 
@@ -209,7 +161,7 @@
 
     private sealed class LoginModel
     {
-        [Required(ErrorMessage = "Ingresa tu usuario o correo electrónico.")]
+        [Required(ErrorMessage = "Ingresa tu nombre de usuario.")]
         public string Usuario { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Ingresa tu contraseña.")]
