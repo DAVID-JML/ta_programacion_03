@@ -1,0 +1,104 @@
+
+.mis-citas {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ms-space-6);
+    width: 100%;
+    max-width: var(--ms-content-max-width);
+    margin-inline: auto;
+}
+
+.mis-citas__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--ms-space-6);
+}
+
+    .mis-citas__header h1 {
+        margin: 0;
+        color: var(--ms-color-primary-dark);
+        font-size: var(--ms-font-size-title);
+        font-weight: var(--ms-font-weight-bold);
+        line-height: var(--ms-line-height-tight);
+    }
+
+    .mis-citas__header p {
+        max-width: 680px;
+        margin: var(--ms-space-3) 0 0;
+        color: var(--ms-color-text-muted);
+        font-size: var(--ms-font-size-body);
+        line-height: var(--ms-line-height-normal);
+    }
+
+    .mis-citas__header > ::deep .ms-btn {
+        flex-shrink: 0;
+    }
+
+.mis-citas__content {
+    min-width: 0;
+}
+
+    .mis-citas__content ::deep .ms-card__body {
+        min-width: 0;
+    }
+
+    .mis-citas__content ::deep .ms-table-wrap {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .mis-citas__content ::deep .ms-table {
+        width: 100%;
+    }
+
+        .mis-citas__content ::deep .ms-table th,
+        .mis-citas__content ::deep .ms-table td {
+            padding: var(--ms-space-3) var(--ms-space-4);
+            vertical-align: middle;
+        }
+
+.mis-citas__date,
+.mis-citas__time {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.mis-citas__pet {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ms-space-2);
+    color: var(--ms-color-text);
+    font-weight: var(--ms-font-weight-medium);
+}
+
+    .mis-citas__pet ::deep .ms-icon {
+        flex-shrink: 0;
+        color: var(--ms-color-primary);
+    }
+
+.mis-citas__pagination {
+    width: 100%;
+}
+
+@media (max-width: 760px) {
+    .mis-citas {
+        gap: var(--ms-space-4);
+    }
+
+    .mis-citas__header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--ms-space-4);
+    }
+
+        .mis-citas__header > ::deep .ms-btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+    .mis-citas__content ::deep .ms-table {
+        min-width: 700px;
+    }
+}

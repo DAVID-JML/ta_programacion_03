@@ -1,0 +1,114 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrador,Veterinario")]
+@page "/administrador/reportes/historial"
+@page "/veterinario/reportes/historial"
+@layout MainLayout
+@inject ClienteRestService ClientesREST
+@inject MascotaRestService MascotasREST
+@inject CitaRestService CitasREST
+@inject ConsultaRestService ConsultasREST
+@inject ControlRestService ControlesREST
+@inject CirugiaRestService CirugiasREST
+@inject VacunacionRestService VacunacionesREST
+@inject VeterinarioRestService VeterinariosREST
+@inject ToastService Toast
+@inject ReporteRestService ReportesREST
+<PageTitle>Reporte de historia clínica | MascoVet</PageTitle>
+<div class="ms-feature-page">
+    <header class="ms-feature-header"><div><h1>Reporte de historia clínica</h1></div></header>
+    <AppCard Title="Filtros del reporte">
+        <div class="form-grid">
+            <div class="span-6"><AppSelect TValue="string" Label="Propietario" Options="propietarios" @bind-Value="idPropietario" @bind-Value:after="CambiarPropietario" /></div>
+            <div class="span-6"><AppSelect TValue="string" Label="Mascota" Options="MascotasPropietario" @bind-Value="idMascota" /></div>
+            <div class="span-3"><AppDatePicker Label="Desde" @bind-Value="desde" /></div>
+            <div class="span-3"><AppDatePicker Label="Hasta" @bind-Value="hasta" /></div>
+        </div>
+        @if (desde.HasValue && hasta.HasValue && desde > hasta)
+        { <p role="alert" class="ms-small-note">La fecha «Desde» no puede ser posterior a «Hasta».</p> }
+    </AppCard>
+    <AppCard Title="Historial clínico">
+        <AppTable Items="Filtradas" ColumnCount="5" Caption="Atenciones médicas">
+            <HeaderContent><th>Fecha</th><th>Veterinario</th><th>Tipo</th><th>Diagnóstico / procedimiento</th><th>Tratamiento / indicaciones</th></HeaderContent>
+            <RowTemplate Context="r"><td>@r.Fecha.ToString("dd/MM/yyyy")</td><td>@r.Veterinario</td><td>@r.Tipo</td><td>@r.Diagnostico</td><td>@r.Tratamiento</td></RowTemplate>
+            <EmptyContent><AppEmptyState Icon="file-text" Title="Sin registros" Description="No hay atenciones registradas para el propietario, mascota y periodo seleccionados." /></EmptyContent>
+        </AppTable>
+        <div class="acciones"><AppButton OnClick="Exportar" Disabled="@cargando" Variant="ButtonVariant.Secondary" Icon="file-text">Ver PDF</AppButton></div>
+    </AppCard>
+</div>
+<ReportePdfModal @bind-Visible="mostrarPdf" PdfDataUrl="@pdfBase64"
+                 Title="Historial clínico de mascota" FileName="HistorialClinico_MascoVet.pdf" />
+
+@code {
+    private string idPropietario="", idMascota="";
+    private string? pdfBase64;
+    private bool mostrarPdf;
+    private bool cargando;
+    private DateOnly? desde, hasta;
+    private List<SelectOption<string>> propietarios=new();
+    private List<MascovetDomain.Mascotas.Mascota> mascotasDatos=new();
+    private IEnumerable<SelectOption<string>> MascotasPropietario => mascotasDatos
+        .Where(m=>m.Activo && m.Cliente?.IdUsuario.ToString()==idPropietario)
+        .OrderBy(m=>m.Nombre).Select(m=>new SelectOption<string>(m.IdMascota.ToString(),m.Nombre??"Mascota"));
+    private void CambiarPropietario() { idMascota=MascotasPropietario.FirstOrDefault()?.Value??""; pdfBase64 = null; mostrarPdf = false; }
+    private sealed record ReporteFila(int Mascota,DateOnly Fecha,string Veterinario,string Tipo,string Diagnostico,string Tratamiento);
+    private List<ReporteFila> atenciones=new();
+    private IEnumerable<ReporteFila> Filtradas => atenciones.Where(r=>r.Mascota.ToString()==idMascota &&
+        (!desde.HasValue||r.Fecha>=desde) && (!hasta.HasValue||r.Fecha<=hasta) &&
+        (!desde.HasValue||!hasta.HasValue||desde<=hasta)).OrderBy(r=>r.Fecha);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var clientes=await ClientesREST.ListarTodosAsync();
+            mascotasDatos=await MascotasREST.ListarTodosAsync();
+            propietarios=clientes.Where(c=>c.Activo && mascotasDatos.Any(m=>m.Cliente?.IdUsuario==c.IdUsuario))
+                .OrderBy(c=>c.Nombre).Select(c=>new SelectOption<string>(c.IdUsuario.ToString(),
+                    $"{c.Nombre} {c.ApellidoPaterno}".Trim())).ToList();
+            idPropietario=propietarios.FirstOrDefault()?.Value??"";
+            CambiarPropietario();
+            var citas=await CitasREST.ListarTodosAsync();
+            var vets=await VeterinariosREST.ListarTodosAsync();
+            void Agregar(MascovetDomain.AtencionesMedicas.AtencionMedica a,string tipo,string diagnostico,string tratamiento)
+            {
+                if (!a.Activo) return;
+                var cita=citas.FirstOrDefault(c=>c.IdCita==a.Cita?.IdCita);
+                int mascota=cita?.Mascota?.IdMascota??0;
+                if(mascota==0) return;
+                var vet=vets.FirstOrDefault(v=>v.IdUsuario==cita?.Veterinario?.IdUsuario);
+                atenciones.Add(new(mascota,DateOnly.FromDateTime(cita?.Fecha??DateTime.Today),
+                    vet?.NombreCompleto??"Veterinario no identificado",tipo,diagnostico,tratamiento));
+            }
+            foreach(var a in await ConsultasREST.ListarTodosAsync()) Agregar(a,"Consulta",a.Diagnostico??"",a.Tratamiento??"");
+            foreach(var a in await ControlesREST.ListarTodosAsync()) Agregar(a,"Control",a.Evolucion??"",a.Indicaciones??"");
+            foreach(var a in await CirugiasREST.ListarTodosAsync()) Agregar(a,"Cirugía",a.Procedimiento??"",a.IndicacionesPostOperatorias??"");
+            foreach(var a in await VacunacionesREST.ListarTodosAsync())
+                Agregar(a, "Vacunación", "Vacuna(s): " +
+                    (a.Vacunas.Count == 0 ? "No especificada" : string.Join(", ",
+                        a.Vacunas.Select(v => v.Nombre).Where(n => !string.IsNullOrWhiteSpace(n)))),
+                    a.Dosis??"");
+        }
+        catch(Exception ex) {Toast.Error($"No se pudo cargar el historial desde REST: {ex.Message}");}
+    }
+    private async Task Exportar()
+    {
+        if (!int.TryParse(idMascota, out int id) || id <= 0)
+        {
+            Toast.Warning("Selecciona primero una mascota."); return;
+        }
+        if (desde.HasValue && hasta.HasValue && desde > hasta)
+        {
+            Toast.Warning("La fecha Desde no puede ser posterior a Hasta."); return;
+        }
+        cargando = true;
+        pdfBase64 = null; mostrarPdf = false;
+        try
+        {
+            byte[] pdf = await ReportesREST.GenerarHistorialClinicoAsync(id, desde, hasta);
+            pdfBase64 = "data:application/pdf;base64," + Convert.ToBase64String(pdf);
+            mostrarPdf = true;
+            Toast.Success("Historial clínico PDF generado.");
+        }
+        catch (Exception ex) { Toast.Error($"Java no pudo generar el historial PDF: {ex.Message}"); }
+        finally { cargando = false; }
+    }
+}

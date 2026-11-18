@@ -1,0 +1,54 @@
+@page "/"
+@layout AuthLayout
+
+<PageTitle>Iniciar sesión | Mascovet</PageTitle>
+<main class="login-page">
+    <section class="login-panel" aria-labelledby="login-title">
+        <header class="login-brand">
+            <div class="login-logo" aria-hidden="true"><span>🐾</span></div>
+            <h1 id="login-title">Mascovet</h1>
+        </header>
+        <form method="post" action="/auth/login">
+            <AntiforgeryToken />
+            <div class="login-fields">
+                <label class="ms-role-field"><span>Usuario o correo electrónico</span>
+                    <input name="usuario" type="text" class="ms-role-input"
+                           placeholder="Nombre de usuario o correo" autocomplete="username"
+                           required maxlength="100" />
+                </label>
+                <label class="ms-role-field"><span>Contraseña</span>
+                    <input name="password" type="password" class="ms-role-input"
+                           placeholder="Ingresa tu contraseña" autocomplete="current-password"
+                           required />
+                </label>
+            </div>
+            <div class="login-options">
+                <span>Si olvidaste tu contraseña, solicita al administrador que la restablezca.</span>
+            </div>
+            <div class="login-submit">
+                <button class="ms-btn ms-btn--primary" type="submit">Iniciar sesión</button>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Mensaje))
+            {
+                <p class="login-feedback" role="alert">@Mensaje</p>
+            }
+        </form>
+        <footer class="login-footer">
+            <span>¿Todavía no tienes una cuenta?</span>
+            <a href="/registro">Crear una cuenta</a>
+        </footer>
+    </section>
+    <p class="login-copyright">© 2026 Mascovet. Todos los derechos reservados.</p>
+</main>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+
+    private string Mensaje => Error switch
+    {
+        "1" => "Usuario o contraseña incorrectos, o cuenta deshabilitada.",
+        "2" => "No fue posible contactar al servicio Java. Verifica que esté iniciado.",
+        _ => string.Empty
+    };
+}

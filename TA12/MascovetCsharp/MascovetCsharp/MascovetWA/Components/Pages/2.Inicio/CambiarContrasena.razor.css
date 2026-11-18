@@ -1,0 +1,15 @@
+.cambio-contrasena { max-width: 660px; margin: 0 auto; padding: 24px 12px 40px; }
+.cambio-contrasena__encabezado h1 { font-size: 1.65rem; font-weight: 700; margin: 0 0 10px; }
+.cambio-contrasena__encabezado p { margin: 0 0 22px; color: var(--ms-text-muted, #64748b); }
+.cambio-contrasena__tarjeta { border: 1px solid #dbe2e8; border-radius: 16px; padding: 24px; background: var(--ms-surface, #fff); }
+.cambio-contrasena__campo { display: flex; flex-direction: column; gap: 7px; margin-bottom: 19px; }
+.cambio-contrasena__campo label { font-weight: 600; }
+.cambio-contrasena__campo input { width: 100%; border-radius: 9px; border: 1px solid #cbd5e1; padding: 11px 13px; background: #fff; color: #0f172a; }
+.cambio-contrasena__campo input:focus-visible { outline: 2px solid #0e7490; outline-offset: 2px; }
+.cambio-contrasena__acciones { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+.cambio-contrasena__boton { border: 0; border-radius: 9px; background: #0e7490; color: white; font-weight: 600; padding: 12px 18px; cursor: pointer; }
+.cambio-contrasena__boton:hover { background: #155e75; }
+.cambio-contrasena__aviso { padding: 12px; border-radius: 9px; margin-bottom: 20px; }
+.cambio-contrasena__aviso--ok { background: #ecfdf5; color: #065f46; }
+.cambio-contrasena__aviso--error { background: #fef2f2; color: #991b1b; }
+@media (max-width: 540px) { .cambio-contrasena__tarjeta { padding: 17px; } }

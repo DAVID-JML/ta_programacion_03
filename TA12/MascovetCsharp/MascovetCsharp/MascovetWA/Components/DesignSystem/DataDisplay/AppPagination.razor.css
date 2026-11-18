@@ -1,0 +1,41 @@
+.ms-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ms-space-3);
+    margin-top: var(--ms-space-4);
+}
+
+.ms-pagination__summary { font-size: var(--ms-font-size-small); color: var(--ms-color-text-muted); }
+
+.ms-pagination__list { display: flex; gap: var(--ms-space-1); padding: 0; list-style: none; }
+
+.ms-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--ms-control-height-sm);
+    height: var(--ms-control-height-sm);
+    padding: 0 var(--ms-space-2);
+    border: var(--ms-border-width) solid var(--ms-color-border-strong);
+    border-radius: var(--ms-radius-control);
+    background: var(--ms-color-surface);
+    color: var(--ms-color-text);
+    font: inherit;
+    font-size: var(--ms-font-size-small);
+    font-weight: var(--ms-font-weight-medium);
+    cursor: pointer;
+}
+
+.ms-page-btn:hover:not(:disabled) { background: var(--ms-color-background-soft); border-color: var(--ms-color-primary); }
+
+.ms-page-btn--current { background: var(--ms-color-primary); border-color: var(--ms-color-primary); color: #fff; }
+.ms-page-btn--current:hover:not(:disabled) { background: var(--ms-color-primary-hover); }
+
+.ms-page-btn:disabled {
+    background: var(--ms-color-disabled-bg);
+    border-color: var(--ms-color-disabled-border);
+    color: var(--ms-color-disabled-text);
+    cursor: not-allowed;
+}
