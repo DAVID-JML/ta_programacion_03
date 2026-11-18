@@ -89,7 +89,7 @@
             if ((await HorariosREST.ListarTodosAsync()).Any(h => h.IdHorario != Id && h.Activo &&
                 h.Veterinario?.IdUsuario == idVet && h.Dia == diaSeleccionado &&
                 h.HoraInicio.HasValue && h.HoraFin.HasValue && desde < h.HoraFin.Value && hasta > h.HoraInicio.Value))
-            { mostrarSuperposicion=true; return; }
+            { mostrarSuperposicion = true; return; }
         }
         catch (Exception ex) { Toast.Error($"No se pudieron validar los horarios: {ex.Message}"); return; }
         guardando = true;
@@ -102,7 +102,7 @@
             horario.HoraInicio = desde;
             horario.HoraFin = hasta;
             int resultado = await HorariosREST.ModificarAsync(horario);
-            if (resultado <= 0) { mostrarSuperposicion=true; return; }
+            if (resultado <= 0) { mostrarSuperposicion = true; return; }
             Toast.Success("Horario actualizado correctamente.");
             Navigation.NavigateTo("/administrador/horarios");
         }
