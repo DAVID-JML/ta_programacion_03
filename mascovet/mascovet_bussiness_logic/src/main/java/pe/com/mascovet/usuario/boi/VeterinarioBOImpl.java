@@ -142,6 +142,7 @@ public class VeterinarioBOImpl implements IVeterinarioBO {
 
         try {
             TransactionContext.getConnection();
+            veterinario.setContrasena(ContrasenaHash.generar(veterinario.getContrasena()));
             daoVeterinario.insertar(veterinario);
             for (HorarioAtencion horario : veterinario.getHorariosAtencion()) {
                 horario.setVeterinario(veterinario);

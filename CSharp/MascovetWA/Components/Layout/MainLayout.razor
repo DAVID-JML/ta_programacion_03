@@ -40,7 +40,19 @@
 
 <AppToastContainer />
 
-<AppButton Variant="ButtonVariant.Primary" OnClick="CerrarSesion">Sí, cerrar sesión</AppButton>
+<AppModal @bind-Visible="mostrarConfirmacion" Title="Cerrar sesión">
+    <ChildContent>
+        <p>¿Estás seguro de que deseas cerrar sesión?</p>
+    </ChildContent>
+    <Actions>
+        <AppButton Variant="ButtonVariant.Tertiary" OnClick="() => mostrarConfirmacion = false">
+            No, regresar
+        </AppButton>
+        <AppButton Variant="ButtonVariant.Primary" OnClick="CerrarSesion">
+            Sí, cerrar sesión
+        </AppButton>
+    </Actions>
+</AppModal>
 
 @if (Loading.IsLoading)
 {
