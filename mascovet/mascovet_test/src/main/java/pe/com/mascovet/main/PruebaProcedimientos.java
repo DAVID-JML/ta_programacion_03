@@ -34,8 +34,6 @@ public class PruebaProcedimientos {
 
             System.out.println("=== PROCEDIMIENTOS ALMACENADOS DE MASCOVET ===");
             System.out.println("Procedimientos encontrados: " + procedimientos.size());
-
-            probar("LISTAR_USUARIO_TODOS", () -> new UsuarioBOImpl().listarTodos(), procedimientos);
             probar("LISTAR_CLIENTE_TODOS", () -> new ClienteBOImpl().listarTodos(), procedimientos);
             probar("LISTAR_VETERINARIO_TODOS", () -> new VeterinarioBOImpl().listarTodos(), procedimientos);
             probar("LISTAR_RECEPCIONISTA_TODOS", () -> new RecepcionistaBOImpl().listarTodos(), procedimientos);
