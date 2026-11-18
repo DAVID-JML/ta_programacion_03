@@ -7,7 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Components\DesignSystem\DataDisplay\" />
-    <Folder Include="Components\Pages\2.Inicio\Recepcion\" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="Components\DesignSystem\Forms\AppDatePicker.razor" />
