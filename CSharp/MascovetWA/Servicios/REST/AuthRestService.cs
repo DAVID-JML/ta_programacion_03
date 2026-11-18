@@ -49,7 +49,16 @@ public sealed class AuthRestService
         return await respuesta.Content.ReadFromJsonAsync<SesionLogin>()
             ?? throw new InvalidOperationException("La respuesta de login está vacía.");
     }
+    public async Task<bool> CambiarContrasenaAsync(int idUsuario, string actual, string nueva)
+    {
+        using var respuesta = await _client.PostAsJsonAsync(
+            "AutenticacionRS/cambiarContrasena",
+            new { idUsuario, contrasenaActual = actual, contrasenaNueva = nueva });
 
+        if (respuesta.StatusCode == HttpStatusCode.Unauthorized) return false;
+        respuesta.EnsureSuccessStatusCode();
+        return true;
+    }
     public sealed record SesionLogin(
         int IdUsuario,
         string Nombre,

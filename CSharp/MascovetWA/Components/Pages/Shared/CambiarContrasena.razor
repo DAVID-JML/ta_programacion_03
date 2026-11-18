@@ -1,0 +1,30 @@
+﻿@page "/cliente/cambiar-contrasena"
+@layout MainLayout
+@inject AuthRestService AuthRest
+@inject UserContext User
+@inject ToastService Toast
+
+<AppCard Title="Cambiar contraseña">
+    <AppInput TValue="string" Type="password" Label="Contraseña actual" @bind-Value="actual" />
+    <AppInput TValue="string" Type="password" Label="Nueva contraseña" @bind-Value="nueva" />
+    <AppInput TValue="string" Type="password" Label="Confirmar nueva contraseña" @bind-Value="confirmar" />
+    <AppButton OnClick="Guardar">Guardar</AppButton>
+</AppCard>
+
+@code {
+    private string actual = "", nueva = "", confirmar = "";
+
+    private async Task Guardar()
+    {
+        if (User.IdUsuario is not int id) { Toast.Warning("Sesión no válida."); return; }
+        if (nueva.Length < 8 || nueva != confirmar || nueva == actual)
+        { Toast.Warning("La nueva contraseña debe tener 8+ caracteres, coincidir y ser distinta."); return; }
+        try
+        {
+            bool ok = await AuthRest.CambiarContrasenaAsync(id, actual, nueva);
+            if (ok) { Toast.Success("Contraseña actualizada."); actual = nueva = confirmar = ""; }
+            else Toast.Warning("La contraseña actual es incorrecta.");
+        }
+        catch { Toast.Warning("No se pudo conectar con el servicio."); }
+    }
+}

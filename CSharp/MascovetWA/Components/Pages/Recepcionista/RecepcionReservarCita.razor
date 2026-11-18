@@ -115,7 +115,7 @@
     }
     private async Task Reservar()
     {
-        if (!User.IsAuthenticated || User.Role != UserRole.Recepcionista || User.IdUsuario <= 0)
+        if (!User.IsAuthenticated || User.Role != UserRole.Recepcionista || User.IdUsuario is not > 0)
         { Toast.Warning("No se pudo identificar al recepcionista. Inicia sesión nuevamente."); return; }
         if(!int.TryParse(idMascota,out int im)||!int.TryParse(veterinario,out int iv)||!fecha.HasValue||!TimeOnly.TryParse(hora,out var th))
         {Toast.Warning("Completa mascota, veterinario, fecha y hora.");return;}
@@ -146,7 +146,7 @@
             int result=await CitasREST.InsertarAsync(new MascovetDomain.Citas.Cita{
                 Mascota=new MascovetDomain.Mascotas.Mascota{IdMascota=im, Cliente=new MascovetDomain.Usuarios.Cliente{IdUsuario=seleccionada.Cliente.IdUsuario}},
                 Veterinario=new MascovetDomain.Usuarios.Veterinario{IdUsuario=iv},
-                Recepcionista=new MascovetDomain.Usuarios.Recepcionista{IdUsuario=User.IdUsuario},
+                Recepcionista = new MascovetDomain.Usuarios.Recepcionista { IdUsuario = User.IdUsuario.Value },
                 Fecha=fecha.Value.ToDateTime(new TimeOnly(12,0)),Hora=th,
                 TipoAtencion=Enum.Parse<MascovetDomain.Enums.TipoAtencion>(tipo),Estado=MascovetDomain.Enums.EstadoCita.RESERVADA});
             if(result<=0){mostrarHorarioOcupado=true;return;}

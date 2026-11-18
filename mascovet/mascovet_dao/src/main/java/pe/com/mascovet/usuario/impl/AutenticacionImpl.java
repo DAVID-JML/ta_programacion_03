@@ -32,6 +32,36 @@ public class AutenticacionImpl implements AutenticacionDAO {
         );
     }
 
+    @Override
+    public String obtenerHashPorId(int idUsuario) {
+        try (Connection con = DBManager.getInstance().getConnection();
+             CallableStatement cs = con.prepareCall("{call OBTENER_HASH_USUARIO(?)}")) {
+
+            cs.setInt(1, idUsuario);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                return rs.next() ? rs.getString("hash_contrasena") : null;
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Error al obtener la contraseña del usuario", ex);
+        }
+    }
+
+    @Override
+    public boolean actualizarHash(int idUsuario, String nuevoHash) {
+        try (Connection con = DBManager.getInstance().getConnection();
+             CallableStatement cs = con.prepareCall("{call ACTUALIZAR_CONTRASENA_USUARIO(?, ?)}")) {
+
+            cs.setInt(1, idUsuario);
+            cs.setString(2, nuevoHash);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                return rs.next() && rs.getInt("filas") > 0;
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Error al actualizar la contraseña del usuario", ex);
+        }
+    }
     private DatosLogin buscar(String sql, String valor, String rolFijo, String mensajeError) {
         try (Connection con = DBManager.getInstance().getConnection();
              CallableStatement cs = con.prepareCall(sql)) {

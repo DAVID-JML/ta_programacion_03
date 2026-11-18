@@ -3,7 +3,6 @@
 @inject MascovetWA.Servicios.LoadingService Loading
 @inject UserContext User
 @inject NavigationManager Navigation
-@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthState
 
 <div class="ms-shell">
     <a class="ms-skip-link" href="#main-content">Saltar al contenido principal</a>
@@ -41,18 +40,7 @@
 
 <AppToastContainer />
 
-<AppModal @bind-Visible="mostrarConfirmacion" Title="Cerrar sesión">
-    <ChildContent>
-        <p>¿Estás seguro de que deseas cerrar sesión?</p>
-    </ChildContent>
-    <Actions>
-        <AppButton Variant="ButtonVariant.Tertiary" OnClick="() => mostrarConfirmacion = false">No, regresar</AppButton>
-        <form method="post" action="/auth/logout">
-            <AntiforgeryToken />
-            <AppButton Type="submit" Variant="ButtonVariant.Primary">Sí, cerrar sesión</AppButton>
-        </form>
-    </Actions>
-</AppModal>
+<AppButton Variant="ButtonVariant.Primary" OnClick="CerrarSesion">Sí, cerrar sesión</AppButton>
 
 @if (Loading.IsLoading)
 {
@@ -69,12 +57,17 @@
     private bool mostrarConfirmacion;
     private void MostrarConfirmacionCerrarSesion() => mostrarConfirmacion = true;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         Loading.Changed += AlCambiarCarga;
-        var estado = await AuthState.GetAuthenticationStateAsync();
-        User.RestoreFromClaims(estado.User);
         if (!User.IsAuthenticated) Navigation.NavigateTo("/", replace: true);
+    }
+
+    private void CerrarSesion()
+    {
+        mostrarConfirmacion = false;
+        User.SignOut();
+        Navigation.NavigateTo("/", replace: true);
     }
     private void AlCambiarCarga() => _ = InvokeAsync(StateHasChanged);
 

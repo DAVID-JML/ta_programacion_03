@@ -1,6 +1,5 @@
-@using System.Security.Claims
-@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
+@inject UserContext User
 
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
@@ -8,26 +7,20 @@
         {
             <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
         }
+        else if (!User.IsAuthenticated)
+        {
+            <RedirectToLogin />
+        }
+        else if (TienePermiso())
+        {
+            <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        }
         else
         {
-            <AuthorizeView>
-                <Authorized Context="ctx">
-                    @if (TienePermiso(ctx.User))
-                    {
-                        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
-                            <NotAuthorized><RedirectToLogin /></NotAuthorized>
-                        </AuthorizeRouteView>
-                    }
-                    else
-                    {
-                        <LayoutView Layout="typeof(AuthLayout)">
-                            <p role="alert">No tienes permisos para acceder a este módulo.</p>
-                            <a href="/">Ir al inicio</a>
-                        </LayoutView>
-                    }
-                </Authorized>
-                <NotAuthorized><RedirectToLogin /></NotAuthorized>
-            </AuthorizeView>
+            <LayoutView Layout="typeof(AuthLayout)">
+                <p role="alert">No tienes permisos para acceder a este módulo.</p>
+                <a href="/">Ir al inicio</a>
+            </LayoutView>
         }
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
@@ -41,20 +34,21 @@
 @code {
     private string Ruta() => Navigation.ToBaseRelativePath(Navigation.Uri)
         .Split('?', '#')[0].Trim('/').ToLowerInvariant();
-    private bool EsPublica() => Ruta() is "" or "registro";
 
-    private bool TienePermiso(ClaimsPrincipal usuario)
+    private bool EsPublica() => Ruta() is "" or "registro" or "autentificar-personal";
+
+    private bool TienePermiso()
     {
-        if (usuario.Identity?.IsAuthenticated != true) return false;
-        var ruta = Ruta();
-        if (ruta.StartsWith("cliente/", StringComparison.Ordinal) || ruta == "cliente")
-            return usuario.IsInRole("Cliente");
-        if (ruta.StartsWith("administrador/", StringComparison.Ordinal) || ruta == "administrador")
-            return usuario.IsInRole("Administrador");
-        if (ruta.StartsWith("veterinario/", StringComparison.Ordinal) || ruta == "veterinario")
-            return usuario.IsInRole("Veterinario");
-        if (ruta.StartsWith("recepcion/", StringComparison.Ordinal) || ruta == "recepcion")
-            return usuario.IsInRole("Recepcionista");
-        return false;
+        string ruta = Ruta();
+        string? prefijo = User.Role switch
+        {
+            UserRole.Cliente => "cliente",
+            UserRole.Veterinario => "veterinario",
+            UserRole.Recepcionista => "recepcion",
+            UserRole.Administrador => "administrador",
+            _ => null
+        };
+        return prefijo is not null &&
+               (ruta == prefijo || ruta.StartsWith(prefijo + "/", StringComparison.Ordinal));
     }
 }

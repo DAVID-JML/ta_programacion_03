@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace MascovetWA.Components.Layout;
 
 /// <summary>
@@ -50,4 +52,5 @@ public sealed class UserContext
         Role = role;
         Changed?.Invoke();
     }
+   
 }

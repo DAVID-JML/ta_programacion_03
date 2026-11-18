@@ -14,4 +14,7 @@ public interface AutenticacionDAO {
 
     /** Busca un miembro del personal (veterinario, recepcionista o administrador) por nombre de usuario. Devuelve null si no existe o está deshabilitado. */
     DatosLogin buscarPersonalParaLogin(String nombreUsuario);
+
+    String obtenerHashPorId(int idUsuario);
+    boolean actualizarHash(int idUsuario, String nuevoHash);
 }

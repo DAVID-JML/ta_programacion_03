@@ -29,6 +29,17 @@ public class AutenticacionBOImpl implements IAutenticacionBO {
         return verificar(dao.buscarPersonalParaLogin(usuarioLimpio), contrasena);
     }
 
+    @Override
+    public boolean cambiarContrasena(int idUsuario, String actual, String nueva) {
+        if (idUsuario <= 0 || !contrasenaValida(actual) || !contrasenaValida(nueva)
+                || nueva.length() < 8 || nueva.equals(actual)) return false;
+
+        String hash = dao.obtenerHashPorId(idUsuario);
+        boolean coincide = ContrasenaHash.verificar(actual, hash != null ? hash : HASH_FALSO);
+        if (hash == null || !coincide) return false;
+
+        return dao.actualizarHash(idUsuario, ContrasenaHash.generar(nueva));
+    }
     // La lógica común, escrita una sola vez
     private Sesion verificar(AutenticacionDAO.DatosLogin datos, String contrasena) {
         String hash = datos != null ? datos.hashContrasena() : HASH_FALSO;

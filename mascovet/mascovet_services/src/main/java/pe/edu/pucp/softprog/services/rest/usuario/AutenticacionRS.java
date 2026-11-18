@@ -45,7 +45,26 @@ public class AutenticacionRS {
                 () -> boAutenticacion.autenticarPersonal(solicitud.nombreUsuario, solicitud.contrasena),
                 "Usuario o contraseña incorrectos.");
     }
+    @POST
+    @Path("cambiarContrasena")
+    public Response cambiarContrasena(SolicitudCambioContrasena s) {
+        if (s == null || s.idUsuario <= 0 || estaVacio(s.contrasenaActual) || estaVacio(s.contrasenaNueva))
+            return error(Response.Status.BAD_REQUEST, "Completa todos los campos.");
+        try {
+            boolean ok = boAutenticacion.cambiarContrasena(s.idUsuario, s.contrasenaActual, s.contrasenaNueva);
+            if (!ok) return error(Response.Status.UNAUTHORIZED, "La contraseña actual es incorrecta o la nueva no es válida.");
+            return Response.ok(Map.of("mensaje", "Contraseña actualizada.")).build();
+        } catch (RuntimeException ex) {
+            LOGGER.log(Level.SEVERE, "Error al cambiar contraseña", ex);
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "No se pudo cambiar la contraseña.");
+        }
+    }
 
+    public static class SolicitudCambioContrasena {
+        public int idUsuario;
+        public String contrasenaActual;
+        public String contrasenaNueva;
+    }
     // La respuesta se arma una sola vez para los dos logins.
     private Response responder(Supplier<IAutenticacionBO.Sesion> autenticacion, String mensajeNoValido) {
         IAutenticacionBO.Sesion sesion;

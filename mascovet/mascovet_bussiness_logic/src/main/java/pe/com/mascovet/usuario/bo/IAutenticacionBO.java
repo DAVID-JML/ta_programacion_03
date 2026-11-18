@@ -5,4 +5,5 @@ public interface IAutenticacionBO {
 
     Sesion autenticarCliente(String correo, String contrasena);
     Sesion autenticarPersonal(String nombreUsuario, String contrasena);
+    boolean cambiarContrasena(int idUsuario, String contrasenaActual, String contrasenaNueva);
 }
