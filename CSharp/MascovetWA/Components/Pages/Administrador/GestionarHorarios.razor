@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/administrador/horarios"
 @inject HorarioAtencionRestService HorariosREST
 @inject VeterinarioRestService VeterinariosREST
@@ -7,7 +8,7 @@
 
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Horarios de atención</h1><p>Registra y administra la disponibilidad semanal de los veterinarios.</p></div>
+        <div><h1>Horarios de atención</h1></div>
     </header>
 
     <AppCard Title="Registrar horario">
@@ -62,8 +63,8 @@
 
     private async Task Cargar()
     {
-        // El DAO de Java devuelve solamente el id del veterinario en cada horario.
-        // Se consulta el catálogo existente por REST para mostrar el nombre real.
+         
+         
         List<MascovetDomain.Usuarios.Veterinario> listaVeterinarios = new();
         try
         {

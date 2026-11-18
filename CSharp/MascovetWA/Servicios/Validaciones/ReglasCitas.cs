@@ -23,8 +23,8 @@ public static class ReglasCitas
         _ => 4
     };
 
-    // DATE de MySQL: normalizar la fecha al mediodía para evitar desplazamientos
-    // de día al serializar/deserializar java.util.Date entre Java y C#.
+
+
     public static DateTime FechaParaRest(DateTime fecha) =>
         DateTime.SpecifyKind(fecha.Date.AddHours(12), DateTimeKind.Unspecified);
 }

@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/recepcion/clientes/nuevo"
 @inject ClienteRestService ClientesREST
 @inject NavigationManager Navigation
@@ -7,7 +8,7 @@
 
 <PageTitle>@Titulo | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>@Titulo</h1><p>Datos personales y de contacto del cliente.</p></div></header>
+    <header class="ms-feature-header"><div><h1>@Titulo</h1></div></header>
     <EditForm Model="modelo" OnValidSubmit="Guardar">
         <DataAnnotationsValidator />
         <AppCard Title="Datos del cliente">
@@ -22,7 +23,7 @@
         </AppCard>
         @if (!EsEdicion)
         {
-            <AppCard Title="Datos de acceso" Subtitle="Credenciales iniciales para la nueva cuenta.">
+            <AppCard Title="Datos de acceso">
                 <div class="form-grid">
                     <div class="span-6"><AppInput TValue="string" Label="Usuario" Required="true" autocomplete="username" @bind-Value="modelo.Usuario" /></div>
                     <div class="span-6"><AppInput TValue="string" Label="Contraseña inicial" Type="password" Required="true" autocomplete="new-password" @bind-Value="modelo.Contrasena" /></div>
@@ -77,19 +78,12 @@
     }
     private sealed class ClienteModel
     {
-        [Required(ErrorMessage = "Ingrese los nombres.")]
-        public string Nombres { get; set; } = "";
-        [Required(ErrorMessage = "Ingrese Apellido Paterno.")]
-        public string Paterno { get; set; } = "";
-        [Required(ErrorMessage = "Ingrese Apellido Materno.")]
-        public string Materno { get; set; } = "";
-        [Required(ErrorMessage = "Ingrese DNI.")]
-        public string Dni { get; set; } = "";
-        [Required(ErrorMessage = "Ingrese Telefono.")]
-        public string Telefono { get; set; } = "";
-        [Required(ErrorMessage = "Ingresa el correo electrónico.")]
-        [EmailAddress]
-        public string Correo { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa los nombres.")] public string Nombres { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa el apellido paterno.")] public string Paterno { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa el apellido materno.")] public string Materno { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa el DNI.")] public string Dni { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa el teléfono.")] public string Telefono { get; set; } = "";
+        [Required(ErrorMessage = "Ingresa el correo electrónico."), EmailAddress(ErrorMessage = "Ingresa un correo electrónico válido.")] public string Correo { get; set; } = "";
         public string Usuario { get; set; } = "";
         public string Contrasena { get; set; } = "";
     }

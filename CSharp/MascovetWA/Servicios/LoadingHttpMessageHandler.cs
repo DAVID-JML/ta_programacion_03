@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 namespace MascovetWA.Servicios
 {
-    // Muestra el estado de carga durante cada petición HTTP a GlassFish.
-    // try/finally garantiza que se oculte incluso si el servidor devuelve un error.
+
+
     public class LoadingHttpMessageHandler : DelegatingHandler
     {
         private readonly LoadingService loading;
@@ -23,7 +23,7 @@ namespace MascovetWA.Servicios
             try
             {
                 return await base.SendAsync(request, cancellationToken);
-            } 
+            }
             finally
             {
                 loading.Terminar();

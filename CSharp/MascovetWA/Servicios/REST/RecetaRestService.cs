@@ -19,8 +19,8 @@ namespace MascovetWA.Servicios.REST
             this.client = client;
         }
 
-        // La respuesta de JSON-B contiene una atención concreta dentro del tipo abstracto
-        // AtencionMedica. Leer primero su identificador, sin intentar construir la clase abstracta.
+
+
         public async Task<List<Receta>> ListarTodosAsync()
         {
             using HttpResponseMessage respuesta = await client.GetAsync("RecetaRS/listarTodosRecetas");
@@ -131,3 +131,4 @@ namespace MascovetWA.Servicios.REST
         }
     }
 }
+

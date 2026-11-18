@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 
 @inject MascotaRestService MascotasREST
 @inject ClienteRestService ClientesREST
@@ -14,16 +15,12 @@
 
     <header class="registrar-mascota__header">
         <h1>Registrar mascota</h1>
-        <p>
-            Registra a tu compañero para llevar el seguimiento de sus citas y su salud.
-        </p>
     </header>
     <EditForm Model="@modelo" OnValidSubmit="@Registrar">
         <DataAnnotationsValidator />
         <ValidationSummary class="registrar-mascota__validation" />
 
-        <AppCard Title="Información de la mascota"
-                 Subtitle="Completa los datos de tu mascota para continuar.">
+        <AppCard Title="Información de la mascota">
 
             <ChildContent>
                 <div class="registrar-mascota__grid">

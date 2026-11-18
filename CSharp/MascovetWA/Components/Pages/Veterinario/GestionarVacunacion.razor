@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario/vacunas"
 @inject CitaRestService CitasREST
 @inject MascotaRestService MascotasREST
@@ -12,8 +13,7 @@
 
 <div class="page-header">
     <h1>Gestionar vacunaciones</h1>
-    <p class="page-subtitle">Registra, modifica y anula las vacunaciones aplicadas a la mascota.</p>
-</div>
+    </div>
 
 <EditForm Model="modelo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
@@ -231,7 +231,6 @@
 </AppModal>
 
 @code {
-
     [SupplyParameterFromQuery(Name = "cita")] private int? IdCitaSeleccionada { get; set; }
     [SupplyParameterFromQuery(Name = "mascota")] private int? IdMascotaSeleccionada { get; set; }
     protected override async Task OnInitializedAsync()
@@ -259,8 +258,8 @@
                 .Select(v=>new SelectOption<int?>((int?)v.IdVacuna,v.Nombre??"Vacuna sin nombre")).ToList();
             var mascotas = await MascotasREST.ListarTodosAsync();
             var clientes = await ClientesREST.ListarTodosAsync();
-            // Se conservan las citas históricas para consultar vacunas previas,
-            // pero solo se permiten citas CONFIRMADAS para nuevos registros.
+             
+             
             citas=(await CitasREST.ListarTodosAsync())
                 .Where(c=>c.TipoAtencion == MascovetDomain.Enums.TipoAtencion.VACUNACION)
                 .Select(c=>
@@ -280,7 +279,7 @@
                 string? nombreVacuna = vacunaAsociada?.Nombre;
                 if (string.IsNullOrWhiteSpace(nombreVacuna) && idVacuna > 0)
                     nombreVacuna = catalogoVacunas.FirstOrDefault(x => x.IdVacuna == idVacuna)?.Nombre;
-                // Sin una asociación en VACUNACION_VACUNA no podemos deducir qué vacuna se aplicó.
+                 
                 if (string.IsNullOrWhiteSpace(nombreVacuna))
                     nombreVacuna = idVacuna > 0 ? $"Vacuna #{idVacuna}" : "Vacuna sin asociar";
 
@@ -360,7 +359,7 @@
     {
         try
         {
-            // Al editar una vacuna de otra cita histórica, seleccionamos su cita primero.
+             
             var citaAsociada=citas.FirstOrDefault(c=>c.Id==v.IdCita);
             if (citaAsociada is not null) SeleccionarCita(citaAsociada);
             var registro = await VacunacionesREST.BuscarPorIdAsync(v.Id);
@@ -420,7 +419,7 @@
         if(!int.TryParse(modelo.IdCita,out int idCita)||!modelo.IdVacuna.HasValue||!modelo.FechaAplicacion.HasValue||
             !TimeOnly.TryParse(modelo.HoraInicio,out var ini)||!TimeOnly.TryParse(modelo.HoraFin,out var fin))
         {Toast.Warning("Completa cita, vacuna, fechas y horas.");return;}
-        // Java solo admite registrar vacunaciones en citas CONFIRMADAS.
+         
         if (!modelo.IdVacunacion.HasValue && !CitaPermiteRegistrar)
         {
             Toast.Warning("Selecciona una cita de vacunación confirmada.");
@@ -444,16 +443,16 @@
             v.FechaAplicacion=modelo.FechaAplicacion.Value.ToDateTime(TimeOnly.MinValue);
             v.FechaProximaDosis=modelo.ProximaDosis?.ToDateTime(TimeOnly.MinValue);
             v.HoraInicio=ini;v.HoraFin=fin;v.Observaciones=modelo.Observaciones;
-            // No cambiamos la vacuna de un registro existente: el UPDATE Java
-            // solo modifica los datos de la vacunación, no la tabla asociativa.
+             
+             
             if (modelo.IdVacunacion.HasValue &&
                 v.Vacunas.FirstOrDefault()?.IdVacuna != modelo.IdVacuna.Value)
             {
                 Toast.Warning("La vacuna asociada no se puede cambiar desde este formulario.");
                 return;
             }
-            // Al asociar una vacuna EXISTENTE, el DAO Java utiliza su ID.
-            // No se debe llamar a insertarConVacunas (ese método valida nombre y descripción).
+             
+             
             if (!modelo.IdVacunacion.HasValue)
             {
                 v.AgregarVacuna(new MascovetDomain.AtencionesMedicas.Vacuna
@@ -466,7 +465,7 @@
                 : await VacunacionesREST.InsertarAsync(v);
             if(result<=0){Toast.Warning("No se confirmó el registro de vacunación.");return;}
             Toast.Success("Vacunación guardada.");
-            // Si es una nueva vacunación, la cita se marca ATENDIDA.
+             
             if (!modelo.IdVacunacion.HasValue)
             {
                 try

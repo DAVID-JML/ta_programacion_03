@@ -5,8 +5,8 @@ using System.Text.Json.Serialization;
 
 namespace MascovetWA.Servicios.REST
 {
-    // java.util.Date puede recibirse como milisegundos Unix o como texto JSON.
-    // Este convertidor se utiliza solo en la lectura/escritura de los servicios REST.
+
+
     public class FechaRestJsonConverter : JsonConverter<DateTime?>
     {
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -26,7 +26,7 @@ namespace MascovetWA.Servicios.REST
                 if (long.TryParse(texto, NumberStyles.Integer, CultureInfo.InvariantCulture, out long numero))
                     return DesdeUnix(numero);
 
-                // Algunas implementaciones Java añaden la zona entre corchetes: ...Z[UTC].
+
                 int corchete = texto.IndexOf('[');
                 if (corchete > 0) texto = texto.Substring(0, corchete);
                 if (DateTimeOffset.TryParse(texto, CultureInfo.InvariantCulture,
@@ -43,7 +43,7 @@ namespace MascovetWA.Servicios.REST
 
         private static DateTime DesdeUnix(long valor)
         {
-            // Las fechas de java.util.Date suelen representarse en milisegundos.
+
             return (valor > 100_000_000_000L || valor < -100_000_000_000L)
                 ? DateTimeOffset.FromUnixTimeMilliseconds(valor).UtcDateTime
                 : DateTimeOffset.FromUnixTimeSeconds(valor).UtcDateTime;

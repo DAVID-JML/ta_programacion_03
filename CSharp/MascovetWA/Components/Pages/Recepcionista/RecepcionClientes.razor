@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/recepcion/clientes"
 @inject ClienteRestService ClientesREST
 @layout MainLayout
@@ -5,10 +6,10 @@
 <PageTitle>Clientes | Mascovet</PageTitle>
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Clientes</h1><p>Consulta los datos de los clientes y accede a sus mascotas y citas.</p></div>
+        <div><h1>Clientes</h1></div>
         <AppButton Href="/recepcion/clientes/nuevo" Icon="plus">Registrar cliente</AppButton>
     </header>
-    <AppCard Title="Directorio de clientes" Subtitle="Selecciona un cliente para consultar su información y sus mascotas.">
+    <AppCard Title="Directorio de clientes">
         <AppSearchInput Label="Buscar clientes" Placeholder="Nombre, DNI o correo" @bind-Value="Busqueda" />
         @if (Error is not null) { <p class="ms-small-note">@Error</p> }
         <AppTable Items="ClientesFiltrados" Caption="Clientes de la clínica" ColumnCount="6">
@@ -43,3 +44,4 @@
     private IEnumerable<ClienteFila> ClientesFiltrados => clientes.Where(c => string.IsNullOrWhiteSpace(Busqueda) ||
         $"{c.Nombre} {c.Dni} {c.Telefono} {c.Correo}".Contains(Busqueda.Trim(), StringComparison.OrdinalIgnoreCase));
 }
+

@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario/recetas"
 @inject ConsultaRestService ConsultasREST
 @inject CitaRestService CitasREST
@@ -16,8 +17,7 @@
 
 <div class="page-header">
     <h1>Generar receta</h1>
-    <p class="page-subtitle">Asocia una receta a una atención médica e indica los medicamentos recetados.</p>
-</div>
+    </div>
 
 <EditForm Model="modelo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
@@ -43,13 +43,16 @@
             </div>
 
             <div class="form-grid">
-                <div class="span-4">
+                <div class="span-3">
+                    <AppInput TValue="string" Label="Tipo de atención" Disabled="true" @bind-Value="modelo.TipoAtencion" />
+                </div>
+                <div class="span-3">
                     <AppInput TValue="string" Label="Mascota" Disabled="true" @bind-Value="modelo.Mascota" />
                 </div>
-                <div class="span-4">
+                <div class="span-3">
                     <AppInput TValue="string" Label="Dueño" Disabled="true" @bind-Value="modelo.Dueno" />
                 </div>
-                <div class="span-4">
+                <div class="span-3">
                     <AppDatePicker Label="Fecha de la receta" Required="true" @bind-Value="modelo.Fecha" />
                 </div>
             </div>
@@ -162,13 +165,13 @@
     </div>
 
     <div class="acciones acciones--entre">
-        <AppButton Href="/veterinario/atencion" Variant="ButtonVariant.Secondary">Regresar</AppButton>
+        <AppButton Href="@HrefRegresar" Variant="ButtonVariant.Secondary">Regresar</AppButton>
         <AppButton Type="submit" Variant="ButtonVariant.Primary">Guardar receta</AppButton>
     </div>
 </EditForm>
 
 <div class="seccion">
-    <AppCard Title="Recetas registradas" Subtitle="Consulta las recetas y sus medicamentos prescritos.">
+    <AppCard Title="Recetas registradas">
         @if (!string.IsNullOrWhiteSpace(errorListado))
         {
             <p role="alert" class="ms-small-note">@errorListado</p>
@@ -285,8 +288,13 @@
 </AppModal>
 
 @code {
-
     [SupplyParameterFromQuery(Name = "atencion")] private int? IdAtencionSeleccionada { get; set; }
+    [SupplyParameterFromQuery(Name = "tipo")] private string? TipoAtencionSolicitado { get; set; }
+    [SupplyParameterFromQuery(Name = "origen")] private string? Origen { get; set; }
+    private string HrefRegresar =>
+        Origen == "detalle" && IdAtencionSeleccionada.HasValue && !string.IsNullOrWhiteSpace(TipoAtencionSolicitado)
+            ? $"/veterinario/atenciones/ver/{IdAtencionSeleccionada.Value}?tipo={TipoAtencionSolicitado}"
+            : Origen == "atencion" ? "/veterinario/agenda" : "/veterinario/atencion";
     protected override async Task OnInitializedAsync()
     {
         try
@@ -303,10 +311,17 @@
             foreach(var a in await CirugiasREST.ListarTodosAsync())AgregarAtencion(a,"Cirugía");
             foreach(var a in await VacunacionesREST.ListarTodosAsync())AgregarAtencion(a,"Vacunación");
             await CargarRecetas();
-            if(IdAtencionSeleccionada.HasValue)
+            if (IdAtencionSeleccionada.HasValue)
             {
-                var atencion=atenciones.FirstOrDefault(a=>a.Id==IdAtencionSeleccionada.Value);
-                if(atencion is not null)SeleccionarAtencion(atencion);
+                var tipo = TipoAtencionSolicitado?.Trim().ToUpperInvariant();
+                var candidatas = atenciones.Where(a => a.Id == IdAtencionSeleccionada.Value &&
+                    (string.IsNullOrWhiteSpace(tipo) || TipoCodigo(a.Tipo) == tipo)).ToList();
+                if (candidatas.Count == 1)
+                    SeleccionarAtencion(candidatas[0]);
+                else if (candidatas.Count > 1)
+                    Toast.Warning("Hay varias atenciones con ese código. Selecciona también el tipo de atención.");
+                else
+                    Toast.Warning("No se encontró la atención indicada para generar la receta.");
             }
         }
         catch(Exception ex){Toast.Error($"No se pudieron cargar los datos de receta: {ex.Message}");}
@@ -403,10 +418,21 @@
     private void SeleccionarAtencion(AtencionBusqueda a)
     {
         modelo.IdAtencion = a.Id.ToString();
+        modelo.TipoAtencion = a.Tipo;
         modelo.Mascota = a.Mascota;
         modelo.Dueno = a.Dueno;
+        modelo.Fecha ??= DateOnly.FromDateTime(DateTime.Today);
         mostrarModalAtencion = false;
     }
+
+    private static string TipoCodigo(string tipo) => tipo switch
+    {
+        "Consulta" => "CONSULTA",
+        "Control" => "CONTROL",
+        "Cirugía" => "CIRUGIA",
+        "Vacunación" => "VACUNACION",
+        _ => ""
+    };
 
     private void SeleccionarMedicamento(MedicamentoBusqueda m)
     {
@@ -450,8 +476,11 @@
         errorDetalle="";
         try
         {
-            var tipoAtencion = atenciones.FirstOrDefault(a => a.Id == id)?.Tipo;
-            MascovetDomain.AtencionesMedicas.AtencionMedica atencion = tipoAtencion switch
+             
+            var seleccionada = atenciones.FirstOrDefault(a => a.Id == id && a.Tipo == modelo.TipoAtencion);
+            if (seleccionada is null)
+            { Toast.Warning("Selecciona una atención médica válida antes de guardar la receta."); return; }
+            MascovetDomain.AtencionesMedicas.AtencionMedica atencion = seleccionada.Tipo switch
             {
                 "Control" => new MascovetDomain.AtencionesMedicas.Control { IdAtencion = id },
                 "Cirugía" => new MascovetDomain.AtencionesMedicas.Cirugia { IdAtencion = id },
@@ -478,6 +507,7 @@
     {
         [Required(ErrorMessage = "Seleccione una atención médica.")]
         public string IdAtencion { get; set; } = string.Empty;
+        public string TipoAtencion { get; set; } = string.Empty;
         public string Mascota { get; set; } = string.Empty;
         public string Dueno { get; set; } = string.Empty;
 

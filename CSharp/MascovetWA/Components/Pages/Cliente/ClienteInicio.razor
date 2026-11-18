@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/cliente"
 @inject UserContext User
 @inject ClienteRestService ClientesREST
@@ -12,7 +13,6 @@
         <div>
             <span class="dashboard-eyebrow">TU ESPACIO MASCOVET</span>
             <h1 id="bienvenida-titulo">¡Hola, @Nombre!</h1>
-            <p>Gestiona las citas y cuida la salud de tus mascotas desde un solo lugar.</p>
         </div>
 
         <AppButton Href="/cliente/reservar" Icon="plus">Reservar una cita</AppButton>
@@ -42,7 +42,6 @@
         <div class="dashboard-section-heading">
             <div>
                 <h2 id="proxima-titulo">Tu próxima cita</h2>
-                <p>Ten a mano los detalles de la próxima atención.</p>
             </div>
             <AppButton Href="/cliente/citas" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver todas</AppButton>
         </div>
@@ -84,7 +83,6 @@
         <div class="dashboard-section-heading">
             <div>
                 <h2 id="mascotas-titulo">Mis mascotas</h2>
-                <p>Accede rápidamente a la información de tus compañeros.</p>
             </div>
             <AppButton Href="/cliente/mascotas" Variant="ButtonVariant.Tertiary" Size="ButtonSize.Small">Ver todas</AppButton>
         </div>
@@ -195,16 +193,20 @@
 
     private string Nombre => string.IsNullOrWhiteSpace(User.Nombre) ? "Cliente" : User.Nombre;
 
-    private Cita? Proxima => Citas
+     
+     
+    private IEnumerable<Cita> CitasProximas => Citas
         .Where(c => c.Estado is "Reservada" or "Confirmada")
         .Where(c => c.Fecha >= DateOnly.FromDateTime(DateTime.Today))
         .OrderBy(c => c.Fecha)
-        .FirstOrDefault();
+        .ThenBy(c => c.Hora);
+
+    private Cita? Proxima => CitasProximas.FirstOrDefault();
 
     private IEnumerable<Resumen> Resumenes => new[]
     {
         new Resumen("Mis mascotas", Mascotas.Length, "heart", "Ver mascotas", "/cliente/mascotas"),
-        new Resumen("Citas próximas", Citas.Count(c => c.Estado is "Reservada" or "Confirmada"), "calendar", "Ver mis citas", "/cliente/citas"),
+        new Resumen("Citas próximas", CitasProximas.Count(), "calendar", "Ver mis citas", "/cliente/citas"),
         new Resumen("Citas atendidas", AtencionesRealizadas, "check-circle", "Ver mis citas", "/cliente/citas"),
     };
     private static string ObtenerIconoEspecie(string especie) =>
@@ -214,7 +216,7 @@
         "perro" => "dog",
         _ => "paw-print"
     };
-    // Estados del Reservada, Confirmada, Atendida, Cancelada
+     
     private static SemanticVariant EstadoVariant(string estado) => estado switch
     {
         "Reservada" => SemanticVariant.Info,

@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario/agenda"
 @inject CitaRestService CitasREST
 @inject MascotaRestService MascotasREST
@@ -14,7 +15,7 @@
 <PageTitle>Agenda médica | Mascovet</PageTitle>
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Agenda médica</h1><p>Citas asignadas al veterinario y acceso directo a la atención de cada mascota.</p></div>
+        <div><h1>Agenda médica</h1></div>
         <AppButton Href="/veterinario/historias" Variant="ButtonVariant.Secondary">Consultar historias clínicas</AppButton>
     </header>
     <AppCard Title="Citas registradas">
@@ -73,8 +74,8 @@
         errorCarga = "";
         try
         {
-            // En esta entrega, la cuenta de prueba se vincula por el nombre de usuario con un veterinario del SQL.
-            // Sin esa vinculación nunca mostramos citas de otros médicos como si fueran propias.
+             
+             
             var propios = (await VeterinariosREST.ListarTodosAsync()).Where(v => v.Activo &&
                 !string.IsNullOrWhiteSpace(User.UsuarioVinculado) &&
                 string.Equals(v.NombreUsuario, User.UsuarioVinculado, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -86,12 +87,12 @@
             }
             int idVeterinario = propios[0].IdUsuario;
             var citas = await CitasREST.ListarTodosAsync();
-            // Una falla al consultar mascotas no debe ocultar las citas que sí devolvió Java.
+             
             List<MascovetDomain.Mascotas.Mascota> mascotas = new();
             try { mascotas = await MascotasREST.ListarTodosAsync(); }
             catch (Exception ex) { Toast.Warning($"No se pudieron consultar los nombres de mascotas: {ex.Message}"); }
             var atencionesPorCita = new Dictionary<int,int>();
-            // Cada recurso tiene su propio contador de IDs; se asocia por cita.
+             
             try { foreach (var a in await ConsultasREST.ListarTodosAsync()) if(a.Activo && a.Cita?.IdCita is > 0) atencionesPorCita[a.Cita.IdCita]=a.IdAtencion; }
             catch (Exception ex) { Toast.Warning($"No se cargaron consultas: {ex.Message}"); }
             try { foreach (var a in await ControlesREST.ListarTodosAsync()) if(a.Activo && a.Cita?.IdCita is > 0) atencionesPorCita[a.Cita.IdCita]=a.IdAtencion; }

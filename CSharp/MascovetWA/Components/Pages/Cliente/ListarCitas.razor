@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/cliente/citas"
 @inject CitaRestService CitasREST
 @inject MascotaRestService MascotasREST
@@ -15,10 +16,6 @@
     <header class="mis-citas__header">
         <div>
             <h1>Mis citas</h1>
-            <p>
-                Consulta tus citas veterinarias y revisa el estado
-                de cada atención.
-            </p>
         </div>
 
         <AppButton Href="/cliente/reservar"
@@ -35,8 +32,7 @@
         @if (!string.IsNullOrWhiteSpace(error)) { <p class="ms-muted" role="alert">@error</p> }
         @if (!cargando)
         {
-        <AppCard Title="Listado de citas"
-                 Subtitle="Consulta las fechas, los tipos de atención y el estado de tus reservas.">
+        <AppCard Title="Listado de citas">
 
             <ChildContent>
                 <AppTable TItem="CitaFila"
@@ -139,7 +135,7 @@
         cargando = true;
         try
         {
-            // Vinculación temporal de la cuenta de prueba mediante nombre de usuario del SQL.
+             
             var clientes = await ClientesREST.ListarTodosAsync();
             var propios = clientes.Where(c => c.Activo &&
                 !string.IsNullOrWhiteSpace(User.UsuarioVinculado) &&

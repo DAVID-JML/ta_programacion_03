@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/administrador/atenciones/ver/{Id:int}"
 @inject ConsultaRestService ConsultasREST
 @inject ControlRestService ControlesREST
@@ -12,7 +13,7 @@
 @inject ToastService Toast
 <PageTitle>@Titulo | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>@Titulo</h1><p>Información asociada a la atención seleccionada.</p></div></header>
+    <header class="ms-feature-header"><div><h1>@Titulo</h1></div></header>
     @if (Atencion is null)
     { <AppCard Title="Atención no encontrada"><p>No se encontró el registro solicitado.</p><AppButton Href="/administrador/atenciones" Variant="ButtonVariant.Secondary">Volver</AppButton></AppCard> }
     else
@@ -59,8 +60,8 @@
         registro = null;
         var atenciones = new List<(MascovetDomain.AtencionesMedicas.AtencionMedica Registro, string Tipo)>();
 
-        // Si se recibe el tipo, consultar solo ese recurso: un fallo en otra
-        // categoría no debe impedir abrir el detalle actual.
+         
+         
         bool Incluir(string nombre) => string.IsNullOrWhiteSpace(TipoSolicitado)
             || nombre.Equals(TipoSolicitado, StringComparison.OrdinalIgnoreCase);
 
@@ -97,7 +98,7 @@
             var citas = await CitasREST.ListarTodosAsync();
             cita = citas.FirstOrDefault(c => c.IdCita == registro.Cita?.IdCita) ?? cita;
         }
-        catch { /* Se conservan los datos que existan en el objeto recibido. */ }
+        catch {   }
 
         int idMascota = cita?.Mascota?.IdMascota ?? 0;
         int idVet = cita?.Veterinario?.IdUsuario ?? 0;

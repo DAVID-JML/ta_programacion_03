@@ -35,7 +35,7 @@
                 </li>
             }
             <li>
-                <button type="button" class="ms-nav__logout" @onclick="() => mostrarConfirmacion = true">
+                <button type="button" class="ms-nav__logout" @onclick="() => OnLogoutRequested.InvokeAsync()">
                     <AppIcon Name="log-out" Size="20" />
                     <span>Cerrar sesión</span>
                 </button>
@@ -44,26 +44,14 @@
     </div>
 </div>
 
-<AppModal @bind-Visible="mostrarConfirmacion"
-          Title="Cerrar sesión"
-          ConfirmText="Sí, cerrar sesión"
-          CancelText="No, regresar"
-          OnConfirm="CerrarSesion">
-    <p>¿Estás seguro de que deseas cerrar sesión?</p>
-</AppModal>
 
 @code {
-    private bool mostrarConfirmacion;
+    [Parameter] public EventCallback OnLogoutRequested { get; set; }
     private IEnumerable<NavItem> Principales => NavCatalog.For(User.Role).Where(i => !i.Bottom);
     private IEnumerable<NavItem> Inferiores => NavCatalog.For(User.Role).Where(i => i.Bottom);
 
-    // El "Inicio" solo se marca activo en su ruta exacta; el resto, también en sus subrutas.
+     
     private NavLinkMatch MatchFor(NavItem item) =>
         item.Href == NavCatalog.HomeFor(User.Role) ? NavLinkMatch.All : NavLinkMatch.Prefix;
 
-    private void CerrarSesion()
-    {
-        User.SignOut();
-        Navigation.NavigateTo("/", replace: true);
-    }
 }

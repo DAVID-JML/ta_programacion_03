@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/cliente/mascotas/{IdMascota:int}/historial"
 @inject MascotaRestService MascotasREST
 @inject ConsultaRestService ConsultasREST
@@ -14,7 +15,7 @@
 <PageTitle>Historial médico | Mascovet</PageTitle>
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Historial médico</h1><p>Seguimiento de consultas, vacunaciones y recetas de la mascota.</p></div>
+        <div><h1>Historial médico</h1></div>
         <div class="ms-inline-actions">
             <AppButton Href="@CartillaHref" Icon="check-circle">Cartilla de vacunación</AppButton>
             <AppButton Href="@FichaHref" Variant="ButtonVariant.Secondary">Volver a la ficha</AppButton>
@@ -34,14 +35,14 @@
         {
             <p class="ms-small-note" role="alert">@ErrorHistorial</p>
         }
-        <AppCard Title="@($"Historial de {Mascota}")" Subtitle="Atenciones médicas">
+        <AppCard Title="@($"Historial de {Mascota}")">
             <AppTable Items="Atenciones.OrderByDescending(a => ParseFecha(a.Fecha))" ColumnCount="4" Caption="Atenciones médicas">
                 <HeaderContent><th>Fecha</th><th>Tipo</th><th>Diagnóstico</th><th>Tratamiento</th></HeaderContent>
                 <RowTemplate Context="a"><td>@a.Fecha</td><td>@a.Tipo</td><td>@a.Diagnostico</td><td>@a.Tratamiento</td></RowTemplate>
                 <EmptyContent><AppEmptyState Icon="file-text" Title="Sin atenciones" Description="No se encontraron atenciones médicas." /></EmptyContent>
             </AppTable>
         </AppCard>
-        <AppCard Title="Vacunaciones" Subtitle="Acceso rápido a las próximas dosis.">
+        <AppCard Title="Vacunaciones">
             <p>Puedes consultar las vacunas aplicadas, sus fechas y próximas dosis en la cartilla de esta mascota.</p>
             <div class="acciones"><AppButton Href="@CartillaHref" Variant="ButtonVariant.Secondary">Consultar cartilla</AppButton></div>
         </AppCard>

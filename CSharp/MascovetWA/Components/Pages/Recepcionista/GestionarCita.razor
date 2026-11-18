@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/recepcion/citas"
 @inject CitaRestService CitasREST
 @inject MascotaRestService MascotasREST
@@ -8,7 +9,7 @@
 @using MascovetWA.Servicios.Validaciones
 <PageTitle>Gestión de citas | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Gestión de citas</h1><p>Confirma, reprograma y cancela las citas según su estado.</p></div>
+    <header class="ms-feature-header"><div><h1>Gestión de citas</h1></div>
     <AppButton Href="/recepcion/citas/nueva" Icon="plus">Registrar cita</AppButton></header>
     <AppCard Title="Citas registradas">
         <AppTable Items="citas" ColumnCount="7" Caption="Citas de la clínica">
@@ -47,7 +48,7 @@
     {
         try
         {
-            // Consultas independientes en paralelo para evitar esperas acumuladas.
+             
             var citasTask = CitasREST.ListarTodosAsync();
             var mascotasTask = MascotasREST.ListarTodosAsync();
             var clientesTask = ClientesREST.ListarTodosAsync();

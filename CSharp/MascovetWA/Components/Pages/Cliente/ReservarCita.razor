@@ -1,8 +1,10 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/cliente/reservar"
 @inject MascotaRestService MascotasREST
 @inject ClienteRestService ClientesREST
 @inject VeterinarioRestService VeterinariosREST
-@inject ReservaCitaRestService ReservaREST
+@inject HorarioAtencionRestService HorariosREST
+@inject CitaRestService CitasREST
 @inject UserContext User
 @inject NavigationManager Navigation
 @layout MainLayout
@@ -15,10 +17,6 @@
 
     <header class="reserva-cita__header">
         <h1>Reservar una cita</h1>
-        <p>
-            Selecciona tu mascota, el tipo de atención y el horario
-            que mejor se adapte a tus necesidades.
-        </p>
     </header>
 
     <div class="reserva-cita__layout">
@@ -26,8 +24,7 @@
         <section class="reserva-cita__main"
                  aria-label="Datos de la reserva">
 
-            <AppCard Title="Datos de la cita"
-                     Subtitle="Completa los datos para consultar la disponibilidad.">
+            <AppCard Title="Datos de la cita">
 
                 <ChildContent>
                     <div class="reserva-cita__fields">
@@ -67,7 +64,7 @@
                                            Label="Fecha de atención"
                                            Required="true"
                                            Min="@FechaMinima"
-                                           @bind-Value="FechaSeleccionada" @bind-Value:after="CargarHoras"
+                                           @bind-Value="FechaSeleccionada"
                                            HelpText="Selecciona una fecha a partir de hoy." />
                         </div>
 
@@ -76,8 +73,7 @@
 
             </AppCard>
 
-            <AppCard Title="Horarios disponibles"
-                     Subtitle="Selecciona una hora de atención.">
+            <AppCard Title="Horarios disponibles">
 
                 <ChildContent>
                     <div class="reserva-cita__availability">
@@ -96,8 +92,7 @@
 
         <aside class="reserva-cita__aside">
 
-            <AppCard Title="Resumen de la reserva"
-                     Subtitle="Revisa los datos seleccionados.">
+            <AppCard Title="Resumen de la reserva">
 
                 <ChildContent>
                     <div class="reserva-cita__summary">
@@ -194,13 +189,15 @@
 </div>
 
 <AppModal @bind-Visible="mostrarHorarioOcupado" Title="Horario no disponible">
-    <ChildContent><p>@(string.IsNullOrWhiteSpace(MensajeConflicto) ? "El horario seleccionado no puede reservarse porque ya no está disponible o el veterinario tiene otra cita. Selecciona una fecha u hora distinta." : MensajeConflicto)</p></ChildContent>
+    <ChildContent><p>El horario seleccionado no puede reservarse porque ya no está disponible o el veterinario tiene otra cita. Selecciona una fecha u hora distinta.</p></ChildContent>
     <Actions><AppButton OnClick="() => mostrarHorarioOcupado = false">Aceptar</AppButton></Actions>
 </AppModal>
 @code {
     private bool mostrarHorarioOcupado;
-    private string? MensajeConflicto;
     [SupplyParameterFromQuery(Name="mascotaId")] private int? IdMascota {get;set;}
+    [SupplyParameterFromQuery(Name="vetId")] private int? VeterinarioDesdeDisponibilidad {get;set;}
+    [SupplyParameterFromQuery(Name="fecha")] private string? FechaDesdeDisponibilidad {get;set;}
+    [SupplyParameterFromQuery(Name="hora")] private string? HoraDesdeDisponibilidad {get;set;}
     private DateOnly? FechaSeleccionada{get;set;}
     private DateOnly FechaMinima=>DateOnly.FromDateTime(DateTime.Today);
     private string MascotaSeleccionada { get; set; } = "";
@@ -212,30 +209,27 @@
     private IEnumerable<SelectOption<string>> ServiciosDisponibles => Servicios.Where(x =>
         Enum.TryParse<MascovetDomain.Enums.TipoAtencion>(x.Value,out var servicio) &&
         ReglasCitas.Permite(veterinariosDatos.FirstOrDefault(v => v.IdUsuario.ToString()==VeterinarioSeleccionado)?.Especialidad,servicio));
-    private async Task CambiarVeterinario()
+    private void CambiarVeterinario()
     {
         HoraSeleccionada="";
         if (!ServiciosDisponibles.Any(s => s.Value==ServicioSeleccionado)) ServicioSeleccionado="";
-        await CargarHoras();
     }
     private List<MascovetDomain.Mascotas.Mascota> mascotasCliente = new();
     private MascovetDomain.Usuarios.Cliente? clienteActual;
     private string NombrePropietario => mascotasCliente.Any(m => m.IdMascota.ToString() == MascotaSeleccionada)
         ? clienteActual?.NombreCompleto ?? "Propietario no identificado" : "Sin seleccionar";
+    private List<MascovetDomain.Citas.HorarioAtencion> horarios=new();
+    private List<MascovetDomain.Citas.Cita> citas=new();
     private static readonly List<SelectOption<string>> Servicios=[new("CONSULTA","Consulta"),new("CONTROL","Control"),new("VACUNACION","Vacunación"),new("CIRUGIA","Cirugía")];
-    
-    private List<SelectOption<string>> HorasDisponibles = new();
-    private async Task CargarHoras()
+    private IEnumerable<SelectOption<string>> HorasDisponibles
     {
-        HoraSeleccionada = "";
-        HorasDisponibles = new();
-        if (!FechaSeleccionada.HasValue || !int.TryParse(VeterinarioSeleccionado, out int idVet)) return;
-        try
+        get
         {
-            var slots = await ReservaREST.ListarDisponiblesAsync(FechaSeleccionada.Value, idVet);
-            HorasDisponibles = slots.Select(s => new SelectOption<string>(s.HoraInicio!.Value.ToString("HH:mm"), s.HoraInicio!.Value.ToString("HH:mm"))).ToList();
+            if (!FechaSeleccionada.HasValue || !int.TryParse(VeterinarioSeleccionado, out int id))
+                return Array.Empty<SelectOption<string>>();
+            return DisponibilidadCitas.ObtenerHoras(FechaSeleccionada.Value, id, horarios, citas)
+                .Select(h => new SelectOption<string>(h.ToString("HH:mm"), h.ToString("HH:mm"))).ToList();
         }
-        catch (Exception ex) { Toast.Error($"No se pudo consultar la disponibilidad: {ex.Message}"); }
     }
     private bool DatosCompletos=>int.TryParse(MascotaSeleccionada,out _)&&int.TryParse(VeterinarioSeleccionado,out _)
         &&!string.IsNullOrWhiteSpace(ServicioSeleccionado)&&FechaSeleccionada>=FechaMinima
@@ -262,6 +256,18 @@
             if(IdMascota.HasValue && m.Any(m=>m.IdMascota==IdMascota.Value))MascotaSeleccionada=IdMascota.Value.ToString();
             veterinariosDatos=(await VeterinariosREST.ListarTodosAsync()).Where(v=>v.Activo).ToList();
             OpcionesVeterinarios=veterinariosDatos.Select(v=>new SelectOption<string>(v.IdUsuario.ToString(),$"{v.Nombre} {v.ApellidoPaterno}".Trim())).ToList();
+            horarios=await HorariosREST.ListarTodosAsync();citas=await CitasREST.ListarTodosAsync();
+             
+            if (VeterinarioDesdeDisponibilidad.HasValue &&
+                veterinariosDatos.Any(v => v.IdUsuario == VeterinarioDesdeDisponibilidad.Value))
+                VeterinarioSeleccionado = VeterinarioDesdeDisponibilidad.Value.ToString();
+            CambiarVeterinario();
+            if (DateOnly.TryParseExact(FechaDesdeDisponibilidad, "yyyy-MM-dd",
+                CultureInfo.InvariantCulture, DateTimeStyles.None, out var fechaBuscada) && fechaBuscada >= FechaMinima)
+                FechaSeleccionada = fechaBuscada;
+            if (TimeOnly.TryParse(HoraDesdeDisponibilidad, out var horaBuscada) &&
+                HorasDisponibles.Any(h => h.Value == horaBuscada.ToString("HH:mm")))
+                HoraSeleccionada = horaBuscada.ToString("HH:mm");
         }
         catch(Exception ex){Toast.Error($"No se pudo cargar disponibilidad: {ex.Message}");}
     }
@@ -270,15 +276,24 @@
         if(!DatosCompletos||!TimeOnly.TryParse(HoraSeleccionada,out var hora)) {Toast.Warning("Selecciona todos los datos y un horario libre.");return;}
         try
         {
+             
+            horarios = await HorariosREST.ListarTodosAsync();
+            citas = await CitasREST.ListarTodosAsync();
+            if (!HorasDisponibles.Any(h => h.Value == HoraSeleccionada))
+            {
+                mostrarHorarioOcupado = true;
+                HoraSeleccionada = "";
+                return;
+            }
             var mascota = mascotasCliente.FirstOrDefault(m => m.IdMascota == int.Parse(MascotaSeleccionada));
             if (mascota?.Cliente?.IdUsuario is not > 0)
             { Toast.Warning("No se pudo identificar al propietario de la mascota seleccionada."); return; }
-            var resultado=await ReservaREST.ReservarAsync(new MascovetDomain.Citas.Cita{
+            int result=await CitasREST.InsertarAsync(new MascovetDomain.Citas.Cita{
                 Mascota=new MascovetDomain.Mascotas.Mascota{IdMascota=mascota.IdMascota,Cliente=new MascovetDomain.Usuarios.Cliente{IdUsuario=mascota.Cliente.IdUsuario}},
                 Veterinario=new MascovetDomain.Usuarios.Veterinario{IdUsuario=int.Parse(VeterinarioSeleccionado)},
                 TipoAtencion=Enum.Parse<MascovetDomain.Enums.TipoAtencion>(ServicioSeleccionado),
                 Fecha=FechaSeleccionada!.Value.ToDateTime(new TimeOnly(12,0)),Hora=hora,Estado=MascovetDomain.Enums.EstadoCita.RESERVADA});
-            if(!resultado.Exito){MensajeConflicto=resultado.Mensaje;mostrarHorarioOcupado=true;await CargarHoras();return;}
+            if(result<=0){mostrarHorarioOcupado=true;return;}
             Toast.Success("Reserva registrada.");Navigation.NavigateTo("/cliente/citas");
         }
         catch(Exception ex){Toast.Error($"No se pudo reservar: {ex.Message}");}

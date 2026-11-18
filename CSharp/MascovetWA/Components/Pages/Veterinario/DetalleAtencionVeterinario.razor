@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario/atenciones/ver/{Id:int}"
 @inject ConsultaRestService ConsultasREST
 @inject ControlRestService ControlesREST
@@ -13,7 +14,7 @@
 
 <PageTitle>Detalle de atención médica | MascoVet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Detalle de atención médica</h1><p>Información completa del registro y de la cita asociada.</p></div></header>
+    <header class="ms-feature-header"><div><h1>Detalle de atención médica</h1></div></header>
     @if (cargando) { <p>Cargando atención...</p> }
     else if (registro is null)
     { <AppCard Title="Atención no encontrada"><p>No se encontró una atención de ese tipo y código.</p></AppCard> }
@@ -80,6 +81,10 @@
                 else
                 { <AppButton Href="@($"/veterinario/atencion/{Id}?tipo={tipo}")">Editar atención</AppButton> }
             }
+            @if (registro.Activo)
+            {
+                <AppButton Href="@($"/veterinario/recetas?atencion={Id}&tipo={tipo}&origen=detalle")" Variant="ButtonVariant.Secondary">Generar receta</AppButton>
+            }
             <AppButton Href="/veterinario/agenda" Variant="ButtonVariant.Secondary">Volver a mi agenda</AppButton>
             <AppButton Href="/veterinario/historias" Variant="ButtonVariant.Tertiary">Historias clínicas</AppButton>
         </div>
@@ -121,7 +126,7 @@
                 if(string.IsNullOrWhiteSpace(nombresVacunas)) nombresVacunas="Vacuna no asociada";
             }
             try { recetas=(await RecetasREST.ListarTodosAsync()).Where(r=>r.Activo && r.AtencionMedica?.IdAtencion==Id).ToList(); }
-            catch { /* La ficha clínica se consulta incluso si el servicio de recetas falla. */ }
+            catch {   }
         }
         catch(Exception ex) {Toast.Error($"No se pudo consultar el detalle: {ex.Message}");}
         finally {cargando=false;}

@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/administrador/personal/editar/{Id:int}"
 @inject VeterinarioRestService VeterinariosREST
 @inject RecepcionistaRestService RecepcionistasREST
@@ -6,7 +7,7 @@
 @inject ToastService Toast
 <PageTitle>Editar personal | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Editar personal</h1><p>Modifica la información del trabajador seleccionado.</p></div></header>
+    <header class="ms-feature-header"><div><h1>Editar personal</h1></div></header>
     @if(!Existe) { <AppCard Title="Registro no encontrado"><p>No se encontró al trabajador.</p></AppCard> }
     else
     {

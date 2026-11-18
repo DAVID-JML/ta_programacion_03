@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario/historias"
 @inject MascotaRestService MascotasREST
 @inject ClienteRestService ClientesREST
@@ -11,7 +12,7 @@
 
 <PageTitle>Historias clínicas | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Historias clínicas</h1><p>Consulta el seguimiento médico y la cartilla de cada mascota.</p></div></header>
+    <header class="ms-feature-header"><div><h1>Historias clínicas</h1></div></header>
     <AppCard Title="Seleccionar mascota">
         <div class="form-grid">
             <div class="span-6"><AppSelect TValue="string" Label="Propietario" Options="propietarios" @bind-Value="idPropietario" @bind-Value:after="CambiarPropietario" /></div>

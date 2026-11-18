@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/recepcion/clientes/{Id:int}"
 @inject ClienteRestService ClientesREST
 @inject MascotaRestService MascotasREST
@@ -8,7 +9,7 @@
 <PageTitle>Ficha del cliente | Mascovet</PageTitle>
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Ficha del cliente</h1><p>Información de contacto, mascotas registradas y citas del cliente.</p></div>
+        <div><h1>Ficha del cliente</h1></div>
         <AppButton Href="/recepcion/clientes" Variant="ButtonVariant.Secondary">Volver al directorio</AppButton>
     </header>
     @if (Cliente is null)
@@ -17,7 +18,7 @@
     }
     else
     {
-        <AppCard Title="@Cliente.Nombre" Subtitle="Datos personales y contacto">
+        <AppCard Title="@Cliente.Nombre">
             <div class="ms-detail-grid">
                 <div><span>DNI</span><strong>@Cliente.Dni</strong></div>
                 <div><span>Teléfono</span><strong>@Cliente.Telefono</strong></div>
@@ -33,7 +34,7 @@
         {
             <p role="alert" class="ms-small-note">@Aviso</p>
         }
-        <AppCard Title="Mascotas del cliente" Subtitle="Accede a su ficha, cartilla y seguimiento.">
+        <AppCard Title="Mascotas del cliente">
             <AppTable Items="Cliente.Mascotas" Caption="Mascotas del cliente" ColumnCount="4">
                 <HeaderContent><th>Mascota</th><th>Especie</th><th>Estado</th><th>Acciones</th></HeaderContent>
                 <RowTemplate Context="m">
@@ -45,7 +46,7 @@
                 </RowTemplate>
             </AppTable>
         </AppCard>
-        <AppCard Title="Próximas citas" Subtitle="Citas asociadas a las mascotas del cliente.">
+        <AppCard Title="Próximas citas">
             <AppTable Items="Cliente.Citas" Caption="Citas del cliente" ColumnCount="4">
                 <HeaderContent><th>Mascota</th><th>Fecha</th><th>Veterinario</th><th>Estado</th></HeaderContent>
                 <RowTemplate Context="c"><td>@c.Mascota</td><td>@c.Fecha</td><td>@c.Veterinario</td><td>@c.Estado</td></RowTemplate>
@@ -71,7 +72,7 @@
         Cliente = null;
         MascovetDomain.Usuarios.Cliente? c = null;
         try { c = await ClientesREST.BuscarPorIdAsync(Id); }
-        catch { /* Si falla la búsqueda individual, se intenta con la lista. */ }
+        catch {   }
         if (c is null)
         {
             try { c = (await ClientesREST.ListarTodosAsync()).FirstOrDefault(x => x.IdUsuario == Id); }
@@ -91,7 +92,7 @@
         catch (Exception ex) { Aviso = $"No se pudieron consultar las citas: {ex.Message}"; }
         List<MascovetDomain.Usuarios.Veterinario> veterinarios = new();
         try { veterinarios = await VeterinariosREST.ListarTodosAsync(); }
-        catch { /* El ID sigue visible si falta el catálogo de veterinarios. */ }
+        catch {   }
         Cliente = new ClienteFicha($"{c.Nombre} {c.ApellidoPaterno} {c.ApellidoMaterno}".Trim(),
             c.Dni ?? "", c.Telefono ?? "", c.Correo ?? "", c.Activo,
             mascotas.Select(m => new MascotaFila(m.IdMascota, m.Nombre ?? "", m.Especie?.ToString() ?? "", m.Activo)).ToList(),

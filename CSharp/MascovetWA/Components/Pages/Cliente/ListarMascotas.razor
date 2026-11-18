@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/cliente/mascotas"
 @inject MascotaRestService MascotasREST
 @inject ClienteRestService ClientesREST
@@ -22,10 +23,6 @@
         <div class="pets-page__heading">
             <span class="pets-page__eyebrow">MI ESPACIO MASCOVET</span>
             <h1>Mis mascotas</h1>
-            <p>
-                Consulta la información de tus compañeros y mantén
-                al día el seguimiento de su salud.
-            </p>
         </div>
 
         <div class="pets-page__header-action">
@@ -96,8 +93,7 @@
             @foreach (var mascota in MascotasFiltradas)
             {
                 <article class="pet-card" @key="mascota.Id">
-                    <AppCard Title="@mascota.Nombre"
-                             Subtitle="@($"{mascota.Especie} · {mascota.Raza}")">
+                    <AppCard Title="@mascota.Nombre"{mascota.Especie} · {mascota.Raza}")">
 
                         <Actions>
                             <div class="pet-card__avatar" aria-hidden="true">
@@ -219,7 +215,7 @@
     {
         ErrorCarga = null;
         ListaMascotas.Clear();
-        // La cuenta de prueba se vincula temporalmente mediante su correo único.
+         
         int idCliente;
         try
         {
@@ -253,7 +249,7 @@
             var proxima = citas.Where(c => c.Mascota?.IdMascota == m.IdMascota && c.Fecha.HasValue &&
                 c.Fecha.Value.Date >= DateTime.Today && c.Estado is not MascovetDomain.Enums.EstadoCita.CANCELADA)
                 .OrderBy(c => c.Fecha).ThenBy(c => c.Hora).FirstOrDefault();
-            // La vacunación puede contener solo el ID de la cita, sin la mascota completa.
+             
             var idsCitas = citas.Where(c => c.Mascota?.IdMascota == m.IdMascota)
                 .Select(c => c.IdCita).ToHashSet();
             var vacuna = vacunas.Where(v => v.Cita is not null && idsCitas.Contains(v.Cita.IdCita))

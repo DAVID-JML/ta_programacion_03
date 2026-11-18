@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario/atencion"
 @inject CitaRestService CitasREST
 @inject MascotaRestService MascotasREST
@@ -15,8 +16,7 @@
 
 <div class="page-header">
     <h1>@Titulo</h1>
-    <p class="page-subtitle">Registra una consulta, control o cirugía realizada a la mascota.</p>
-</div>
+    </div>
 
 <EditForm Model="modelo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
@@ -160,12 +160,30 @@
         }
     </div>
 
+    @if (!EsEdicion)
+    {
+        <div class="seccion">
+            <AppCard Title="Receta médica (opcional)">
+                <label class="ms-prescription-option">
+                    <input type="checkbox" class="form-check-input" @bind="generarReceta" disabled="@guardando" />
+                    <span>Generar receta médica al finalizar la atención</span>
+                </label>
+                <p class="ms-prescription-help">
+                    @(generarReceta
+                        ? "Se guardará la atención y, al finalizar, se abrirá la receta con esta atención seleccionada."
+                        : "Se guardará la atención sin generar receta. Podrás crear una posteriormente desde su detalle.")
+                </p>
+            </AppCard>
+        </div>
+    }
+
     <div class="acciones acciones--entre">
         <AppButton Href="/veterinario/agenda" Variant="ButtonVariant.Secondary">Regresar</AppButton>
 
         <div class="acciones">
-            <AppButton Href="@HrefReceta" Variant="ButtonVariant.Tertiary">Generar receta</AppButton>
-            <AppButton Type="submit" Variant="ButtonVariant.Primary" Disabled="@guardando" Loading="@guardando">@(EsEdicion ? "Guardar cambios" : "Guardar atención")</AppButton>
+            <AppButton Type="submit" Variant="ButtonVariant.Primary" Disabled="@guardando" Loading="@guardando">
+                @(EsEdicion ? "Guardar cambios" : generarReceta ? "Guardar atención y continuar a receta" : "Guardar atención")
+            </AppButton>
         </div>
     </div>
 </EditForm>
@@ -222,13 +240,14 @@
 </AppModal>
 
 @code {
-
     [Parameter]
     public int? IdAtencion { get; set; }
 
     [SupplyParameterFromQuery(Name = "cita")] private int? IdCitaSeleccionada { get; set; }
     [SupplyParameterFromQuery(Name = "tipo")] private string? TipoEdicion { get; set; }
     private bool guardando;
+     
+    private bool generarReceta;
     private HashSet<int> citasYaAtendidas=new();
     protected override async Task OnInitializedAsync()
     {
@@ -267,7 +286,7 @@
             }
             if(IdAtencion.HasValue)
             {
-                // Edición del tipo de atención identificado por su recurso correspondiente.
+                 
                 var consultas=await ConsultasREST.ListarTodosAsync();
                 var consulta=consultas.FirstOrDefault(x=>x.IdAtencion==IdAtencion.Value &&
                     (string.IsNullOrWhiteSpace(TipoEdicion) || TipoEdicion.Equals("CONSULTA",StringComparison.OrdinalIgnoreCase)));
@@ -301,8 +320,6 @@
     private bool EsEdicion => IdAtencion.HasValue;
     private string Titulo => EsEdicion ? "Editar atención médica" : "Registrar atención médica";
 
-    private string HrefReceta => ultimoIdAtencion.HasValue ? $"/veterinario/recetas?atencion={ultimoIdAtencion}" : "/veterinario/recetas";
-    private int? ultimoIdAtencion;
     private bool EsConsulta => modelo.Tipo == "Consulta";
     private bool EsControl => modelo.Tipo == "Control";
 
@@ -378,7 +395,6 @@
                 _=>0
             };
             if(resultado<=0){Toast.Warning("No se confirmó el registro de atención.");return;}
-            ultimoIdAtencion=EsEdicion?IdAtencion:resultado;
             if (EsEdicion) { Toast.Success("Atención actualizada."); return; }
             if(!EsEdicion)
             {
@@ -400,6 +416,21 @@
                     { Toast.Warning("Atención guardada, pero el estado de la cita no se actualizó."); return; }
                     citas=citas.Where(c=>c.Id!=idCita).ToList();
                     Toast.Success("Atención registrada y cita marcada ATENDIDA.");
+                    if (generarReceta)
+                    {
+                         
+                        var tipoReceta=modelo.Tipo switch
+                        {
+                            "Consulta" => "CONSULTA",
+                            "Control" => "CONTROL",
+                            "Cirugia" => "CIRUGIA",
+                            _ => ""
+                        };
+                        if (!string.IsNullOrEmpty(tipoReceta))
+                            Navigation.NavigateTo($"/veterinario/recetas?atencion={resultado}&tipo={tipoReceta}&origen=atencion");
+                    }
+                    else
+                        Navigation.NavigateTo("/veterinario/agenda");
                 }
                 catch(Exception ex)
                 { Toast.Warning($"Atención guardada, pero no se pudo marcar la cita ATENDIDA: {ex.Message}"); }
@@ -412,7 +443,7 @@
     private sealed record CitaBusqueda(int Id, DateOnly Fecha, TimeOnly Hora, string Mascota, string Dueno,
         bool Confirmada, string Servicio);
 
-    // Los límites de longitud salen de las validaciones de ConsultaBOImpl, ControlBOImpl y CirugiaBOImpl.
+     
     private sealed class AtencionModel : IValidatableObject
     {
         [Required(ErrorMessage = "Seleccione una cita.")]
@@ -437,7 +468,7 @@
         [StringLength(255, ErrorMessage = "Las observaciones no deben exceder los 255 caracteres.")]
         public string Observaciones { get; set; } = string.Empty;
 
-        // Consulta
+         
         [StringLength(400, ErrorMessage = "El motivo de consulta no debe exceder los 400 caracteres.")]
         public string MotivoConsulta { get; set; } = string.Empty;
 
@@ -447,14 +478,14 @@
         [StringLength(400, ErrorMessage = "El tratamiento no debe exceder los 400 caracteres.")]
         public string Tratamiento { get; set; } = string.Empty;
 
-        // Control
+         
         [StringLength(500, ErrorMessage = "La evolución no debe exceder los 500 caracteres.")]
         public string Evolucion { get; set; } = string.Empty;
 
         [StringLength(500, ErrorMessage = "Las indicaciones no deben exceder los 500 caracteres.")]
         public string Indicaciones { get; set; } = string.Empty;
 
-        // Cirugía
+         
         [StringLength(500, ErrorMessage = "El procedimiento no debe exceder los 500 caracteres.")]
         public string Procedimiento { get; set; } = string.Empty;
 
@@ -495,4 +526,3 @@
         }
     }
 }
-

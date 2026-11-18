@@ -3,12 +3,13 @@
 @inject MascovetWA.Servicios.LoadingService Loading
 @inject UserContext User
 @inject NavigationManager Navigation
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthState
 
 <div class="ms-shell">
     <a class="ms-skip-link" href="#main-content">Saltar al contenido principal</a>
 
     <aside class="ms-sidebar">
-        <NavMenu />
+        <NavMenu OnLogoutRequested="MostrarConfirmacionCerrarSesion" />
     </aside>
 
     <div class="ms-main">
@@ -40,6 +41,19 @@
 
 <AppToastContainer />
 
+<AppModal @bind-Visible="mostrarConfirmacion" Title="Cerrar sesión">
+    <ChildContent>
+        <p>¿Estás seguro de que deseas cerrar sesión?</p>
+    </ChildContent>
+    <Actions>
+        <AppButton Variant="ButtonVariant.Tertiary" OnClick="() => mostrarConfirmacion = false">No, regresar</AppButton>
+        <form method="post" action="/auth/logout">
+            <AntiforgeryToken />
+            <AppButton Type="submit" Variant="ButtonVariant.Primary">Sí, cerrar sesión</AppButton>
+        </form>
+    </Actions>
+</AppModal>
+
 @if (Loading.IsLoading)
 {
     <div class="ms-global-loading" role="status" aria-live="polite" aria-label="Cargando información">
@@ -52,10 +66,14 @@
 }
 
 @code {
-    protected override void OnInitialized()
+    private bool mostrarConfirmacion;
+    private void MostrarConfirmacionCerrarSesion() => mostrarConfirmacion = true;
+
+    protected override async Task OnInitializedAsync()
     {
         Loading.Changed += AlCambiarCarga;
-        // Sin sesión no se muestra nada de la aplicación: vuelve al login.
+        var estado = await AuthState.GetAuthenticationStateAsync();
+        User.RestoreFromClaims(estado.User);
         if (!User.IsAuthenticated) Navigation.NavigateTo("/", replace: true);
     }
     private void AlCambiarCarga() => _ = InvokeAsync(StateHasChanged);

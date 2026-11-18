@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/recepcion/mascotas"
 @inject MascotaRestService MascotasREST
 @inject ClienteRestService ClientesREST
@@ -6,7 +7,7 @@
 <PageTitle>Mascotas | Mascovet</PageTitle>
 <div class="ms-feature-page">
     <header class="ms-feature-header">
-        <div><h1>Mascotas</h1><p>Consulta las mascotas de los clientes, sus fichas y cartillas de vacunación.</p></div>
+        <div><h1>Mascotas</h1></div>
         <AppButton Href="/recepcion/mascotas/nueva" Icon="plus">Registrar mascota</AppButton>
     </header>
     <AppCard Title="Mascotas registradas">
@@ -40,8 +41,8 @@
     private List<MascotaFila> mascotas = new();
     protected override async Task OnInitializedAsync()
     {
-        // El REST de Mascota incluye el ID del cliente, pero no sus nombres.
-        // Consultamos ClienteRS y relacionamos ambos objetos por su ID.
+         
+         
         List<MascovetDomain.Usuarios.Cliente> clientes = new();
         try { clientes = await ClientesREST.ListarTodosAsync(); }
         catch (Exception ex) { Error = $"No se pudieron consultar los propietarios: {ex.Message}"; }

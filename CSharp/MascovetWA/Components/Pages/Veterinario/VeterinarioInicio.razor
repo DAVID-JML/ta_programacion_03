@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/veterinario"
 @layout MainLayout
 @inject CitaRestService CitasREST
@@ -21,11 +22,6 @@
             <span class="vet-eyebrow">ATENCIÓN VETERINARIA</span>
 
             <h1>Panel del veterinario</h1>
-
-            <p>
-                Consulta tu agenda, registra las atenciones clínicas
-                y mantén actualizada la información de tus pacientes.
-            </p>
         </div>
 
         <AppButton Href="/veterinario/agenda"
@@ -40,10 +36,6 @@
         <div class="vet-section-heading">
             <div>
                 <h2 id="vet-agenda-heading">Mis citas programadas</h2>
-
-                <p>
-                    Consulta las citas asignadas y accede a sus atenciones.
-                </p>
             </div>
 
             <AppButton Href="/veterinario/agenda"
@@ -58,8 +50,7 @@
             <p role="alert" class="ms-small-note">@errorCarga</p>
         }
         <AppCard class="vet-agenda-card"
-                 Title="Citas programadas"
-                 Subtitle="Agenda de atención veterinaria">
+                 Title="Citas programadas">
 
             <ChildContent>
                 <AppTable Items="citasInicio" ColumnCount="5" Caption="Próximas atenciones">
@@ -104,19 +95,13 @@
         <div class="vet-section-heading">
             <div>
                 <h2 id="vet-modules-heading">Gestión clínica</h2>
-
-                <p>
-                    Accede a las herramientas necesarias para
-                    documentar y dar seguimiento a cada paciente.
-                </p>
             </div>
         </div>
 
         <div class="vet-modules-grid">
 
             <article class="vet-module">
-                <AppCard Title="Historias clínicas"
-                         Subtitle="Registro de atenciones">
+                <AppCard Title="Historias clínicas">
 
                     <ChildContent>
                         <span class="vet-module__icon">
@@ -141,8 +126,7 @@
             </article>
 
             <article class="vet-module">
-                <AppCard Title="Vacunación"
-                         Subtitle="Seguimiento de vacunas">
+                <AppCard Title="Vacunación">
 
                     <ChildContent>
                         <span class="vet-module__icon">
@@ -167,8 +151,7 @@
             </article>
 
             <article class="vet-module">
-                <AppCard Title="Recetas"
-                         Subtitle="Prescripciones veterinarias">
+                <AppCard Title="Recetas">
 
                     <ChildContent>
                         <span class="vet-module__icon">

@@ -2,8 +2,8 @@ using System;
 
 namespace MascovetWA.Servicios
 {
-    // Indica a las pantallas cuando hay solicitudes REST pendientes.
-    // El contador permite varias consultas simultáneas sin ocultar el indicador antes de tiempo.
+
+
     public class LoadingService
     {
         private readonly object sincronizacion = new();

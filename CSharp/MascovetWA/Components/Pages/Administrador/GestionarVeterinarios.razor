@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/administrador/personal"
 @inject VeterinarioRestService VeterinariosREST
 @inject RecepcionistaRestService RecepcionistasREST
@@ -5,7 +6,7 @@
 @inject ToastService Toast
 <PageTitle>Personal | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Personal</h1><p>Registro y administración de veterinarios y recepcionistas.</p></div></header>
+    <header class="ms-feature-header"><div><h1>Personal</h1></div></header>
     <AppCard Title="Registrar personal">
         <div class="form-grid">
             <div class="span-4"><AppSelect TValue="string" Label="Tipo de personal" Options="tipos" @bind-Value="tipo" /></div>

@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/administrador/medicamentos"
 @inject MedicamentoRestService MedicamentosREST
 @layout MainLayout
@@ -5,7 +6,7 @@
 <PageTitle>Medicamentos | Mascovet</PageTitle>
 
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Medicamentos</h1><p>Administra el catálogo de medicamentos utilizados en las recetas.</p></div></header>
+    <header class="ms-feature-header"><div><h1>Medicamentos</h1></div></header>
 
     <AppCard Title="Registrar medicamento">
         <div class="form-grid">

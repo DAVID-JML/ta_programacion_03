@@ -1,14 +1,15 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/administrador/personal/ver/{Id:int}"
 @inject VeterinarioRestService VeterinariosREST
 @inject RecepcionistaRestService RecepcionistasREST
 @layout MainLayout
 <PageTitle>Ficha de personal | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>Ficha de personal</h1><p>Información del trabajador seleccionado.</p></div></header>
+    <header class="ms-feature-header"><div><h1>Ficha de personal</h1></div></header>
     @if(Persona is null) { <AppCard Title="Registro no encontrado"><p>No se encontró al trabajador.</p></AppCard> }
     else
     {
-        <AppCard Title="@Persona.Nombre" Subtitle="@Persona.Rol">
+        <AppCard Title="@Persona.Nombre">
             <div class="ms-detail-grid">
                 <div><span>DNI</span><strong>@Persona.Dni</strong></div><div><span>Teléfono</span><strong>@Persona.Telefono</strong></div>
                 <div><span>Correo</span><strong>@Persona.Correo</strong></div><div><span>Especialidad / Turno</span><strong>@Persona.Detalle</strong></div>
@@ -39,3 +40,4 @@
         catch { Persona=null; }
     }
 }
+

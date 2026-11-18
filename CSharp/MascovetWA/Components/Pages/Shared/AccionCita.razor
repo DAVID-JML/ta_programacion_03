@@ -1,3 +1,4 @@
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @page "/cliente/citas/{Id:int}/reprogramar"
 @inject CitaRestService CitasREST
 @inject MascotaRestService MascotasREST
@@ -13,7 +14,7 @@
 
 <PageTitle>@Titulo | Mascovet</PageTitle>
 <div class="ms-feature-page">
-    <header class="ms-feature-header"><div><h1>@Titulo</h1><p>Revisa los datos de la cita antes de continuar.</p></div></header>
+    <header class="ms-feature-header"><div><h1>@Titulo</h1></div></header>
     @if (Cita is null)
     {
         <AppCard Title="Cita no encontrada"><p>No se encontró la cita seleccionada.</p></AppCard>
@@ -150,15 +151,15 @@
             { IdMascota = mascota.IdMascota, Cliente = new MascovetDomain.Usuarios.Cliente { IdUsuario = mascota.Cliente.IdUsuario } };
             if(Reprogramar)
             {
-                // Fecha es DATE en MySQL, pero Java la recibe como java.util.Date.
-                // Enviar la fecha al mediodía evita que una diferencia de zona horaria
-                // cambie el día utilizado por el BO al validar el horario del veterinario.
+                 
+                 
+                 
                 registro.Fecha=fecha!.Value.ToDateTime(new TimeOnly(12, 0));
                 registro.Hora=TimeOnly.Parse(hora);
             }
             else
             {
-                // Cambiar solo estado: conservar la fecha de reserva y normalizar DATE.
+                 
                 if (registro.Fecha.HasValue) registro.Fecha=ReglasCitas.FechaParaRest(registro.Fecha.Value);
                 registro.Estado=MascovetDomain.Enums.EstadoCita.CANCELADA;
                 registro.MotivoCancelacion=motivo;
