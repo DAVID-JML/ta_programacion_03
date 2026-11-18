@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "MascovetDomain": {
+      "commandName": "Project"
+    },
+    "Perfil 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\crisg\\Documents\\MascovetC#\\ta_programacion_03\\CSharp\\MascovetWA\\MascovetWA.csproj"
+    }
+  }
+}

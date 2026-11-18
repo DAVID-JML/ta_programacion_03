@@ -12,11 +12,11 @@ public sealed class AuthRestService
         _client = client;
     }
 
-    public async Task<SesionLogin?> AutenticarAsync(
+    public async Task<SesionLogin?> AutenticarClienteAsync(
         string correo, string contrasena)
     {
         using var respuesta = await _client.PostAsJsonAsync(
-            "UsuarioRS/autenticar",
+            "AutenticacionRS/cliente",
             new { correo, contrasena }
         );
 
@@ -35,7 +35,7 @@ public sealed class AuthRestService
         string nombreUsuario, string contrasena)
     {
         using var respuesta = await _client.PostAsJsonAsync(
-            "UsuarioRS/autenticarPersonal",
+            "AutenticacionRS/personal",
             new { nombreUsuario, contrasena }
         );
 

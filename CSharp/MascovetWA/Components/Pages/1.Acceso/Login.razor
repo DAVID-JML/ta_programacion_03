@@ -151,21 +151,13 @@
             AuthRestService.SesionLogin? sesion;
 
             // Los clientes ingresan con correo.
-            // El personal ingresa con nombre de usuario.
-            if (identificador.Contains('@'))
-            {
-                sesion = await AuthRest.AutenticarAsync(
-                    identificador,
-                    modelo.Contrasena
-                );
-            }
-            else
-            {
-                sesion = await AuthRest.AutenticarPersonalAsync(
-                    identificador,
-                    modelo.Contrasena
-                );
-            }
+           
+            sesion = await AuthRest.AutenticarClienteAsync(
+                                identificador,
+                                modelo.Contrasena
+                            );
+
+       
 
             // El backend devuelve null cuando responde 401.
             if (sesion is null)
