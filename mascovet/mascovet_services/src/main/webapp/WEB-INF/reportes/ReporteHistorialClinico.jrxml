@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jasperReport name="ReporteHistorialClinico" language="java" pageWidth="595" pageHeight="842" orientation="Portrait" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="c27989fa-7687-40af-adb6-c3e585bc0f28">
+  <parameter name="idMascota" class="java.lang.Integer"/>
+  <parameter name="fechaInicio" class="java.sql.Date"/>
+  <parameter name="fechaFin" class="java.sql.Date"/>
+  <query language="sql">SELECT m.nombre AS nombreMascota, m.especie AS especie, m.raza AS raza,
+ CONCAT_WS(' ', up.nombre, up.apellido_paterno, up.apellido_materno) AS propietario,
+ a.peso_actual AS pesoActual, a.alergias AS alergias, c.fecha AS fecha, COALESCE(CONCAT(u.nombre,' ',u.apellido_paterno,' ',u.apellido_materno),'Veterinario no asignado') AS veterinario,
+ c.tipo_atencion AS tipo,
+ COALESCE(NULLIF(con.diagnostico,''), NULLIF(ctrl.evolucion,''), NULLIF(cir.procedimiento,''),
+    CONCAT('Vacuna(s): ', COALESCE(vacunas.nombres,'No especificada')), 'Sin diagnóstico registrado') AS diagnostico,
+ COALESCE(NULLIF(con.tratamiento,''), NULLIF(ctrl.indicaciones,''), NULLIF(cir.indicaciones_post_operatorias,''),
+    NULLIF(vacun.dosis,''), 'Sin tratamiento registrado') AS tratamiento
+ FROM ATENCION_MEDICA a
+ JOIN CITA c ON c.id_cita = a.id_cita
+ JOIN MASCOTA m ON m.id_mascota = c.id_mascota
+ LEFT JOIN USUARIO up ON up.id_usuario = m.id_usuario
+ LEFT JOIN VETERINARIO v ON v.id_usuario = c.id_veterinario
+ LEFT JOIN USUARIO u ON u.id_usuario = v.id_usuario
+ LEFT JOIN CONSULTA con ON con.id_atencion = a.id_atencion AND con.activo = 1
+ LEFT JOIN CONTROL ctrl ON ctrl.id_atencion = a.id_atencion AND ctrl.activo = 1
+ LEFT JOIN CIRUGIA cir ON cir.id_atencion = a.id_atencion AND cir.activo = 1
+ LEFT JOIN VACUNACION vacun ON vacun.id_atencion = a.id_atencion AND vacun.activo = 1
+ LEFT JOIN (SELECT vv.id_vacunacion, GROUP_CONCAT(va.nombre SEPARATOR ', ') AS nombres
+     FROM VACUNACION_VACUNA vv JOIN VACUNA va ON va.id_vacuna=vv.id_vacuna
+     WHERE vv.activo=1 GROUP BY vv.id_vacunacion) vacunas ON vacunas.id_vacunacion=a.id_atencion
+ WHERE c.id_mascota = $P{idMascota} AND a.activo = 1
+ AND ($P{fechaInicio} IS NULL OR c.fecha &gt;= $P{fechaInicio})
+ AND ($P{fechaFin} IS NULL OR c.fecha &lt;= $P{fechaFin})
+ ORDER BY c.fecha ASC, a.hora_inicio ASC, a.id_atencion ASC</query>
+  <field name="nombreMascota" class="java.lang.String"/>
+  <field name="fecha" class="java.sql.Date"/>
+  <field name="veterinario" class="java.lang.String"/>
+  <field name="tipo" class="java.lang.String"/>
+  <field name="diagnostico" class="java.lang.String"/>
+  <field name="tratamiento" class="java.lang.String"/>
+  <field name="especie" class="java.lang.String"/>
+  <field name="raza" class="java.lang.String"/>
+  <field name="propietario" class="java.lang.String"/>
+  <field name="pesoActual" class="java.lang.Double"/>
+  <field name="alergias" class="java.lang.String"/>
+  <group name="PerfilMascota">
+    <expression>$P{idMascota}</expression>
+    <groupHeader>
+      <band height="94" splitType="Stretch">
+        <element kind="rectangle" uuid="124c71d4-3473-4278-980e-a00b0c716a78" x="0" y="0" width="555" height="89" mode="Opaque" backcolor="#EAF5F7" forecolor="#EAF5F7"/>
+        <element kind="rectangle" uuid="8129d4ae-acad-43e1-8dfd-d441852480e6" x="0" y="0" width="5" height="89" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+        <element kind="staticText" uuid="7b2b807d-f752-4f02-8cb2-4f4ff535cfa5" x="15" y="7" width="525" height="18" fontName="DejaVu Sans" fontSize="9" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+          <text>FICHA DE IDENTIFICACIÓN</text>
+        </element>
+        <element kind="staticText" uuid="38675de9-aa7f-42a1-9072-4105aa335150" x="15" y="33" width="79" height="13" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+          <text>MASCOTA</text>
+        </element>
+        <element kind="textField" uuid="1f31db6e-3ae6-4202-b5a9-c2b6b7e9e4b8" x="92" y="27" width="175" height="26" fontName="DejaVu Sans" fontSize="11" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+          <expression>$F{nombreMascota}</expression>
+        </element>
+        <element kind="staticText" uuid="1acb697e-1a8c-45dd-b80c-4a311c16ddab" x="279" y="33" width="85" height="13" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+          <text>ESPECIE / RAZA</text>
+        </element>
+        <element kind="textField" uuid="e471dbf9-110a-41ba-96bb-1c235fce30e6" x="369" y="27" width="173" height="29" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false" textAdjust="StretchHeight">
+          <expression>($F{especie} == null ? "-" : $F{especie}) + " / " + ($F{raza} == null ? "-" : $F{raza})</expression>
+        </element>
+        <element kind="staticText" uuid="5faf5837-3661-4a49-9aea-762575b00ef8" x="15" y="65" width="86" height="13" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+          <text>PROPIETARIO</text>
+        </element>
+        <element kind="textField" uuid="fb36878a-ced5-40f5-8c02-d95789de1588" x="103" y="59" width="435" height="25" fontName="DejaVu Sans" fontSize="10" forecolor="#183A55" hTextAlign="Left" vTextAlign="Middle" bold="false">
+          <expression>$F{propietario} == null ? "Sin titular informado" : $F{propietario}</expression>
+        </element>
+      </band>
+    </groupHeader>
+  </group>
+  <background splitType="Stretch"/>
+  <title height="108" splitType="Stretch">
+    <element kind="rectangle" uuid="8f9e45fd-469b-4baf-a5e9-85c1c2b7668a" x="0" y="0" width="555" height="101" mode="Opaque" backcolor="#143B56" forecolor="#143B56"/>
+    <element kind="rectangle" uuid="c54fe01b-6673-45f1-889b-15be8ef62f8e" x="0" y="0" width="6" height="101" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="aa61ba70-6a4a-48ca-ab6f-ef33d0d4e9aa" x="20" y="9" width="300" height="18" fontName="DejaVu Sans" fontSize="9" forecolor="#B8ECF4" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>MASCOVET  ·  INFORMES</text>
+    </element>
+    <element kind="staticText" uuid="4c92f364-1825-40ad-8b01-ee95f013c3bc" x="20" y="29" width="520" height="35" fontName="DejaVu Sans" fontSize="16" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>Historial clínico de mascota</text>
+    </element>
+    <element kind="staticText" uuid="de751aa1-eaf6-4696-ad7b-c5b1c8615dde" x="20" y="65" width="520" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#C8DEEA" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Evolución cronológica de atenciones</text>
+    </element>
+    <element kind="textField" uuid="09d5b9a0-f054-4dc7-9aa6-81116c694b67" x="20" y="83" width="520" height="15" fontName="DejaVu Sans" fontSize="8" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Top" bold="false">
+      <expression>"Mascota N.° " + $P{idMascota} + "   |   Período: " + ($P{fechaInicio} == null ? "Desde el primer registro" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio})) + " al " + ($P{fechaFin} == null ? "último registro" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin}))</expression>
+    </element>
+  </title>
+  <pageHeader height="39" splitType="Stretch">
+    <element kind="staticText" uuid="dfd16dd6-34b4-4c65-af41-eb5943e396fc" x="2" y="8" width="535" height="24" fontName="DejaVu Sans" fontSize="11" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>REGISTRO DE ATENCIONES · ORDEN CRONOLÓGICO</text>
+    </element>
+  </pageHeader>
+  <detail>
+    <band height="145" splitType="Stretch">
+      <element kind="rectangle" uuid="96168a6d-9390-4633-90b1-18e5fb01fcf9" x="0" y="1" width="555" height="139" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB" stretchType="ContainerHeight"/>
+      <element kind="rectangle" uuid="945c7ae0-955c-4d60-b28d-042412fbe224" x="0" y="1" width="5" height="139" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5" stretchType="ContainerHeight"/>
+      <element kind="rectangle" uuid="6c29bf12-0b52-42ba-af90-247a25529217" x="14" y="10" width="527" height="30" mode="Opaque" backcolor="#EAF5F7" forecolor="#EAF5F7"/>
+      <element kind="textField" uuid="78997bae-fb39-4dc6-aa00-76e124d34cca" x="24" y="13" width="102" height="23" fontName="DejaVu Sans" fontSize="9" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+        <expression>$F{fecha} == null ? "" : new java.text.SimpleDateFormat("dd/MM/yyyy").format($F{fecha})</expression>
+      </element>
+      <element kind="textField" uuid="ef20c557-db00-4710-8b51-4f1ed400d7c3" x="128" y="13" width="115" height="23" fontName="DejaVu Sans" fontSize="9" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+        <expression>$F{tipo}</expression>
+      </element>
+      <element kind="textField" uuid="05a39999-284e-4e19-a34a-d8c601b2532f" x="248" y="13" width="293" height="23" fontName="DejaVu Sans" fontSize="8" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="false">
+        <expression>$F{veterinario}</expression>
+      </element>
+      <element kind="staticText" uuid="ca8b58b5-99e3-4b79-b7ef-9ecbd92b0f71" x="24" y="48" width="240" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#2A8DA5" hTextAlign="Left" vTextAlign="Middle" bold="true">
+        <text>DIAGNÓSTICO / PROCEDIMIENTO</text>
+      </element>
+      <element kind="staticText" uuid="4ee5aad2-3b7d-436f-9c7c-c3d03b29423b" x="281" y="48" width="253" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#2A8DA5" hTextAlign="Left" vTextAlign="Middle" bold="true">
+        <text>TRATAMIENTO / INDICACIONES</text>
+      </element>
+      <element kind="textField" uuid="5839134f-4648-4efe-a899-e549f939dc34" x="24" y="67" width="238" height="48" fontName="DejaVu Sans" fontSize="8" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false" textAdjust="StretchHeight">
+        <expression>$F{diagnostico}</expression>
+      </element>
+      <element kind="textField" uuid="fbc7b885-49ae-4849-ae3e-d6b7b12a6140" x="281" y="67" width="251" height="48" fontName="DejaVu Sans" fontSize="8" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false" textAdjust="StretchHeight">
+        <expression>$F{tratamiento}</expression>
+      </element>
+      <element kind="textField" uuid="4e07095d-52b4-4e9f-9b73-2a7b1ebca7f0" x="24" y="120" width="512" height="17" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+        <expression>"PESO: " + ($F{pesoActual} == null || $F{pesoActual} &lt;= 0 ? "No registrado" : String.format(java.util.Locale.US, "%.1f kg", $F{pesoActual})) + "     |     ALERGIAS: " + ($F{alergias} == null || $F{alergias}.trim().isEmpty() ? "Sin registro" : $F{alergias})</expression>
+      </element>
+    </band>
+  </detail>
+  <columnFooter height="26" splitType="Stretch">
+    <element kind="staticText" uuid="5c5b84a1-1397-436c-a1cb-2f7ff9da0c5d" x="2" y="6" width="370" height="14" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>MASCOVET · Información de gestión clínica</text>
+    </element>
+    <element kind="textField" uuid="17b8fd80-7ded-4c1d-9b84-2b47014e345e" x="446" y="6" width="107" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Right" vTextAlign="Top" bold="false">
+      <expression>"Página " + $V{PAGE_NUMBER}</expression>
+    </element>
+  </columnFooter>
+  <summary height="90" splitType="Stretch">
+    <element kind="rectangle" uuid="3f51f0ee-184f-4d91-abbd-82fb597b0162" x="0" y="4" width="555" height="69" mode="Opaque" backcolor="#143B56" forecolor="#143B56"/>
+    <element kind="staticText" uuid="001bd4ca-cc19-401e-9152-723ffc2be693" x="17" y="14" width="490" height="18" fontName="DejaVu Sans" fontSize="10" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>RESUMEN DEL HISTORIAL</text>
+    </element>
+    <element kind="textField" uuid="8c3c8dbb-e081-44fd-b44b-14c4b7a51853" x="17" y="36" width="510" height="27" fontName="DejaVu Sans" fontSize="11" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>"Total de atenciones en el período: " + $V{REPORT_COUNT}</expression>
+    </element>
+    <element kind="staticText" uuid="61574849-f6bd-4365-b707-e4e3404ceba0" x="4" y="77" width="542" height="12" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Documento de consulta. Los datos reflejan las atenciones activas registradas en MascoVet.</text>
+    </element>
+  </summary>
+</jasperReport>

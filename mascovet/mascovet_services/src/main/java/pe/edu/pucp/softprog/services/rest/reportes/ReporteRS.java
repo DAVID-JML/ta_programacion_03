@@ -1,11 +1,11 @@
 package pe.edu.pucp.softprog.services.rest.reportes;
 
-import jakarta.inject.Inject;
 import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 
 import net.sf.jasperreports.engine.*;
@@ -13,22 +13,60 @@ import net.sf.jasperreports.engine.util.JRLoader;
 
 import pe.com.mascovet.config.DBManager;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.Date;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Path("ReporteRS")
 public class ReporteRS {
 
-    @Inject
+    private static final Map<String, JasperReport> CACHE_REPORTES = new ConcurrentHashMap<>();
+
+    @Context
     private ServletContext servletContext;
 
-     
+    private JasperReport obtenerReporte(String nombreBase) throws JRException {
+        JasperReport enCache = CACHE_REPORTES.get(nombreBase);
+        if (enCache != null) {
+            return enCache;
+        }
+
+        String rutaJasper = servletContext.getRealPath("/WEB-INF/reportes/" + nombreBase + ".jasper");
+        String rutaJrxml = servletContext.getRealPath("/WEB-INF/reportes/" + nombreBase + ".jrxml");
+
+        JasperReport reporte;
+        if (rutaJasper != null && new File(rutaJasper).exists()) {
+            reporte = (JasperReport) JRLoader.loadObjectFromFile(rutaJasper);
+        } else if (rutaJrxml != null && new File(rutaJrxml).exists()) {
+            reporte = JasperCompileManager.compileReport(rutaJrxml);
+        } else {
+            throw new JRException("No se encontró el archivo de reporte: " + nombreBase);
+        }
+
+        CACHE_REPORTES.put(nombreBase, reporte);
+        return reporte;
+    }
+
+    private Response respuestaError500(Exception ex) {
+        ex.printStackTrace();
+        Throwable causa = ex;
+        while (causa.getCause() != null) {
+            causa = causa.getCause();
+        }
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .type("text/plain; charset=UTF-8")
+                .entity(causa.getClass().getName() + ": " + causa.getMessage())
+                .build();
+    }
+
     @GET
     @Path("citasPorTipoAtencion")
     @Produces("application/pdf")
     public Response generarReporteCitasPorTipo(@QueryParam("fechaInicio") String fechaInicio,
-                                                @QueryParam("fechaFin") String fechaFin) {
+                                               @QueryParam("fechaFin") String fechaFin) {
         try {
             Date inicio = Date.valueOf(fechaInicio);
             Date fin = Date.valueOf(fechaFin);
@@ -36,13 +74,9 @@ public class ReporteRS {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
-            String ruta = servletContext.getRealPath(
-                    "/WEB-INF/reportes/ReporteCitasTipoAtencion.jasper");
+            JasperReport reporte = obtenerReporte("ReporteCitasTipoAtencion");
 
-            JasperReport reporte = (JasperReport)
-                    JRLoader.loadObjectFromFile(ruta);
-
-            HashMap parametros = new HashMap();
+            Map<String, Object> parametros = new HashMap<>();
             parametros.put("fechaInicio", inicio);
             parametros.put("fechaFin", fin);
 
@@ -57,17 +91,15 @@ public class ReporteRS {
         } catch (IllegalArgumentException | NullPointerException ex) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return respuestaError500(ex);
         }
     }
 
-     
     @GET
     @Path("citasPorEspecialidad")
     @Produces("application/pdf")
     public Response generarReporteCitasPorEspecialidad(@QueryParam("fechaInicio") String fechaInicio,
-                                                        @QueryParam("fechaFin") String fechaFin) {
+                                                       @QueryParam("fechaFin") String fechaFin) {
         try {
             Date inicio = Date.valueOf(fechaInicio);
             Date fin = Date.valueOf(fechaFin);
@@ -75,15 +107,18 @@ public class ReporteRS {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
-            String ruta = servletContext.getRealPath(
-                    "/WEB-INF/reportes/ReporteCitasEspecialidad.jasper");
+            JasperReport reporte = obtenerReporte("ReporteCitasEspecialidad");
+            // Precarga/compila también el subreporte si solo estaba el .jrxml
+            obtenerReporte("ReporteGraficoEspecialidades");
+
             String rutaReporteGrafico = servletContext.getRealPath(
                     "/WEB-INF/reportes/ReporteGraficoEspecialidades.jasper");
+            if (rutaReporteGrafico == null) {
+                File dirReportes = new File(servletContext.getRealPath("/WEB-INF/reportes"));
+                rutaReporteGrafico = new File(dirReportes, "ReporteGraficoEspecialidades.jasper").getAbsolutePath();
+            }
 
-            JasperReport reporte = (JasperReport)
-                    JRLoader.loadObjectFromFile(ruta);
-
-            HashMap parametros = new HashMap();
+            Map<String, Object> parametros = new HashMap<>();
             parametros.put("fechaInicio", inicio);
             parametros.put("fechaFin", fin);
             parametros.put("rutaSubreporteGrafico", rutaReporteGrafico);
@@ -99,18 +134,16 @@ public class ReporteRS {
         } catch (IllegalArgumentException | NullPointerException ex) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return respuestaError500(ex);
         }
     }
 
-     
     @GET
     @Path("historialClinico")
     @Produces("application/pdf")
     public Response generarReporteHistorialClinico(@QueryParam("idMascota") Integer idMascota,
-                                                    @QueryParam("fechaInicio") String fechaInicio,
-                                                    @QueryParam("fechaFin") String fechaFin) {
+                                                   @QueryParam("fechaInicio") String fechaInicio,
+                                                   @QueryParam("fechaFin") String fechaFin) {
         try {
             if (idMascota == null || idMascota <= 0) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
@@ -122,13 +155,9 @@ public class ReporteRS {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
-            String ruta = servletContext.getRealPath(
-                    "/WEB-INF/reportes/ReporteHistorialClinico.jasper");
+            JasperReport reporte = obtenerReporte("ReporteHistorialClinico");
 
-            JasperReport reporte = (JasperReport)
-                    JRLoader.loadObjectFromFile(ruta);
-
-            HashMap parametros = new HashMap();
+            Map<String, Object> parametros = new HashMap<>();
             parametros.put("idMascota", idMascota);
             parametros.put("fechaInicio", inicio);
             parametros.put("fechaFin", fin);
@@ -144,8 +173,7 @@ public class ReporteRS {
         } catch (IllegalArgumentException ex) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         } catch (Exception ex) {
-            ex.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return respuestaError500(ex);
         }
     }
 }

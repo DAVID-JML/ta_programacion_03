@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<jasperReport name="ReporteCitasTipoAtencion" language="java" pageWidth="595" pageHeight="842" orientation="Portrait" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="f6e94b3b-62cc-419b-8c30-baf92cdf6a77">
+  <parameter name="fechaInicio" class="java.sql.Date"/>
+  <parameter name="fechaFin" class="java.sql.Date"/>
+  <query language="sql">SELECT t.tipo AS tipo_atencion,
+ CAST(COALESCE(SUM(CASE WHEN c.estado IN ('RESERVADA', 'CONFIRMADA') THEN 1 ELSE 0 END),0) AS SIGNED) AS programadas,
+ CAST(COALESCE(SUM(CASE WHEN c.estado = 'ATENDIDA' THEN 1 ELSE 0 END),0) AS SIGNED) AS atendidas,
+ CAST(COALESCE(SUM(CASE WHEN c.estado = 'CANCELADA' THEN 1 ELSE 0 END),0) AS SIGNED) AS canceladas,
+ CAST(COUNT(c.id_cita) AS SIGNED) AS total
+ FROM (SELECT 'CONSULTA' AS tipo UNION ALL SELECT 'CONTROL' UNION ALL SELECT 'CIRUGIA' UNION ALL SELECT 'VACUNACION') t
+ LEFT JOIN CITA c ON c.tipo_atencion = t.tipo AND c.activo = 1
+ AND c.fecha BETWEEN $P{fechaInicio} AND $P{fechaFin}
+ GROUP BY t.tipo
+ ORDER BY FIELD(t.tipo, 'CONSULTA','CONTROL','CIRUGIA','VACUNACION')</query>
+  <field name="tipo_atencion" class="java.lang.String"/>
+  <field name="programadas" class="java.lang.Long"/>
+  <field name="atendidas" class="java.lang.Long"/>
+  <field name="canceladas" class="java.lang.Long"/>
+  <field name="total" class="java.lang.Long"/>
+  <variable name="TOTAL_CITAS" class="java.lang.Long" calculation="Sum">
+    <expression>$F{total}</expression>
+  </variable>
+  <variable name="TOTAL_PROGRAMADAS" class="java.lang.Long" calculation="Sum">
+    <expression>$F{programadas}</expression>
+  </variable>
+  <variable name="TOTAL_ATENDIDAS" class="java.lang.Long" calculation="Sum">
+    <expression>$F{atendidas}</expression>
+  </variable>
+  <variable name="TOTAL_CANCELADAS" class="java.lang.Long" calculation="Sum">
+    <expression>$F{canceladas}</expression>
+  </variable>
+  <background splitType="Stretch"/>
+  <title height="108" splitType="Stretch">
+    <element kind="rectangle" uuid="616edb04-1824-486d-9f12-fe0b067bf41e" x="0" y="0" width="555" height="101" mode="Opaque" backcolor="#143B56" forecolor="#143B56"/>
+    <element kind="rectangle" uuid="4fec120f-d600-4284-a63f-29e6e7d862e0" x="0" y="0" width="6" height="101" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="6dee5d5a-681b-4249-a91d-756757626aba" x="20" y="9" width="300" height="18" fontName="DejaVu Sans" fontSize="9" forecolor="#B8ECF4" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>MASCOVET  ·  INFORMES</text>
+    </element>
+    <element kind="staticText" uuid="30acccd4-0338-442a-8913-042d51fc343f" x="20" y="29" width="520" height="35" fontName="DejaVu Sans" fontSize="16" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>Citas por tipo de atención</text>
+    </element>
+    <element kind="staticText" uuid="e4f56f59-84a7-42de-b4cf-51569260eb54" x="20" y="65" width="520" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#C8DEEA" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Programadas, atendidas y canceladas</text>
+    </element>
+    <element kind="textField" uuid="a4366ed5-fc08-4983-9be8-9fc9f74d9ab4" x="20" y="83" width="520" height="15" fontName="DejaVu Sans" fontSize="8" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Top" bold="false">
+      <expression>"Desde " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaInicio}) + " hasta " + new java.text.SimpleDateFormat("dd/MM/yyyy").format($P{fechaFin})</expression>
+    </element>
+  </title>
+  <pageHeader height="39" splitType="Stretch">
+    <element kind="staticText" uuid="320b498a-76de-4007-9a0d-e3bca292b9b1" x="2" y="8" width="535" height="24" fontName="DejaVu Sans" fontSize="11" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>CUADRO COMPARATIVO POR TIPO DE ATENCIÓN</text>
+    </element>
+  </pageHeader>
+  <columnHeader height="35" splitType="Stretch">
+    <element kind="rectangle" uuid="345dd57c-2e0b-4fc8-a27a-68070c5e629f" x="0" y="0" width="555" height="35" mode="Opaque" backcolor="#E9F4F7" forecolor="#E9F4F7"/>
+    <element kind="staticText" uuid="3a6dc63a-cd17-4982-b31f-14f983a43e4c" x="6" y="7" width="126" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>TIPO</text>
+    </element>
+    <element kind="staticText" uuid="3f51369b-dc08-4e7e-b377-d5e76eac5368" x="142" y="7" width="108" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>PROGRAMADAS</text>
+    </element>
+    <element kind="staticText" uuid="f7878513-590e-4720-94b8-1c8d884839e8" x="260" y="7" width="95" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>ATENDIDAS</text>
+    </element>
+    <element kind="staticText" uuid="f8b72edb-655c-479d-b1f5-61408924ed3d" x="365" y="7" width="98" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>CANCELADAS</text>
+    </element>
+    <element kind="staticText" uuid="52bc7a8f-2286-48d2-89ca-3e3b4a0157e0" x="473" y="7" width="78" height="24" fontName="DejaVu Sans" fontSize="8" forecolor="#185775" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>TOTAL</text>
+    </element>
+  </columnHeader>
+  <detail>
+    <band height="36" splitType="Stretch">
+      <element kind="rectangle" uuid="62dba599-f218-4902-ab16-78a61ca187f1" x="0" y="0" width="555" height="36" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+      <element kind="textField" uuid="7916332a-34fd-4c67-b671-892003525f90" x="6" y="7" width="126" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{tipo_atencion}</expression>
+      </element>
+      <element kind="textField" uuid="39d5dee2-ae97-4f45-bb8c-298cffcb8401" x="142" y="7" width="108" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{programadas}</expression>
+      </element>
+      <element kind="textField" uuid="479e7f73-57c1-43b0-861e-9e4d6976bac4" x="260" y="7" width="95" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{atendidas}</expression>
+      </element>
+      <element kind="textField" uuid="2b6895fb-4bda-4b55-8daa-2cd7355b0922" x="365" y="7" width="98" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{canceladas}</expression>
+      </element>
+      <element kind="textField" uuid="08dfa218-2b89-4436-9dfe-4412a21e384f" x="473" y="7" width="78" height="25" fontName="DejaVu Sans" fontSize="9" forecolor="#183A55" hTextAlign="Left" vTextAlign="Top" bold="false">
+        <expression>$F{total}</expression>
+      </element>
+    </band>
+  </detail>
+  <columnFooter height="26" splitType="Stretch">
+    <element kind="staticText" uuid="5b5dce0f-cb96-4531-8ecc-1f67c79420c2" x="2" y="6" width="370" height="14" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>MASCOVET · Información de gestión clínica</text>
+    </element>
+    <element kind="textField" uuid="1ab46444-9fdd-4c6f-aebe-e3ac197eecf2" x="446" y="6" width="107" height="16" fontName="DejaVu Sans" fontSize="8" forecolor="#637C90" hTextAlign="Right" vTextAlign="Top" bold="false">
+      <expression>"Página " + $V{PAGE_NUMBER}</expression>
+    </element>
+  </columnFooter>
+  <summary height="395" splitType="Stretch">
+    <element kind="rectangle" uuid="57f6be9c-9c74-4be4-a528-17feb81cc877" x="0" y="3" width="555" height="31" mode="Opaque" backcolor="#143B56" forecolor="#143B56"/>
+    <element kind="staticText" uuid="d7f36d81-ca14-430f-9b97-cb7fd95cd09f" x="12" y="7" width="530" height="23" fontName="DejaVu Sans" fontSize="11" forecolor="#FFFFFF" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>RESUMEN GENERAL DEL PERÍODO</text>
+    </element>
+    <element kind="rectangle" uuid="ecfd99cb-ff1e-4025-85a3-a46cb5d2fef2" x="0" y="45" width="132" height="82" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+    <element kind="rectangle" uuid="2720a3c4-8509-4bb9-9d5c-c4a5f740259d" x="0" y="45" width="4" height="82" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="89c72872-15d7-4b26-a844-ed24103b85be" x="12" y="54" width="114" height="22" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>CITAS REGISTRADAS</text>
+    </element>
+    <element kind="textField" uuid="979a6284-f2a8-49b4-93ec-bedac8a14937" x="12" y="79" width="114" height="39" fontName="DejaVu Sans" fontSize="20" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>String.valueOf($V{TOTAL_CITAS} == null ? 0 : $V{TOTAL_CITAS})</expression>
+    </element>
+    <element kind="rectangle" uuid="45bb550d-1f57-441f-99ae-932d805cba40" x="141" y="45" width="132" height="82" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+    <element kind="rectangle" uuid="1c275715-a34e-493c-8a48-0f91931f026a" x="141" y="45" width="4" height="82" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="2cf56d87-621c-4503-910d-2a1342ac87ec" x="153" y="54" width="114" height="22" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>PROGRAMADAS</text>
+    </element>
+    <element kind="textField" uuid="4c7bf039-3639-4bd0-9c1c-6c6fee097fa8" x="153" y="79" width="114" height="39" fontName="DejaVu Sans" fontSize="20" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>String.valueOf($V{TOTAL_PROGRAMADAS} == null ? 0 : $V{TOTAL_PROGRAMADAS})</expression>
+    </element>
+    <element kind="rectangle" uuid="74b126e7-0cf3-4980-a4ba-ba2d6ef3b520" x="282" y="45" width="132" height="82" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+    <element kind="rectangle" uuid="f2cd137d-7301-486d-a886-7f6e640fc416" x="282" y="45" width="4" height="82" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="57324e39-6726-48de-847f-1064f13186ba" x="294" y="54" width="114" height="22" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>ATENDIDAS</text>
+    </element>
+    <element kind="textField" uuid="9549032b-1464-40d3-9625-dd31e20f158a" x="294" y="79" width="114" height="39" fontName="DejaVu Sans" fontSize="20" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>String.valueOf($V{TOTAL_ATENDIDAS} == null ? 0 : $V{TOTAL_ATENDIDAS})</expression>
+    </element>
+    <element kind="rectangle" uuid="835e55b3-6591-48ae-a2e9-bfd0d6e6bf0b" x="423" y="45" width="132" height="82" mode="Opaque" backcolor="#F5F9FB" forecolor="#F5F9FB"/>
+    <element kind="rectangle" uuid="0137d3a1-894b-4186-b4dd-e57756af2d3e" x="423" y="45" width="4" height="82" mode="Opaque" backcolor="#2A8DA5" forecolor="#2A8DA5"/>
+    <element kind="staticText" uuid="5329b9de-598a-4973-a5c6-0c48eb62bdd7" x="435" y="54" width="114" height="22" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>CANCELADAS</text>
+    </element>
+    <element kind="textField" uuid="178668ce-f73e-4996-b5e8-e7e6d251c503" x="435" y="79" width="114" height="39" fontName="DejaVu Sans" fontSize="20" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <expression>String.valueOf($V{TOTAL_CANCELADAS} == null ? 0 : $V{TOTAL_CANCELADAS})</expression>
+    </element>
+    <element kind="staticText" uuid="d6e833e2-a211-4227-855d-b207997a491f" x="2" y="141" width="540" height="20" fontName="DejaVu Sans" fontSize="10" forecolor="#143B56" hTextAlign="Left" vTextAlign="Middle" bold="true">
+      <text>COMPARATIVO DE ESTADOS POR TIPO DE ATENCIÓN</text>
+    </element>
+    <element kind="staticText" uuid="a7cafe3b-0ea4-4b3a-9f3f-e4a547df71e5" x="2" y="162" width="540" height="15" fontName="DejaVu Sans" fontSize="8" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Distribución de las citas según su estado al momento de emitir el informe.</text>
+    </element>
+    <element kind="chart" uuid="af8e7695-6cb2-4c80-91a3-7ec80fcfa966" x="0" y="188" width="553" height="183" evaluationTime="Report" chartType="bar" linkType="None" linkTarget="Self">
+      <dataset kind="category">
+        <series>
+          <seriesExpression>"Programadas"</seriesExpression>
+          <categoryExpression>$F{tipo_atencion}</categoryExpression>
+          <valueExpression>$F{programadas}</valueExpression>
+          <labelExpression>""</labelExpression>
+        </series>
+        <series>
+          <seriesExpression>"Atendidas"</seriesExpression>
+          <categoryExpression>$F{tipo_atencion}</categoryExpression>
+          <valueExpression>$F{atendidas}</valueExpression>
+          <labelExpression>""</labelExpression>
+        </series>
+        <series>
+          <seriesExpression>"Canceladas"</seriesExpression>
+          <categoryExpression>$F{tipo_atencion}</categoryExpression>
+          <valueExpression>$F{canceladas}</valueExpression>
+          <labelExpression>""</labelExpression>
+        </series>
+      </dataset>
+      <plot categoryAxisLabelColor="#183A55" categoryAxisTickLabelColor="#183A55" categoryAxisLineColor="#183A55" valueAxisLabelColor="#183A55" valueAxisTickLabelColor="#183A55" valueAxisLineColor="#183A55">
+        <itemLabel/>
+      </plot>
+    </element>
+    <element kind="staticText" uuid="d02cadea-b3f0-4d16-b2c4-ec9eb93ae3bd" x="4" y="373" width="545" height="17" fontName="DejaVu Sans" fontSize="7" forecolor="#667E90" hTextAlign="Left" vTextAlign="Middle" bold="false">
+      <text>Programadas = reservadas + confirmadas. Se consideran únicamente citas activas.</text>
+    </element>
+  </summary>
+</jasperReport>

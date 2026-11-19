@@ -43,7 +43,6 @@ public static class NavCatalog
 
         new("Inicio", "administrador", "home", Admin),
         new("Personal", "administrador/personal", "users", Admin),
-        new("Cuentas y roles", "administrador/cuentas", "user", Admin),
         new("Horarios", "administrador/horarios", "clock", Admin),
         new("Atenciones médicas", "administrador/atenciones", "grid", Admin),
         new("Medicamentos", "administrador/medicamentos", "file-text", Admin),

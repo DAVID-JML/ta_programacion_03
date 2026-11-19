@@ -16,15 +16,37 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <junit.version>5.13.2</junit.version>
+        <jasperreports.version>7.0.1</jasperreports.version>
     </properties>
 
     <dependencies>
-        <!-- JasperReports -->
+        <!-- JasperReports 7.0.1 (compatible con tus reportes de Jaspersoft Studio 7) -->
         <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>6.21.3</version>
+            <version>${jasperreports.version}</version>
         </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-pdf</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-charts</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-fonts</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports-chart-customizers</artifactId>
+            <version>${jasperreports.version}</version>
+        </dependency>
+
         <!-- Dependencias internas de Mascovet -->
         <dependency>
             <groupId>pe.com.mascovet</groupId>
@@ -64,7 +86,7 @@
         <dependency>
             <groupId>jakarta.ws.rs</groupId>
             <artifactId>jakarta.ws.rs-api</artifactId>
-            <version>5.0.0-M1</version>
+            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
 
@@ -82,7 +104,6 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
     <build>
